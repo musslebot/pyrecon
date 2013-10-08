@@ -20,11 +20,12 @@
         
 '''Merge two series together'''
 import sys, os, re
-import Series
-import Section
-import Transform
-import Image
-import Contour, ZContour
+import pyrecon.Series as Series
+import pyrecon.Section as Section
+import pyrecon.Transform as Transform
+import pyrecon.Image as Image
+import pyrecon.Contour as Contour
+import pyrecon.ZContour as ZContour
 from lxml import etree as ET
 from skimage import transform as tf
  
