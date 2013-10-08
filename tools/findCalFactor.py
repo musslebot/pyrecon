@@ -1,11 +1,5 @@
 import sys
 import reconstructmergetool as rmt
-from Series import *
-from Section import *
-from Transform import *
-from Image import *
-from Contour import *
-from ZContour import *
 from skimage import transform as tf
 
 if len(sys.argv) > 1:

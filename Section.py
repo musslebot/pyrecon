@@ -1,7 +1,7 @@
-from Transform import *
-from Image import *
-from Contour import *
-from ZContour import *
+import Transform
+import Image
+import Contour
+import ZContour
 class Section:
 # Python Functions
     # INITIALIZE

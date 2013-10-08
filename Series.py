@@ -1,7 +1,4 @@
-from Contour import *
-from ZContour import *
-from Section import *
-from rObject import *
+import Section
 from lxml import etree as ET
 import numpy as np
 import os, re
