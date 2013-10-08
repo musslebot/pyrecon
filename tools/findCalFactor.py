@@ -1,6 +1,7 @@
 import sys
 import reconstructmergetool as rmt
 from skimage import transform as tf
+import numpy as np
 
 if len(sys.argv) > 1:
     path_to_series = str( sys.argv[1] )
