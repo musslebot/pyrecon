@@ -19,7 +19,7 @@
 
         
 '''Merge two series together'''
-import sys, os
+import sys, os, re
 import Series
 import Section
 import Transform
