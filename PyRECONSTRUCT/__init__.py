@@ -1,0 +1,5 @@
+all = [
+       'classes',
+       'tools',
+       'toolsgui'
+       ]
