@@ -1,6 +1,5 @@
-import Section
+import pyrecon.Section as Section
 from lxml import etree as ET
-import numpy as np
 import os, re
 # Recent changes: popgridSize int -> float
 class Series:

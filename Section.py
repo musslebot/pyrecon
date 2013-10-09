@@ -1,10 +1,8 @@
-import Transform
-import Image
-import Contour
-import ZContour
+import pyrecon.Transform as Transform
+import pyrecon.Image as Image
+import pyrecon.Contour as Contour
 class Section:
 # Python Functions
-    # INITIALIZE
     def __init__(self, root=None, name='Unknown'): #root is xml tree
         # Create <section>
         self.name = name

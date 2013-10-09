@@ -13,8 +13,8 @@ outpath = str(args['outpath'][0])
 if outpath[len(outpath)-1] != '/':
     outpath += '/'
     
-import reconstructmergetool as rmt
-from Transform import *
+import pyrecon.tools.mergeTool as rmt
+import pyrecon.Transform as Transform
    
 def reScale(ser, newMag, outpath):
     ser = rmt.getSeries(ser)

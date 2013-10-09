@@ -4,8 +4,6 @@ class Contour:
 # Python Functions
     # INITIALIZE
     def __init__(self, node=None, imgflag=None, transform=None):
-        '''Initializes the Contour object. Two different Contour objects: Image Contours and Contours \
-        delineated by the imgflag parameter.'''
         self.tag = 'Contour'
         self.name = self.popname(node)
         self.img = imgflag
@@ -113,9 +111,9 @@ class Contour:
         # Open trace
         elif self.closed == False and len(self.points)>1:
             self._shape = LineString( self.transform.worldpts(self.points) )
-        else:
+        else: #===
             print('\nInvalid shape characteristics: '+self.name)
-            print('Quit for debug')
+            print('Quit for debug') 
             quit() # for dbugging
     def box(self):
         '''Returns bounding box of shape (shapely) library'''
@@ -147,7 +145,7 @@ class Contour:
         else:
             return False
     def popsimplified(self, node):
-        '''Searches xml node for closed.'''
+        '''Searches xml node for simplified.'''
         if node == None:
             return None
         elif str(node.get('simplified', None)).capitalize() == 'True':

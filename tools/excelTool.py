@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys, re, openpyxl
-import reconstructmergetool as rmt
+import pyrecon.tools.mergeTool as rmt
 import argparse
 
 def main( path_to_series, save_path ):

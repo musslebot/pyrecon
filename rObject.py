@@ -1,6 +1,6 @@
 import operator
 class rObject:
-    '''rObject contain information for reconstruct objects that requires computation over multiple sections'''
+    '''rObjects contain information for reconstruct objects that require computation over multiple sections'''
     def __init__(self, name=None, series=None, tag=None):
         self.name = name
         self.series = series

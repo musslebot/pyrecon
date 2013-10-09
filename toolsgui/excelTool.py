@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import excelTool
 import sys, os
+from pyrecon.tools import excelTool
 from PySide import QtGui, QtCore
 
 class excelToolWindow(QtGui.QWidget):

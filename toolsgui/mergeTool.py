@@ -1,7 +1,7 @@
 from PySide import QtGui, QtCore
-import reconstructmergetool as rmt
+import pyrecon.tools.mergeTool as rmt
 import sys
-import Series
+# import Series
 
 '''TEST.PY functions as a test page for rmtgui.py. Changes are first made to test.py until a working
 product is established and ready to be copied to rmtgui.py'''
