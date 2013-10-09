@@ -1,31 +1,6 @@
-#!/usr/bin/env python
-#  Files: reconstructmergetool.py, rmtgui.py, Series.py, Section.py, Transform.py,
-#         Contour.py, ZContour.py, Image.py, mergeObject.py, reScale.py, findCalFactor.py
-#
-#  Description: Driver for reconstructmergetool
-#
-#  Created by: Michael Musslewhite, Larry Lindsey
-#
-#  Date Created: 3/7/2013
-#
-#  Date Last Modified: 10/8/2013
-#
-# To do:
-    # File input from commandline doesnt work with ~
-    # Needs to be a better way to change image contour and section.img stuff simultaneously
-    # verbosity mode
-    # make series object better, dictionary instead of a bunch of attributes?
-    # tospace() fromspace() in transform
-
-        
 '''Merge two series together'''
 import sys, os, re
-import pyrecon.Series as Series
-import pyrecon.Section as Section
-import pyrecon.Transform as Transform
-import pyrecon.Image as Image
-import pyrecon.Contour as Contour
-import pyrecon.ZContour as ZContour
+from pyrecon.classes import *
 from lxml import etree as ET
 from skimage import transform as tf
  
