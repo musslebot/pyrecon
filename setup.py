@@ -3,19 +3,23 @@ from distutils.core import setup
 setup(
       name='PyRECONSTRUCT',
       version='0.1',
-      packages=['classes', 'tools', 'toolsgui'],
+      packages=[
+                'classes',
+                'tools',
+                'toolsgui'
+                ],
       long_description=open('README.txt').read(),
       install_requires=[
-                        "numpy >= 1.7.1",
-                        "scipy >= 0.12.0",
-                        "matplotlib >= 1.2.1",
-                        "ipython >= 0.13.2",
-                        "pandas >= 0.12.0",
-                        "sympy >= 0.7.3",
-                        "nose >= 1.3.0",
-                        "shapely >= 1.2.18",
-                        "cython >= 0.19.1",
-                        "scikit-image >= 0.8.2",
-                        "lxml >= 3.2.3"
+                        "numpy == 1.7.1",
+                        "scipy == 0.12.0",
+                        "matplotlib == 1.2.1",
+                        "ipython == 0.13.2",
+                        "pandas == 0.12.0",
+                        "sympy == 0.7.3",
+                        "nose == 1.3.0",
+                        "shapely == 1.2.18",
+                        "cython == 0.19.1",
+                        "scikit-image == 0.8.2",
+                        "lxml == 3.2.3"
                         ],
       )
