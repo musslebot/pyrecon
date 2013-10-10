@@ -4,6 +4,28 @@ from shapely.geometry import Polygon, LineString, box
 from lxml import etree as ET
 from skimage import transform as tf
 
+def loadSeries(path_to_series):
+    '''Create a series object, fully populated.'''
+    if path_to_series.find(os.sep) < 0:
+        path_to_series = './' + path_to_series
+    series = loadSeriesXML(path_to_series)
+    series.getSectionsXML(path_to_series)
+    return series
+    
+def loadSeriesXML(path_to_series):
+    '''Creates a series object representation from a .ser XML file in path_to_series'''
+    print('Creating series object from ' + path_to_series + '...'),
+    #Parse series
+    tree = ET.parse( path_to_series )
+    
+    root = tree.getroot() #Series
+    #Create series object
+    serName = path_to_series.split('/')[len(path_to_series.split('/'))-1].replace('.ser','')
+    series = Series(root, serName)
+    print('DONE')
+    print('\tSeries: '+series.name)
+    return series
+
 class Contour:
 # Python Functions
     # INITIALIZE

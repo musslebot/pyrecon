@@ -9,6 +9,8 @@ This package should also be used to develop scripts/programs for various tasks t
 these XML files. Included examples are mergeTool for merging multiple RECONSTRUCT series
 and excelTool for pushing object data into an excel workbook (.xlsx).
 
+The gui for mergeTool is still under construction... please be patient!
+
 PyRECONSTRUCT should be imported with the name 'pyrecon' (i.e. import pyrecon)
 
 To import only the XML-parse portion of PyRECONSTRUCT:

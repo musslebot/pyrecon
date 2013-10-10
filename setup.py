@@ -2,7 +2,7 @@ from distutils.core import setup
 # Not sure that all of the listed install_requires are actually required --Michael Musslewhite
 setup(
       name='PyRECONSTRUCT',
-      version='0.1',
+      version='0.2',
       author='Michael Musslewhite',
       author_email='mdmusslewhite@gmail.com',
       packages=[
