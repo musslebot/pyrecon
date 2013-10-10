@@ -1,1 +1,5 @@
-all = ['classes','tools','toolsgui']
+all = [
+       'classes',
+       'tools',
+       'toolsgui'
+       ]
