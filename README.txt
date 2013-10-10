@@ -4,9 +4,17 @@ PyRECONSTRUCT
 Date Created: 3/7/2013
 Authors: Michael Musslewhite, Larry Lindsey
 
-PyRECONSTRUCT provides relatively easy access to XML files associated with the program RECONSTRUCT
-using the Python programming language. This package also be used to develop scripts/programs for 
-various tasks associated with these XML files.
+PyRECONSTRUCT provides easy access to XML files associated with the program RECONSTRUCT.
+This package should also be used to develop scripts/programs for various tasks that use
+these XML files. Included examples are mergeTool for merging multiple RECONSTRUCT series
+and excelTool for pushing object data into an excel workbook (.xlsx).
+
+PyRECONSTRUCT should be imported with the name 'pyrecon' (i.e. import pyrecon)
+
+To import only the XML-parse portion of PyRECONSTRUCT:
+	from pyrecon.tools import classes
+		or
+	from pyrecon.tool.classes import * 
 
 More info on RECONSTRUCT can be found here:
 	http://synapses.clm.utexas.edu/tools/index.stm
