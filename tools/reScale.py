@@ -14,7 +14,7 @@ if outpath[len(outpath)-1] != '/':
     outpath += '/'
     
 import pyrecon.tools.mergeTool as rmt
-from pyrecon.classes import Transform
+from pyrecon.tools.classes import Transform
    
 def reScale(ser, newMag, outpath):
     ser = rmt.getSeries(ser)

@@ -1,6 +1,6 @@
 '''Merge two series together'''
 import sys, os, re
-from pyrecon.classes import *
+from pyrecon.tools.classes import *
 from lxml import etree as ET
 from skimage import transform as tf
  

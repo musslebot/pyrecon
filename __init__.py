@@ -1,5 +1,4 @@
-all = [
-       'classes',
+__all__ = [
        'tools',
        'toolsgui'
        ]

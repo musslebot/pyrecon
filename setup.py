@@ -3,11 +3,13 @@ from distutils.core import setup
 setup(
       name='PyRECONSTRUCT',
       version='0.1',
+      author='Michael Musslewhite',
+      author_email='mdmusslewhite@gmail.com',
       packages=[
-                'classes',
                 'tools',
                 'toolsgui'
                 ],
+      license='LICENSE.txt',
       long_description=open('README.txt').read(),
       install_requires=[
                         "numpy == 1.7.1",
