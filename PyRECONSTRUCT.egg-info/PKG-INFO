@@ -1,7 +1,7 @@
 Metadata-Version: 1.0
 Name: PyRECONSTRUCT
-Version: 0.2.3
-Summary: UNKNOWN
+Version: 0.2.4
+Summary: Python tools for interacting with XML files associated with RECONSTRUCT
 Home-page: UNKNOWN
 Author: Michael Musslewhite
 Author-email: mdmusslewhite@gmail.com
