@@ -9,8 +9,7 @@ setup(
       author='Michael Musslewhite',
       author_email='mdmusslewhite@gmail.com',
       packages=[
-                'tools',
-                'toolsgui'
+                'pyrecon'
                 ],
       license='LICENSE.txt',
       long_description=open('README.txt').read(),
