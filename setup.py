@@ -24,7 +24,7 @@ setup(
                         "matplotlib == 1.2.1",
                         "ipython == 0.13.2",
                         "pandas == 0.12.0",
-                        "sympy == 0.7.3",
+                        "sympy == 0.7.3", 
                         "nose == 1.3.0",
                         "shapely == 1.2.18",
                         "cython == 0.19.1",

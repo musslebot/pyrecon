@@ -770,10 +770,6 @@ class mainFrame(QtGui.QFrame):
             self.contAInfo = QtGui.QWidget(self)
             self.contAInfo.setAutoFillBackground(True) #===
             
-            image = QtGui.QPixmap(parent=self.contAInfo) #=== TESTING IMAGES
-            image.load('/home/michaelm/Documents/Test Series/rmtgTest/ser1/001____z0.0.tif')
-            image = image.copy(QtCore.QRect(500,500,100,30))
-            
             self.contBInfo = QtGui.QWidget(self)
             self.contBInfo.setAutoFillBackground(True) #===
             
@@ -792,6 +788,9 @@ class mainFrame(QtGui.QFrame):
             self.bothButton.setText('Choose traces\nfor both series')
             self.bothButton.clicked.connect( self.buttonClicked )
             
+            for button in [self.contAButton, self.contBButton, self.bothButton]: #Must be consistent with buttonClicked()
+                button.setPalette(QtGui.QPalette('lightgray'))
+                
             # Repetition checkboxes
             self.thisTraceAllSections = QtGui.QCheckBox()
             self.thisTraceAllSections.setText('Choose THIS particular trace in THIS series for ALL sections')
@@ -841,6 +840,14 @@ class mainFrame(QtGui.QFrame):
         
         def checkedBox(self):
             '''Maintains an exclusive implementation of checkboxes (i.e. unchecks others when one is checked)'''
+#====== Doesn't work for some reason
+#             for checkbox in [self.thisTraceAllSections,
+#                              self.allTracesThisSection,
+#                              self.allTracesAllSections]:
+#                 if checkbox == self.sender():
+#                     checkbox.setCheckState(QtCore.Qt.Checked)
+#                 else:
+#                     checkbox.setCheckState(QtCore.Qt.Unchecked)
             if self.sender() == self.thisTraceAllSections and self.thisTraceAllSections.checkState() == QtCore.Qt.Checked:
                 self.allTracesThisSection.setCheckState(QtCore.Qt.Unchecked)
                 self.allTracesAllSections.setCheckState(QtCore.Qt.Unchecked)
@@ -851,14 +858,12 @@ class mainFrame(QtGui.QFrame):
                 self.thisTraceAllSections.setCheckState(QtCore.Qt.Unchecked)
                 self.allTracesThisSection.setCheckState(QtCore.Qt.Unchecked)
 
-        def buttonClicked(self): #===
+        def buttonClicked(self):
             for button in [self.contAButton, self.contBButton, self.bothButton]:
                 if button == self.sender():
-                    button.setFlat(True) #=== change color
-                    button.setAutoFillBackground(True)
+                    button.setPalette(QtGui.QPalette('lightblue'))
                 else:
-                    button.setFlat(False)
-                    button.setAutoFillBackground(False)
+                    button.setPalette(QtGui.QPalette('lightgray'))
 
     class sectionContourWidget(widgetWindow):
         def __init__(self, parent=None, section=None):
