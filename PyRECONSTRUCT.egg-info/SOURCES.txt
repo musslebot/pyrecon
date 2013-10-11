@@ -1,5 +1,4 @@
 README.txt
-__init__.py
 setup.py
 PyRECONSTRUCT.egg-info/PKG-INFO
 PyRECONSTRUCT.egg-info/SOURCES.txt
