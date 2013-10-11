@@ -1,1 +1,1 @@
-v0.1,  10/10/2013 -- Initial release.
+Visit https://github.com/wtrdrnkr/pyrecon for more details
