@@ -5,7 +5,7 @@ except ImportError:
 # Not sure that all of the listed install_requires are actually required --Michael Musslewhite
 setup(
       name='PyRECONSTRUCT',
-      version='0.2.5',
+      version='0.2.6',
       author='Michael Musslewhite',
       author_email='mdmusslewhite@gmail.com',
       packages=[

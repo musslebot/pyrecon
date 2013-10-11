@@ -5,4 +5,3 @@ PyRECONSTRUCT.egg-info/SOURCES.txt
 PyRECONSTRUCT.egg-info/dependency_links.txt
 PyRECONSTRUCT.egg-info/requires.txt
 PyRECONSTRUCT.egg-info/top_level.txt
-pyrecon/__init__.py
