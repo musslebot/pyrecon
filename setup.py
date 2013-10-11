@@ -1,4 +1,7 @@
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 # Not sure that all of the listed install_requires are actually required --Michael Musslewhite
 setup(
       name='PyRECONSTRUCT',
