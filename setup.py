@@ -5,11 +5,15 @@ except ImportError:
 # Not sure that all of the listed install_requires are actually required --Michael Musslewhite
 setup(
       name='PyRECONSTRUCT',
-      version='0.2.6',
+      version='0.2.7',
       author='Michael Musslewhite',
       author_email='mdmusslewhite@gmail.com',
+      url='https://github.com/wtrdrnkr/pyrecon',
       packages=[
-                ''
+                '',
+                'pyrecon',
+                'pyrecon.tools',
+                'pyrecon.toolsgui',
                 ],
       license='LICENSE.txt',
       description='Python tools for interacting with XML files associated with RECONSTRUCT',
