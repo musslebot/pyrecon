@@ -1,5 +1,0 @@
-all = [
-       'classes',
-       'tools',
-       'toolsgui'
-       ]
