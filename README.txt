@@ -21,6 +21,20 @@ To import only the XML-parse portion of PyRECONSTRUCT:
 		or
 	from pyrecon.tool.classes import * 
 
+---------------------------------------------------------------------------
+These dependencies are required to run on a linux system (currently working to get functionality on Windows):
+	python-dev
+	python-setuptools
+	libgeos-dev
+	libblas-dev
+	liblapack-dev
+	libfreetype6-dev
+	libpng-dev
+	gfortran
+	libxml2-dev
+	libxslt-dev
+	cmake
+	libshiboken-dev
 ----------------------------------------------------------------------------
 
 More info on RECONSTRUCT can be found here:
