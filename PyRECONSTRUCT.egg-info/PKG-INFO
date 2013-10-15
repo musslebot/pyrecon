@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: PyRECONSTRUCT
-Version: 0.2.7
+Version: 0.2.9
 Summary: Python tools for interacting with XML files associated with RECONSTRUCT
 Home-page: https://github.com/wtrdrnkr/pyrecon
 Author: Michael Musslewhite
@@ -12,19 +12,38 @@ Description: ===========
         Date Created: 3/7/2013
         Authors: Michael Musslewhite, Larry Lindsey
         
+        ** THIS DISTRIBUTION IS STILL IN DEVELOPMENT, BUGS ARE LIKELY TO EXIST **
+        
         PyRECONSTRUCT provides easy access to XML files associated with the program RECONSTRUCT.
         This package should also be used to develop scripts/programs for various tasks that use
         these XML files. Included examples are mergeTool for merging multiple RECONSTRUCT series
         and excelTool for pushing object data into an excel workbook (.xlsx).
         
-        The gui for mergeTool is still under construction... please be patient!
+        The GUI for mergeTool is still under construction... please be patient! :)
         
         PyRECONSTRUCT should be imported with the name 'pyrecon' (i.e. import pyrecon)
         
         To import only the XML-parse portion of PyRECONSTRUCT:
+        	
         	from pyrecon.tools import classes
         		or
         	from pyrecon.tool.classes import * 
+        
+        ---------------------------------------------------------------------------
+        These dependencies are required to run on a linux system (currently working to get functionality on Windows):
+        	python-dev
+        	python-setuptools
+        	libgeos-dev
+        	libblas-dev
+        	liblapack-dev
+        	libfreetype6-dev
+        	libpng-dev
+        	gfortran
+        	libxml2-dev
+        	libxslt-dev
+        	cmake
+        	libshiboken-dev
+        ----------------------------------------------------------------------------
         
         More info on RECONSTRUCT can be found here:
         	http://synapses.clm.utexas.edu/tools/index.stm

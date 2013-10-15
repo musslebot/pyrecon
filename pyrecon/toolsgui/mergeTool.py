@@ -173,7 +173,8 @@ class mainFrame(QtGui.QFrame):
         
         # Load Functional Frame
         self.initUI()
-        
+        hboxA.insertSpacing(0, 100)
+        hboxA.insertSpacing(-1, 100)
     def initUI(self):
         self.prepNandBbuttons()
 #         self.prepSlider() #=== moved to sectionAttributeWidget

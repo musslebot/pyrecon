@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
       name='PyRECONSTRUCT',
-      version='0.2.8',
+      version='0.2.9',
       author='Michael Musslewhite',
       author_email='mdmusslewhite@gmail.com',
       url='https://github.com/wtrdrnkr/pyrecon',

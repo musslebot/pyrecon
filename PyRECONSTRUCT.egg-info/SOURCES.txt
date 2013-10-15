@@ -1,3 +1,6 @@
+CHANGES.txt
+LICENSE.txt
+MANIFEST.in
 README.txt
 setup.py
 PyRECONSTRUCT.egg-info/PKG-INFO
