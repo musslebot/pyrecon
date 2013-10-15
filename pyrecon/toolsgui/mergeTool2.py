@@ -57,6 +57,7 @@ class mainContainer(QtGui.QFrame):
         
         self.finishButton.setText('COMPLETE MERGE\nAND\nOUTPUT NEW SERIES')
         self.finishButton.setFlat(True)
+        self.finishButton.clicked.connect( self.finish )
         
     def browseSeries(self):
         path = QtGui.QFileDialog.getOpenFileName(self,
@@ -146,6 +147,14 @@ class mainContainer(QtGui.QFrame):
     def sectionConflicts(self):
         # Requires self. in variable name to be rendered correctly
         self.secWin = sectionConflictWindow(parent=None, pSeries=self.series1, sSeries=self.series2)
+        
+    def finish(self): #===
+        # update merged stuff
+        # Popup showing which areas are going to be defaulted due to no human resolution
+        # ask for output path
+        # create new series object
+        # push out
+        return
 
 class seriesConflictWindow(QtGui.QFrame):
     def __init__(self, parent=None, pSeries=None, sSeries=None):
