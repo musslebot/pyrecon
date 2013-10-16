@@ -213,17 +213,17 @@ class seriesConflictWindow(QtGui.QFrame):
         try:
             self.mergedAttributes = self.attRes.mergedAttributes
         except:
-            print('Choose primary atts===')
+            print('Primary Series Attributes chosen by default')
             
         try:
             self.mergedContours = self.contRes.mergedContours
         except:
-            print('Choose primary conts===')
+            print('Primary Series Contours chosen by default')
             
         try:    
             self.mergedZContours = self.zContRes.mergedZContours
         except:
-            print('Choose primary zconts===')
+            print('Primary Series ZContours chosen by default')
 
         self.close()
         
@@ -238,11 +238,8 @@ class seriesConflictWindow(QtGui.QFrame):
     def resolveContours(self):
         self.contRes = seriesContourResolver(pSeries=self.pSeries, sSeries=self.sSeries)
     
-    def resolveZContours(self): #===
-        print('ZContours pressed')
+    def resolveZContours(self):
         self.zContRes = seriesZContourResolver(pSeries=self.pSeries, sSeries=self.sSeries)
-
-
 
 class seriesAttributeResolver(QtGui.QFrame):
     def __init__(self, parent=None, pSeries=None, sSeries=None):
@@ -323,22 +320,14 @@ class seriesContourResolver(QtGui.QFrame):
         self.setLineWidth(2)
         self.setMidLineWidth(3)
         
-        self.pSeriesConts = [cont for cont in pSeries.contours if cont.tag != 'ZContour']
-        self.sSeriesConts = [cont for cont in sSeries.contours if cont.tag != 'ZContour']
+        self.pSeriesConts = [cont for cont in pSeries.contours if cont.tag == 'Contour']
+        self.sSeriesConts = [cont for cont in sSeries.contours if cont.tag == 'Contour']
         
-        #         # Possible feature for later
-#         mergeTool.mergeSeriesContours([cont for cont in pSeries.contours if cont.tag != 'ZContour'],
-#                                       [cont for cont in sSeries.contours if cont.tag != 'ZContour'],
-#                                       handler=self.serContHandler)
         self.mergedContours = None
         
         self.loadObjects()
         self.loadLayout()
         self.show()
-        
-#     def serContHandler(self, self.pSeriesConts, self.sSeriesConts, mergedConts):
-#         # Possible feature for the future
-#         return
 
     def loadObjects(self):
         self.pSeriesContButton = QtGui.QPushButton(self)
@@ -380,11 +369,33 @@ class seriesZContourResolver(QtGui.QFrame):
         self.show()
     
     def loadObjects(self):
-        return
+        self.pSerZContsButton = QtGui.QPushButton(self)
+        self.pSerZContsButton.setText('Choose Primary Series\'\nZContours (Default)')
+        self.pSerZContsButton.clicked.connect( self.choose )
+        self.sSerZContsButton = QtGui.QPushButton(self)
+        self.sSerZContsButton.setText('Choose Secondary Series\'\nZContours')
+        self.sSerZContsButton.clicked.connect( self.choose )
+        self.bothSerZContsButton = QtGui.QPushButton(self)
+        self.bothSerZContsButton.setText('Choose both Series\'\nZContours')
+        self.bothSerZContsButton.clicked.connect( self.choose )
     
     def loadLayout(self):
-        return
-
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget( self.pSerZContsButton )
+        vbox.addWidget( self.sSerZContsButton )
+        vbox.addWidget( self.bothSerZContsButton)
+        self.setLayout( vbox )
+        
+    def choose(self):
+        if self.sender() == self.pSerZContsButton:
+            self.mergedZContours = self.pSeriesZConts
+        elif self.sender() == self.sSerZContsButton:
+            self.mergedZContours = self.sSeriesZConts
+        else:
+            self.mergedZContours = mergeTool.mergeSeriesZContours(self.pSeriesZConts,
+                                                                  self.sSeriesZConts,
+                                                                  handler=mergeTool.serZContHandler)
+        self.close()
 
 class sectionConflictWindow(QtGui.QFrame):
     def __init__(self, parent=None, pSeries=None, sSeries=None):
