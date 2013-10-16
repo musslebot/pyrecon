@@ -353,7 +353,7 @@ class seriesContourResolver(QtGui.QFrame):
 class seriesZContourResolver(QtGui.QFrame):
     def __init__(self, parent=None, pSeries=None, sSeries=None):
         QtGui.QFrame.__init__(self, parent)
-        self.setGeometry(0,0,400,400)
+        self.setGeometry(0,0,400,200)
         self.setWindowTitle('Series ZContour Conflict Resolver')
         self.setFrameStyle(QtGui.QFrame.Box|QtGui.QFrame.Plain)
         self.setLineWidth(2)
@@ -397,7 +397,7 @@ class seriesZContourResolver(QtGui.QFrame):
                                                                   handler=mergeTool.serZContHandler)
         self.close()
 
-class sectionConflictWindow(QtGui.QFrame):
+class sectionConflictWindow(QtGui.QFrame): #===
     def __init__(self, parent=None, pSeries=None, sSeries=None):
         QtGui.QFrame.__init__(self, parent)
         self.setGeometry(300,325,300,150)
@@ -438,21 +438,123 @@ class sectionConflictWindow(QtGui.QFrame):
     def loadFunctionality(self):
         # Attributes
         self.attributesButton.setText('Attribute\nConflicts')
-#             self.attributesButton.clicked.connect( self.attributes )
+        self.attributesButton.clicked.connect( self.resolveAttributes )
         # ZContours
         self.imagesButton.setText('Image\nConflicts')
-#             self.imagesButton.clicked.connect( self.zcontours )
+        self.imagesButton.clicked.connect( self.resolveImages )
         # Contours
         self.contoursButton.setText('Contour\nConflicts')
-#             self.contoursButton.clicked.connect( self.contours )
+        self.contoursButton.clicked.connect( self.resolveContours )
         # Close
         self.closeButton.setText('Close')
         self.closeButton.clicked.connect( self.closeWin )
     
+    def resolveAttributes(self):
+        self.attRes = sectionAttributeResolver(parent=None,
+                                               pSeries=self.pSeries,
+                                               sSeries=self.sSeries)
+    
+    def resolveImages(self): #===
+        print('sec imgs pressed')
+#         self.imgRes = sectionImageResolver()
+    
+    def resolveContours(self): #===
+        print('sec conts pressed')
+#         self.contRes = sectionContourResolver()
+    
     def closeWin(self):
-        self.close()
-        return
+        # Update instance data to match resolvers
+        try:
+            self.mergedAttributes = self.attRes.mergedAttributes
+        except:
+            print('Default section attributes chosen')
+            
+        try:
+            self.mergedImages = self.imgRes.mergedContours
+        except:
+            print('Default section images chosen')
+            
+        try:    
+            self.mergedContours = self.contRes.mergedZContours
+        except:
+            print('Default section contours chosen')
 
+        self.close()
+        
+        #=== still need to update mainContainer
+        print('Merged Sec Attributes: '+str(self.mergedAttributes)) # Works
+        print('Merged Sec Images: '+str(self.mergedImages))
+        print('Merged Sec Contours: '+str(self.mergedContours))
+
+class sectionAttributeResolver(QtGui.QFrame):
+    def __init__(self, parent=None, pSeries=None, sSeries=None):
+        QtGui.QFrame.__init__(self, parent)
+        self.setGeometry(0,0,400,400)
+        self.setWindowTitle('Section Attribute Conflict Resolver')
+        self.setFrameStyle(QtGui.QFrame.Box|QtGui.QFrame.Plain)
+        self.setLineWidth(2)
+        self.setMidLineWidth(3)
+        
+        self.pSecAttributes = [section.output() for section in pSeries.sections]
+        self.sSecAttributes = [section.output() for section in sSeries.sections]
+        
+        self.mergedAttributes = None
+        
+        self.loadObjects()
+        self.loadLayout()
+        self.show()
+        
+    def loadObjects(self):
+        self.closeSaveButton = QtGui.QPushButton(self)
+        self.closeSaveButton.setText('Save and Close')
+        self.closeSaveButton.clicked.connect( self.updateAndClose )
+        
+        self.table = QtGui.QTableWidget( max(len(self.pSecAttributes),len(self.sSecAttributes)),
+                                        1, 
+                                        self)
+        self.table.setHorizontalHeaderLabels(['Section Attributes'])
+        self.table.setColumnWidth(0,330)
+        self.table.itemPressed.connect( self.resolveDetail )
+        # Load table items
+        for i in range(max(len(self.pSecAttributes),len(self.sSecAttributes))):
+            pSec = self.pSecAttributes[i]
+            sSec = self.sSecAttributes[i]
+            
+            item = QtGui.QTableWidgetItem( 'Section '+pSec['index'] )
+            item.setTextAlignment(QtCore.Qt.AlignCenter)
+            if pSec == sSec:
+                item.setBackground(QtGui.QBrush(QtGui.QColor('lightgreen')))
+            else:
+                item.setBackground(QtGui.QBrush(QtGui.QColor('pink')))
+            self.table.setItem(i,0,item)
+        self.table.show()
+        
+    def loadLayout(self):
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(self.table)
+        vbox.addWidget(self.closeSaveButton)
+        self.setLayout(vbox)
+        
+    def resolveDetail(self, item):
+        pink = '#ffc0cb'
+        yellow = '#ffff66'
+        if item.background().color().name() in [pink, yellow]:
+            self.res = textResolveDetail(parent=None, item=item,
+                              pItem=self.pSecAttributes[item.row()],
+                              sItem=self.sSecAttributes[item.row()])
+   
+    def updateAndClose(self):
+        self.mergedAttributes = []
+        for row in range( self.table.rowCount() ):
+            itemLabel = self.table.item(row,0).text()
+            if '(Secondary)' in itemLabel:
+                itemLabel = str(itemLabel.replace(' (Secondary)',''))
+                self.mergedAttributes.append(self.sSecAttributes[row])
+            else:
+                itemLabel = str(itemLabel.replace(' (Primary)',''))
+                self.mergedAttributes.append(self.pSecAttributes[row])
+        self.close()
+        
 class textResolveDetail(QtGui.QFrame):
     '''Detailed resolver for text-based item conflicts'''
     def __init__(self, parent=None, item=None, pItem=None, sItem=None):
