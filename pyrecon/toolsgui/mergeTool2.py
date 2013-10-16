@@ -235,68 +235,14 @@ class seriesConflictWindow(QtGui.QFrame):
     def resolveAttributes(self):
         self.attRes = seriesAttributeResolver(pSeries=self.pSeries, sSeries=self.sSeries)
     
-    def resolveContours(self): #===
-        print('Contours pressed')
-#         self.contRes = 
+    def resolveContours(self):
+        self.contRes = seriesContourResolver(pSeries=self.pSeries, sSeries=self.sSeries)
     
     def resolveZContours(self): #===
         print('ZContours pressed')
-#         self.zContRes = 
+        self.zContRes = seriesZContourResolver(pSeries=self.pSeries, sSeries=self.sSeries)
 
-class sectionConflictWindow(QtGui.QFrame):
-    def __init__(self, parent=None, pSeries=None, sSeries=None):
-        QtGui.QFrame.__init__(self, parent)
-        self.setGeometry(300,325,300,150)
-        self.setWindowTitle('Section File Conflicts')
-        self.setFrameStyle(QtGui.QFrame.Box|QtGui.QFrame.Plain)
-        self.setLineWidth(2)
-        self.setMidLineWidth(3)
-        
-        self.pSeries = pSeries
-        self.sSeries = sSeries
-        
-        # Returned objects when close button pressed
-        self.mergedAttributes = None
-        self.mergedImages = None
-        self.mergedContours = None
 
-        self.loadFunctionalObjects()
-        self.loadLayout()
-        self.loadFunctionality()
-        
-        
-        self.show()
-        
-    def loadFunctionalObjects(self):
-        self.attributesButton = QtGui.QPushButton(self)
-        self.imagesButton = QtGui.QPushButton(self)
-        self.contoursButton = QtGui.QPushButton(self)
-        self.closeButton = QtGui.QPushButton(self)
-        
-    def loadLayout(self):
-        vbox = QtGui.QVBoxLayout()
-        vbox.addWidget(self.attributesButton)
-        vbox.addWidget(self.imagesButton)
-        vbox.addWidget(self.contoursButton)
-        vbox.addWidget(self.closeButton)
-        self.setLayout(vbox)
-        
-    def loadFunctionality(self):
-        # Attributes
-        self.attributesButton.setText('Attribute\nConflicts')
-#             self.attributesButton.clicked.connect( self.attributes )
-        # ZContours
-        self.imagesButton.setText('Image\nConflicts')
-#             self.imagesButton.clicked.connect( self.zcontours )
-        # Contours
-        self.contoursButton.setText('Contour\nConflicts')
-#             self.contoursButton.clicked.connect( self.contours )
-        # Close
-        self.closeButton.setText('Close')
-        self.closeButton.clicked.connect( self.closeWin )
-    def closeWin(self):
-        self.close()
-        return 
 
 class seriesAttributeResolver(QtGui.QFrame):
     def __init__(self, parent=None, pSeries=None, sSeries=None):
@@ -368,6 +314,134 @@ class seriesAttributeResolver(QtGui.QFrame):
                 self.mergedAttributes[itemLabel] = self.pSeriesAtts[itemLabel]
         self.close()
     
+class seriesContourResolver(QtGui.QFrame):
+    def __init__(self, parent=None, pSeries=None, sSeries=None):
+        QtGui.QFrame.__init__(self, parent)
+        self.setGeometry(0,0,400,100)
+        self.setWindowTitle('Series Contour Conflict Resolver')
+        self.setFrameStyle(QtGui.QFrame.Box|QtGui.QFrame.Plain)
+        self.setLineWidth(2)
+        self.setMidLineWidth(3)
+        
+        self.pSeriesConts = [cont for cont in pSeries.contours if cont.tag != 'ZContour']
+        self.sSeriesConts = [cont for cont in sSeries.contours if cont.tag != 'ZContour']
+        
+        #         # Possible feature for later
+#         mergeTool.mergeSeriesContours([cont for cont in pSeries.contours if cont.tag != 'ZContour'],
+#                                       [cont for cont in sSeries.contours if cont.tag != 'ZContour'],
+#                                       handler=self.serContHandler)
+        self.mergedContours = None
+        
+        self.loadObjects()
+        self.loadLayout()
+        self.show()
+        
+#     def serContHandler(self, self.pSeriesConts, self.sSeriesConts, mergedConts):
+#         # Possible feature for the future
+#         return
+
+    def loadObjects(self):
+        self.pSeriesContButton = QtGui.QPushButton(self)
+        self.pSeriesContButton.setText('Choose Primary\nSeries Contours')
+        self.pSeriesContButton.clicked.connect( self.choose )
+        self.sSeriesContButton = QtGui.QPushButton(self)
+        self.sSeriesContButton.setText('Choose Secondary\nSeries Contours')
+        self.sSeriesContButton.clicked.connect( self.choose )
+    
+    def loadLayout(self):
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget( self.pSeriesContButton )
+        vbox.addWidget( self.sSeriesContButton )
+        self.setLayout( vbox )
+        
+    def choose(self):
+        if self.sender() == self.pSeriesContButton:
+            self.mergedContours = self.pSeriesConts
+        else:
+            self.mergedContours = self.sSeriesConts
+        self.close()
+
+class seriesZContourResolver(QtGui.QFrame):
+    def __init__(self, parent=None, pSeries=None, sSeries=None):
+        QtGui.QFrame.__init__(self, parent)
+        self.setGeometry(0,0,400,400)
+        self.setWindowTitle('Series ZContour Conflict Resolver')
+        self.setFrameStyle(QtGui.QFrame.Box|QtGui.QFrame.Plain)
+        self.setLineWidth(2)
+        self.setMidLineWidth(3)
+
+        self.pSeriesZConts = [cont for cont in pSeries.contours if cont.tag == 'ZContour']
+        self.sSeriesZConts = [cont for cont in sSeries.contours if cont.tag == 'ZContour']
+        
+        self.mergedZContours = None
+        
+        self.loadObjects()
+        self.loadLayout()
+        self.show()
+    
+    def loadObjects(self):
+        return
+    
+    def loadLayout(self):
+        return
+
+
+class sectionConflictWindow(QtGui.QFrame):
+    def __init__(self, parent=None, pSeries=None, sSeries=None):
+        QtGui.QFrame.__init__(self, parent)
+        self.setGeometry(300,325,300,150)
+        self.setWindowTitle('Section File Conflicts')
+        self.setFrameStyle(QtGui.QFrame.Box|QtGui.QFrame.Plain)
+        self.setLineWidth(2)
+        self.setMidLineWidth(3)
+        
+        self.pSeries = pSeries
+        self.sSeries = sSeries
+        
+        # Returned objects when close button pressed
+        self.mergedAttributes = None
+        self.mergedImages = None
+        self.mergedContours = None
+
+        self.loadFunctionalObjects()
+        self.loadLayout()
+        self.loadFunctionality()
+        
+        
+        self.show()
+        
+    def loadFunctionalObjects(self):
+        self.attributesButton = QtGui.QPushButton(self)
+        self.imagesButton = QtGui.QPushButton(self)
+        self.contoursButton = QtGui.QPushButton(self)
+        self.closeButton = QtGui.QPushButton(self)
+        
+    def loadLayout(self):
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(self.attributesButton)
+        vbox.addWidget(self.imagesButton)
+        vbox.addWidget(self.contoursButton)
+        vbox.addWidget(self.closeButton)
+        self.setLayout(vbox)
+        
+    def loadFunctionality(self):
+        # Attributes
+        self.attributesButton.setText('Attribute\nConflicts')
+#             self.attributesButton.clicked.connect( self.attributes )
+        # ZContours
+        self.imagesButton.setText('Image\nConflicts')
+#             self.imagesButton.clicked.connect( self.zcontours )
+        # Contours
+        self.contoursButton.setText('Contour\nConflicts')
+#             self.contoursButton.clicked.connect( self.contours )
+        # Close
+        self.closeButton.setText('Close')
+        self.closeButton.clicked.connect( self.closeWin )
+    
+    def closeWin(self):
+        self.close()
+        return
+
 class textResolveDetail(QtGui.QFrame):
     '''Detailed resolver for text-based item conflicts'''
     def __init__(self, parent=None, item=None, pItem=None, sItem=None):
