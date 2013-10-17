@@ -718,14 +718,14 @@ class sectionContourResolver(QtGui.QFrame):
         row=item.row()
         if item.background().color().name() in [pink, yellow]:
             print('RESOLVE NOOB') #===
-            self.res = sectionContourResolver.sectionContourWidget(parent=None,
+            self.res = sectionContourResolver.sectionContoursWidget(parent=None,
                                                                    pSection=self.pSections[row],
                                                                    sSection=self.sSections[row])
 
     def updateAndClose(self):
         print('updateandclose')
     
-    class sectionContourWidget(QtGui.QWidget):
+    class sectionContoursWidget(QtGui.QWidget):
         def __init__(self, parent=None, pSection=None, sSection=None):
             QtGui.QWidget.__init__(self, parent)
             self.setGeometry(0,0,800,500)
@@ -760,6 +760,15 @@ class sectionContourResolver(QtGui.QFrame):
             self.table1.itemDoubleClicked.connect( self.showDetail )
             self.table2.itemDoubleClicked.connect( self.resolveConflict )
             self.table3.itemDoubleClicked.connect( self.showDetail )
+            self.saveCloseButton = QtGui.QPushButton(self)
+            self.saveCloseButton.setText('Save and Close')
+            self.saveCloseButton.clicked.connect( self.saveAndClose )
+            self.ignoreTable1 = QtGui.QCheckBox(self)
+            self.ignoreTable1.setText('Ignore items in this table')
+            self.ignoreTable2 = QtGui.QCheckBox(self)
+            self.ignoreTable2.setText('Ignore items in this table')
+            self.ignoreTable3 = QtGui.QCheckBox(self)
+            self.ignoreTable3.setText('Ignore items in this table')
             
         def prepLayout(self):
             # Layout
@@ -769,6 +778,19 @@ class sectionContourResolver(QtGui.QFrame):
             hbox1.addWidget(self.table2) # Conflicts/merges
             hbox1.addWidget(self.table3) # Series 2
             vbox.addLayout(hbox1)
+            
+            hbox2 = QtGui.QHBoxLayout()
+            hbox2.addWidget(self.ignoreTable1)
+            hbox2.addWidget(self.ignoreTable2)
+            hbox2.addWidget(self.ignoreTable3)
+#             hbox2.setAlignment(QtCore.)
+            vbox.addLayout(hbox2)
+            
+            hbox3 = QtGui.QHBoxLayout()
+            hbox3.addWidget( self.saveCloseButton )
+            hbox3.insertSpacing(0,250)
+            hbox3.insertSpacing(-1,250)
+            vbox.addLayout(hbox3)
             self.setLayout(vbox)
             
         def prepTables(self, s1unique, ovlps, confs, s2unique):
@@ -1006,6 +1028,10 @@ class sectionContourResolver(QtGui.QFrame):
         
         def itemToYellow(self, item):
             item.setBackground(QtGui.QBrush(QtGui.QColor('#ffff66')))
+            
+        def saveAndClose(self): #===
+            print('saveandclose')
+            self.close()
 
     class sectionContourConflictResolver(QtGui.QWidget):
         def __init__(self, parent=None, contA=None, contB=None):
