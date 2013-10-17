@@ -17,6 +17,10 @@ def main( path_to_series, save_path ):
     print('DONE')
     print('Saving workbook...'),
     wkbk.writeWorkbook()
+    
+    try: wkbk.remove_sheet( wkbk.get_sheet_by_name('Sheet') )
+    except: print('No sheet named \'Sheet\'')
+    
     wkbk.save(save_path)
     print('DONE')
     print('ALL DONE!\nSaved workbook: %s')%save_path

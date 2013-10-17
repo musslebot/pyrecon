@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
       name='PyRECONSTRUCT',
-      version='0.2.11',
+      version='0.2.12',
       author='Michael Musslewhite',
       author_email='mdmusslewhite@gmail.com',
       url='https://github.com/wtrdrnkr/pyrecon',
@@ -30,7 +30,7 @@ setup(
                         "shapely >= 1.2.18",
                         "scikit-image >= 0.8.2",
                         "lxml >= 3.2.3",
-			"openpyxl >= 1.6.2",
-			"PySide >= 1.2.1",
+                        "openpyxl >= 1.6.2",
+                        "PySide >= 1.2.1",
                         ],
       )

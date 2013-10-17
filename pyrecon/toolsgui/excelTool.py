@@ -7,7 +7,7 @@ class excelToolWindow(QtGui.QWidget):
     def __init__(self, parent = None):
         QtGui.QWidget.__init__(self, parent)
         self.parent = parent
-        self.setGeometry(0,0,800,500)
+        self.setGeometry(0,0,500,200)
         
         self.seriesPathLine = None
         self.seriesPathBrowse = None
@@ -52,14 +52,14 @@ class excelToolWindow(QtGui.QWidget):
         hbox1 = QtGui.QHBoxLayout()
         hbox1.addWidget( self.seriesPathLine )
         hbox1.addWidget( self.seriesPathBrowse )
-        hbox1.insertSpacing(0,150)
-        hbox1.insertSpacing(-1,150)
+        hbox1.insertSpacing(0,25)
+        hbox1.insertSpacing(-1,25)
         
         hbox2 = QtGui.QHBoxLayout()
         hbox2.addWidget( self.savePathLine )
         hbox2.addWidget( self.savePathBrowse )
-        hbox2.insertSpacing(0,150)
-        hbox2.insertSpacing(-1,150)
+        hbox2.insertSpacing(0,25)
+        hbox2.insertSpacing(-1,25)
         
         hbox3 = QtGui.QHBoxLayout()
         hbox3.insertSpacing(0,225)
