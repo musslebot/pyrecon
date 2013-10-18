@@ -40,8 +40,8 @@ class mainContainer(QtGui.QFrame):
     def loadFunctionality(self):
         self.seriesPath1.setText('Please enter or browse for path to primary series')
         self.seriesPath2.setText('Please enter or browse for path to secondary series')
-        self.seriesPath1.setText('/home/michaelm/Documents/Test Series/rmtgTest/ser1/BBCHZ.ser') #===
-        self.seriesPath2.setText('/home/michaelm/Documents/Test Series/rmtgTest/ser2/BBCHZ.ser') #===
+        self.seriesPath1.setText('/home/michaelm/Documents/Test Series/BBCHZ/BBCHZ.ser') #===
+        self.seriesPath2.setText('/home/michaelm/Documents/Test Series/BBCHZ2/BBCHZ.ser') #===
         
         self.seriesPath1.setAlignment(QtCore.Qt.AlignCenter)
         self.seriesPath2.setAlignment(QtCore.Qt.AlignCenter)
@@ -336,7 +336,7 @@ class sectionConflictWindow(QtGui.QFrame): #===
                                               sSeries=self.sSeries)
         self.contoursButton.setPalette(QtGui.QPalette(QtGui.QColor('lightgreen')))
     
-    def closeWin(self):
+    def closeWin(self): #===
         # Update instance data to match resolvers
         try:
             self.mergedAttributes = self.attRes.mergedAttributes
@@ -349,7 +349,7 @@ class sectionConflictWindow(QtGui.QFrame): #===
             print('Default section images chosen')
             
         try:    
-            self.mergedContours = self.contRes.mergedContours
+            self.mergedContours = self.contRes.allMergedContours #===
         except:
             print('Default section contours chosen')
 
@@ -357,8 +357,8 @@ class sectionConflictWindow(QtGui.QFrame): #===
         
         #=== still need to update mainContainer
         print('Merged Sec Attributes: '+str(self.mergedAttributes)) # Works
-        print('Merged Sec Images: '+str(self.mergedImages))
-        print('Merged Sec Contours: '+str(self.mergedContours))
+        print('Merged Sec Images: '+str(self.mergedImages)) # Works
+        print('Merged Sec Contours: '+str(self.mergedContours)) #===
 
 class seriesAttributeResolver(QtGui.QFrame):
     def __init__(self, parent=None, pSeries=None, sSeries=None):
@@ -718,7 +718,7 @@ class sectionContourResolver(QtGui.QFrame):
 
     def resolveDetail(self, item):
         pink = '#ffc0cb'
-        yellow = '#ffff66'
+        yellow = '#ffff00'
         row=item.row()
         if item.background().color().name() in [pink, yellow]:
             self.res = sectionContourResolver.sectionContoursWidget(parent=None, window=self,
@@ -726,9 +726,7 @@ class sectionContourResolver(QtGui.QFrame):
                                                                    sSection=self.sSections[row])
         item.setBackground(QtGui.QBrush(QtGui.QColor('yellow')))
 
-    def updateAndClose(self): #===
-        print('updateandclose')
-        print('AllMergedContours: '+str(self.allMergedContours))
+    def updateAndClose(self):
         self.close()
     
     class sectionContoursWidget(QtGui.QWidget):
@@ -748,9 +746,9 @@ class sectionContourResolver(QtGui.QFrame):
             self.show()
         
         def loadObjects(self):
-#             self.pSerTable = QtGui.QTableWidget() # Moved to loadTables()
+#             self.pSecTable = QtGui.QTableWidget() # Moved to loadTables()
 #             self.midTable = QtGui.QTableWidget() # "
-#             self.sSerTable = QtGui.QTableWidget() # "
+#             self.sSecTable = QtGui.QTableWidget() # "
             self.saveCloseButton = QtGui.QPushButton(self)
             self.ignorePTable = QtGui.QCheckBox(self)
             self.ignoreMTable = QtGui.QCheckBox(self)
@@ -758,7 +756,9 @@ class sectionContourResolver(QtGui.QFrame):
             
         def loadFunctionality(self):
             self.loadTables()
+            self.pSecTable.itemPressed.connect( self.resolveConflict )
             self.midTable.itemPressed.connect( self.resolveConflict )
+            self.sSecTable.itemPressed.connect( self.resolveConflict )
             self.saveCloseButton.setText('Save and Close')
             self.saveCloseButton.clicked.connect( self.saveAndClose )
             self.ignorePTable.setText('Ignore items in this table')
@@ -849,17 +849,15 @@ class sectionContourResolver(QtGui.QFrame):
                 for row in range(self.pSecTable.rowCount()):
                     pTableConts.append(self.uniqueA[row])
 
-            
             # midTable
             if not self.ignoreMTable.isChecked():
                 mTableConts = []
                 for row in range(len(self.confOvlp)):
-                    print(str(row))
                     if ' (Secondary)' in self.midTable.item(row,0).text(): #===
                         mTableConts.append( self.confOvlp[row][1] )
                     elif ' (Both)' in self.midTable.item(row,0).text():
                         mTableConts.append( self.confOvlp[row][0])
-                        self.confOvlp[row][1].name += '-dup'
+                        self.confOvlp[row][1].name += '-sec'
                         mTableConts.append( self.confOvlp[row][1])
                     else:
                         mTableConts.append( self.confOvlp[row][0])
@@ -873,27 +871,20 @@ class sectionContourResolver(QtGui.QFrame):
         
             self.secMergedContours.extend(pTableConts+mTableConts+sTableConts)
         
-        def saveAndClose(self):
-            if self.parent.allMergedContours == None:
-                self.parent.allMergedContours = {}
-            self.updateSecMergedConts()
-            self.parent.allMergedContours[ str(self.pSection.index) ] = self.secMergedContours
-            self.close()
-
-        def resolveConflict(self, item): #===
+        def resolveConflict(self, item):
             row = item.row()
             pink = '#ffc0cb'
-            yellow = '#ffff66'
+            yellow = '#ffff00'
             if item.background().color().name() in [pink, yellow]: # If background color = pink (i.e. is a conflict)
                 self.showConfDetails( *self.returnConfConts(row) )
             else:
-                self.showDetail(item)
+                self.showDetail(item) #=== ?
              
         def returnConfConts(self, row):
             '''Returns a Contour object that is represented in row of the table'''
             return self.confOvlp[row][0], self.confOvlp[row][1], row
  
-        def showDetail(self, item):
+        def showDetail(self, item): #===
             '''Provides a small window to display more details about a table item'''
             row = item.row()-len(self.confOvlp)
             table = item.tableWidget()
@@ -930,7 +921,7 @@ class sectionContourResolver(QtGui.QFrame):
         def showConfDetails(self, confA, confB, row):
             '''Gives more detail of the contours in conflict'''
             item = self.midTable.item(row, 0)
-            itemName = item.text().replace(' (Primary)','').replace(' (Secondary)','')
+            itemName = item.text().replace(' (Primary)','').replace(' (Secondary)','').replace(' (Both)', '')
             def pickConfA():
                 item.setText(itemName+' (Primary)')
                 self.itemToYellow(item) #===
@@ -1014,6 +1005,14 @@ class sectionContourResolver(QtGui.QFrame):
             res.setLayout(vbox)
             res.show()    
 
+        def saveAndClose(self):
+            if self.parent.allMergedContours == None:
+                self.parent.allMergedContours = {}
+            self.updateSecMergedConts()
+            print([cont.name for cont in self.secMergedContours])
+            self.parent.allMergedContours[ str(self.pSection.index) ] = self.secMergedContours
+            self.close()
+            
     class sectionContourConflictResolver(QtGui.QWidget):
         def __init__(self, parent=None, contA=None, contB=None):
             QtGui.QWidget.__init__(self, parent)
