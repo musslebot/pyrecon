@@ -10,7 +10,6 @@ setup(
       author_email='mdmusslewhite@gmail.com',
       url='https://github.com/wtrdrnkr/pyrecon',
       packages=[
-                '',
                 'pyrecon',
                 'pyrecon.tools',
                 'pyrecon.toolsgui',
