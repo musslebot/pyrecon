@@ -840,9 +840,6 @@ class sectionContourResolver(QtGui.QFrame):
             self.uniqueB = uniqueB
             return uniqueA, compOvlp, confOvlp, uniqueB
         
-        def resolveConflict(self, item): #===
-            return
-        
         def updateSecMergedConts(self):
             self.secMergedContours = []
             
@@ -860,6 +857,10 @@ class sectionContourResolver(QtGui.QFrame):
                     print(str(row))
                     if ' (Secondary)' in self.midTable.item(row,0).text(): #===
                         mTableConts.append( self.confOvlp[row][1] )
+                    elif ' (Both)' in self.midTable.item(row,0).text():
+                        mTableConts.append( self.confOvlp[row][0])
+                        self.confOvlp[row][1].name += '-dup'
+                        mTableConts.append( self.confOvlp[row][1])
                     else:
                         mTableConts.append( self.confOvlp[row][0])
                 mTableConts.extend( [cont[0] for cont in self.compOvlp] )
@@ -877,265 +878,224 @@ class sectionContourResolver(QtGui.QFrame):
                 self.parent.allMergedContours = {}
             self.updateSecMergedConts()
             self.parent.allMergedContours[ str(self.pSection.index) ] = self.secMergedContours
-            self.close()  
-            
-            
-#=========OLD VERSION OF CONFLICT RESOLVERS============     
+            self.close()
 
-#         def resolveConflict(self, item):
-#             row = item.row()
-#             pink = '#ffc0cb'
-#             yellow = '#ffff66'
-#             if item.background().color().name() in [pink, yellow]: # If background color = pink (i.e. is a conflict)
-#                 self.showConfDetails( *self.returnConfConts(row) )
-#             else:
-#                 self.showDetail(item)
-#             
-#         def returnConfConts(self, row):
-#             '''Returns a Contour object that is represented in row of the table'''
-#             return self.confOvlp[row][0], self.confOvlp[row][1], row
-# 
-#         def showDetail(self, item):
-#             '''Provides a small window to display more details about a table item'''
-#             row = item.row()-len(self.confOvlp)
-#             table = item.tableWidget()
-#             # Get contour object
-#             if table == self.table1: cont = self.uniqueA[row]
-#             elif table == self.table2: cont = self.compOvlp[row][0]
-#             elif table == self.table3: cont = self.uniqueB[row]
-#             
-#             # Window
-#             win = QtGui.QWidget(self)
-#             win.setGeometry(250, 100, 300, 300)
-#             win.setAutoFillBackground(True)
-#             
-#             # Contour information
-#             label = QtGui.QLabel(self)
-#             label.setText(str(cont))
-#             label.setAlignment(QtCore.Qt.AlignCenter)
-#             
-#             # Close button
-#             closeBut = QtGui.QPushButton(self)
-#             closeBut.setText('Close')
-#             closeBut.clicked.connect( win.close )
-#             
-#             # Layout
-#             vbox = QtGui.QVBoxLayout()
-#             vbox.addWidget(label)
-#             vbox.addWidget(closeBut)
-#             win.setLayout(vbox)
-#             win.show()
-#         
-#         def showConfDetails(self, confA, confB, row):
-#             '''Gives more detail of the contours in conflict'''
-#             item = self.table2.item(row, 0)
-#             def pickConfA():
-#                 '''Adds contour A to the output contour list'''
-#                 if confA not in self.confOvlpout: self.confOvlpout.append(confA)
-#                 if confB in self.confOvlpout: self.confOvlpout.remove(confB)
-#                 item.setText(confA.name)
-#                 item.setTextAlignment(QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-#                 self.itemToYellow(item) #===
-#                 res.close()
-#                 
-#             def pickConfB():
-#                 '''Adds contour B to the output contour list'''
-#                 if confB not in self.confOvlpout: self.confOvlpout.append(confB)
-#                 if confA in self.confOvlpout: self.confOvlpout.remove(confA)
-#                 item.setText(confB.name)
-#                 item.setTextAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
-#                 self.itemToYellow(item) #===
-#                 res.close()
-#                 
-#             def pickBoth():
-#                 if confA not in self.confOvlpout: self.confOvlpout.append(confA)
-#                 if confB not in self.confOvlpout: self.confOvlpout.append(confB)
-#                 item.setText('-------------> '+confA.name+' <-------------') #=== confA.name?
-#                 item.setTextAlignment(QtCore.Qt.AlignCenter)
-#                 self.itemToYellow(item) #===
-#                 res.close()#=== Remove for deploy
-#                 
-#             # Conflict Resolution window
-#             res = QtGui.QWidget(self)
-#             res.setGeometry(0,0,800,500)
-#             res.setAutoFillBackground(True)
-# 
-#             # Conflict Label (Name of conflicting contours)
-#             labelBox = QtGui.QHBoxLayout()
-#             label = QtGui.QLabel(self) # Label
-#             label.setText('Conflict: '+str(confA.name))
-#             labelBox.addWidget(label)
-#             labelBox.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
-#             labelBox.setSizeConstraint(QtGui.QLayout.SetFixedSize)
-#             
-#             # Sections box
-#             sectionBox = QtGui.QHBoxLayout()
-#             #--- Section A
-#             secAbox = QtGui.QVBoxLayout() # For sectionA detail & button
-#             tBoxA = QtGui.QLabel(self) # Text box
-#             tBoxA.setText(str(confA))
-#             tBoxA.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
-#             confAbut = QtGui.QPushButton(self) # Contour A button
-#             confAbut.setText('Keep A')
-#             confAbut.clicked.connect( pickConfA )
-#             secAbox.addWidget(tBoxA)
-#             secAbox.addWidget(confAbut)
-#             sectionBox.addLayout(secAbox)
-#             #--- Section B
-#             secBbox = QtGui.QVBoxLayout() # For sectionB detail & button
-#             tBoxB = QtGui.QLabel(self) # Text box
-#             tBoxB.setText(str(confB))
-#             tBoxB.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
-#             confBbut = QtGui.QPushButton(self) # Contour B button
-#             confBbut.setText('Keep B')
-#             confBbut.clicked.connect( pickConfB )
-#             secBbox.addWidget(tBoxB)
-#             secBbox.addWidget(confBbut)
-#             sectionBox.addLayout(secBbox)
-#             
-#             # 'Cancel' & 'Keep Both' buttons
-#             archButtonBox = QtGui.QVBoxLayout()
-#             bothButBox = QtGui.QHBoxLayout()
-#             bothBut = QtGui.QPushButton(self)
-#             bothBut.setText('Keep Both Contours')
-#             bothBut.clicked.connect( pickBoth )
-#             bothButBox.addSpacing(250)
-#             bothButBox.addWidget(bothBut)
-#             bothButBox.addSpacing(250)
-#             cancelButBox = QtGui.QHBoxLayout()
-#             cancelBut = QtGui.QPushButton(self)
-#             cancelBut.setText('Cancel')
-#             cancelBut.clicked.connect( res.close )
-#             cancelButBox.addSpacing(250)
-#             cancelButBox.addWidget(cancelBut)
-#             cancelButBox.addSpacing(250)
-#             archButtonBox.addSpacing(50)
-#             archButtonBox.addLayout(bothButBox)
-#             archButtonBox.addLayout(cancelButBox)
-#             archButtonBox.insertSpacing(-1,100) # prevents the huge space between label and contour info
-#             
-#             # Combine layouts
-#             vbox = QtGui.QVBoxLayout() # For entire detail window
-#             vbox.addLayout(labelBox)
-#             vbox.addLayout(sectionBox)
-#             vbox.addLayout(archButtonBox)
-#             
-#             res.setLayout(vbox)
-#             res.show()    
-#
-#     class sectionContourConflictResolver(QtGui.QWidget):
-#         def __init__(self, parent=None, contA=None, contB=None):
-#             QtGui.QWidget.__init__(self, parent)
-#             self.parent = parent
-#             self.setGeometry(0,0,800,500)
-#             self.contA = contA
-#             self.contB = contB
-#             
-#             self.buttons()
-#             self.layout()
-#             self.show()
-#             
-#         def buttons(self):
-#             #=== Contour info windows (eventually pictures; skimage)
-#             # skimage.
-#             # skimage.draw.polygon for traces
-#             self.contAInfo = QtGui.QWidget(self)
-#             self.contAInfo.setAutoFillBackground(True) #===
-#             
-#             self.contBInfo = QtGui.QWidget(self)
-#             self.contBInfo.setAutoFillBackground(True) #===
-#             
-#             # A button
-#             self.contAButton = QtGui.QPushButton()
-#             self.contAButton.setText('Choose Series A\nTrace')
-#             self.contAButton.clicked.connect( self.buttonClicked )
-#             
-#             # B button
-#             self.contBButton = QtGui.QPushButton()
-#             self.contBButton.setText('Choose Series B\nTrace')
-#             self.contBButton.clicked.connect( self.buttonClicked )
-#             
-#             # Both button
-#             self.bothButton = QtGui.QPushButton()
-#             self.bothButton.setText('Choose traces\nfor both series')
-#             self.bothButton.clicked.connect( self.buttonClicked )
-#             
-#             for button in [self.contAButton, self.contBButton, self.bothButton]: #Must be consistent with buttonClicked()
-#                 button.setPalette(QtGui.QPalette('lightgray'))
-#                 
-#             # Repetition checkboxes
-# #             self.thisTraceAllSections = QtGui.QCheckBox()
-# #             self.thisTraceAllSections.setText('Choose THIS particular trace in THIS series for ALL sections')
-# #             self.thisTraceAllSections.stateChanged.connect(self.checkedBox)
-# #             self.allTracesThisSection = QtGui.QCheckBox()
-# #             self.allTracesThisSection.setText('Choose ALL of this series\' traces for THIS section')
-# #             self.allTracesThisSection.stateChanged.connect(self.checkedBox)
-# #             self.allTracesAllSections = QtGui.QCheckBox()
-# #             self.allTracesAllSections.setText('Choose ALL of this series\' traces for ALL sections')
-# #             self.allTracesAllSections.stateChanged.connect(self.checkedBox)
-#             
-#         def layout(self):
-#             # Trace info
-#             hbox1 = QtGui.QHBoxLayout()
-#             hbox1.addWidget(self.contAInfo)
-#             hbox1.addWidget(self.contBInfo)
-#             
-#             # Trace selection buttons
-#             hbox2 = QtGui.QHBoxLayout()
-#             hbox2.insertSpacing(0,50)
-#             hbox2.addWidget(self.contAButton)
-#             hbox2.insertSpacing(2,100)
-#             hbox2.addWidget(self.contBButton)
-#             hbox2.insertSpacing(4,50)
-#             hbox3 = QtGui.QHBoxLayout()
-#             hbox3.insertSpacing(0,250)
-#             hbox3.addWidget(self.bothButton)
-#             hbox3.insertSpacing(2,250)
-#             
-#             # Action-repetition options
-#             hbox4 = QtGui.QHBoxLayout()
-#             hbox4.addWidget(self.thisTraceAllSections, alignment = QtCore.Qt.AlignHCenter)
-#             hbox5 = QtGui.QHBoxLayout()
-#             hbox5.addWidget(self.allTracesThisSection, alignment = QtCore.Qt.AlignHCenter)
-#             hbox6 = QtGui.QHBoxLayout()
-#             hbox6.addWidget(self.allTracesAllSections, alignment = QtCore.Qt.AlignHCenter)
-#             
-#             # Main Layout
-#             vbox = QtGui.QVBoxLayout()
-#             vbox.addLayout(hbox1)
-#             vbox.addLayout(hbox2)
-#             vbox.addLayout(hbox3)
-#             vbox.addLayout(hbox4)
-#             vbox.addLayout(hbox5)
-#             vbox.addLayout(hbox6)
-#             self.setLayout(vbox)
-#         
-#         def checkedBox(self):
-#             '''Maintains an exclusive implementation of checkboxes (i.e. unchecks others when one is checked)'''
-# #====== Doesn't work for some reason
-# #             for checkbox in [self.thisTraceAllSections,
-# #                              self.allTracesThisSection,
-# #                              self.allTracesAllSections]:
-# #                 if checkbox == self.sender():
-# #                     checkbox.setCheckState(QtCore.Qt.Checked)
-# #                 else:
-# #                     checkbox.setCheckState(QtCore.Qt.Unchecked)
-#             if self.sender() == self.thisTraceAllSections and self.thisTraceAllSections.checkState() == QtCore.Qt.Checked:
-#                 self.allTracesThisSection.setCheckState(QtCore.Qt.Unchecked)
-#                 self.allTracesAllSections.setCheckState(QtCore.Qt.Unchecked)
-#             elif self.sender() == self.allTracesThisSection and self.allTracesThisSection.checkState() == QtCore.Qt.Checked:
-#                 self.thisTraceAllSections.setCheckState(QtCore.Qt.Unchecked)
-#                 self.allTracesAllSections.setCheckState(QtCore.Qt.Unchecked)
-#             elif self.sender() == self.allTracesAllSections and self.allTracesAllSections.checkState() == QtCore.Qt.Checked:
-#                 self.thisTraceAllSections.setCheckState(QtCore.Qt.Unchecked)
-#                 self.allTracesThisSection.setCheckState(QtCore.Qt.Unchecked)
-# 
-#         def buttonClicked(self):
-#             for button in [self.contAButton, self.contBButton, self.bothButton]:
-#                 if button == self.sender():
-#                     button.setPalette(QtGui.QPalette('lightblue'))
-#                 else:
-#                     button.setPalette(QtGui.QPalette('lightgray'))
+        def resolveConflict(self, item): #===
+            row = item.row()
+            pink = '#ffc0cb'
+            yellow = '#ffff66'
+            if item.background().color().name() in [pink, yellow]: # If background color = pink (i.e. is a conflict)
+                self.showConfDetails( *self.returnConfConts(row) )
+            else:
+                self.showDetail(item)
+             
+        def returnConfConts(self, row):
+            '''Returns a Contour object that is represented in row of the table'''
+            return self.confOvlp[row][0], self.confOvlp[row][1], row
+ 
+        def showDetail(self, item):
+            '''Provides a small window to display more details about a table item'''
+            row = item.row()-len(self.confOvlp)
+            table = item.tableWidget()
+            # Get contour object
+            if table == self.pSecTable: cont = self.uniqueA[row]
+            elif table == self.midTable: cont = self.compOvlp[row][0]
+            elif table == self.sSecTable: cont = self.uniqueB[row]
+             
+            # Window
+            win = QtGui.QWidget(self)
+            win.setGeometry(250, 100, 300, 300)
+            win.setAutoFillBackground(True)
+             
+            # Contour information
+            label = QtGui.QLabel(self)
+            label.setText(str(cont))
+            label.setAlignment(QtCore.Qt.AlignCenter)
+             
+            # Close button
+            closeBut = QtGui.QPushButton(self)
+            closeBut.setText('Close')
+            closeBut.clicked.connect( win.close )
+             
+            # Layout
+            vbox = QtGui.QVBoxLayout()
+            vbox.addWidget(label)
+            vbox.addWidget(closeBut)
+            win.setLayout(vbox)
+            win.show()
+        
+        def itemToYellow(self, item):
+            item.setBackground(QtGui.QBrush(QtGui.QColor('yellow')))
+            
+        def showConfDetails(self, confA, confB, row):
+            '''Gives more detail of the contours in conflict'''
+            item = self.midTable.item(row, 0)
+            itemName = item.text().replace(' (Primary)','').replace(' (Secondary)','')
+            def pickConfA():
+                item.setText(itemName+' (Primary)')
+                self.itemToYellow(item) #===
+                res.close()
+                 
+            def pickConfB():
+                item.setText(itemName+' (Secondary)')
+                self.itemToYellow(item) #===
+                res.close()
+                 
+            def pickBoth():
+                item.setText(itemName+' (Both)')
+                self.itemToYellow(item) #===
+                res.close()
+                 
+            # Conflict Resolution window
+            res = QtGui.QWidget(self)
+            res.setGeometry(0,0,800,500)
+            res.setAutoFillBackground(True)
+ 
+            # Conflict Label (Name of conflicting contours)
+            labelBox = QtGui.QHBoxLayout()
+            label = QtGui.QLabel(self) # Label
+            label.setText('Conflict: '+str(confA.name))
+            labelBox.addWidget(label)
+            labelBox.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
+            labelBox.setSizeConstraint(QtGui.QLayout.SetFixedSize)
+             
+            # Sections box
+            sectionBox = QtGui.QHBoxLayout()
+            #--- Section A
+            secAbox = QtGui.QVBoxLayout() # For sectionA detail & button
+            tBoxA = QtGui.QLabel(self) # Text box
+            tBoxA.setText(str(confA))
+            tBoxA.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
+            confAbut = QtGui.QPushButton(self) # Contour A button
+            confAbut.setText('Keep A')
+            confAbut.clicked.connect( pickConfA )
+            secAbox.addWidget(tBoxA)
+            secAbox.addWidget(confAbut)
+            sectionBox.addLayout(secAbox)
+            #--- Section B
+            secBbox = QtGui.QVBoxLayout() # For sectionB detail & button
+            tBoxB = QtGui.QLabel(self) # Text box
+            tBoxB.setText(str(confB))
+            tBoxB.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
+            confBbut = QtGui.QPushButton(self) # Contour B button
+            confBbut.setText('Keep B')
+            confBbut.clicked.connect( pickConfB )
+            secBbox.addWidget(tBoxB)
+            secBbox.addWidget(confBbut)
+            sectionBox.addLayout(secBbox)
+             
+            # 'Cancel' & 'Keep Both' buttons
+            archButtonBox = QtGui.QVBoxLayout()
+            bothButBox = QtGui.QHBoxLayout()
+            bothBut = QtGui.QPushButton(self)
+            bothBut.setText('Keep Both Contours')
+            bothBut.clicked.connect( pickBoth )
+            bothButBox.addSpacing(250)
+            bothButBox.addWidget(bothBut)
+            bothButBox.addSpacing(250)
+            cancelButBox = QtGui.QHBoxLayout()
+            cancelBut = QtGui.QPushButton(self)
+            cancelBut.setText('Cancel')
+            cancelBut.clicked.connect( res.close )
+            cancelButBox.addSpacing(250)
+            cancelButBox.addWidget(cancelBut)
+            cancelButBox.addSpacing(250)
+            archButtonBox.addSpacing(50)
+            archButtonBox.addLayout(bothButBox)
+            archButtonBox.addLayout(cancelButBox)
+            archButtonBox.insertSpacing(-1,100) # prevents the huge space between label and contour info
+             
+            # Combine layouts
+            vbox = QtGui.QVBoxLayout() # For entire detail window
+            vbox.addLayout(labelBox)
+            vbox.addLayout(sectionBox)
+            vbox.addLayout(archButtonBox)
+             
+            res.setLayout(vbox)
+            res.show()    
+
+    class sectionContourConflictResolver(QtGui.QWidget):
+        def __init__(self, parent=None, contA=None, contB=None):
+            QtGui.QWidget.__init__(self, parent)
+            self.parent = parent
+            self.setGeometry(0,0,800,500)
+            self.contA = contA
+            self.contB = contB
+             
+            self.buttons()
+            self.layout()
+            self.show()
+             
+        def buttons(self):
+            #=== Contour info windows (eventually pictures; skimage)
+            # skimage.
+            # skimage.draw.polygon for traces
+            self.contAInfo = QtGui.QWidget(self)
+            self.contAInfo.setAutoFillBackground(True) #===
+             
+            self.contBInfo = QtGui.QWidget(self)
+            self.contBInfo.setAutoFillBackground(True) #===
+             
+            # A button
+            self.contAButton = QtGui.QPushButton()
+            self.contAButton.setText('Choose Series A\nTrace')
+            self.contAButton.clicked.connect( self.buttonClicked )
+             
+            # B button
+            self.contBButton = QtGui.QPushButton()
+            self.contBButton.setText('Choose Series B\nTrace')
+            self.contBButton.clicked.connect( self.buttonClicked )
+             
+            # Both button
+            self.bothButton = QtGui.QPushButton()
+            self.bothButton.setText('Choose traces\nfor both series')
+            self.bothButton.clicked.connect( self.buttonClicked )
+             
+            for button in [self.contAButton, self.contBButton, self.bothButton]: #Must be consistent with buttonClicked()
+                button.setPalette(QtGui.QPalette('lightgray'))
+                          
+        def layout(self):
+            # Trace info
+            hbox1 = QtGui.QHBoxLayout()
+            hbox1.addWidget(self.contAInfo)
+            hbox1.addWidget(self.contBInfo)
+             
+            # Trace selection buttons
+            hbox2 = QtGui.QHBoxLayout()
+            hbox2.insertSpacing(0,50)
+            hbox2.addWidget(self.contAButton)
+            hbox2.insertSpacing(2,100)
+            hbox2.addWidget(self.contBButton)
+            hbox2.insertSpacing(4,50)
+            hbox3 = QtGui.QHBoxLayout()
+            hbox3.insertSpacing(0,250)
+            hbox3.addWidget(self.bothButton)
+            hbox3.insertSpacing(2,250)
+             
+            # Action-repetition options
+            hbox4 = QtGui.QHBoxLayout()
+            hbox4.addWidget(self.thisTraceAllSections, alignment = QtCore.Qt.AlignHCenter)
+            hbox5 = QtGui.QHBoxLayout()
+            hbox5.addWidget(self.allTracesThisSection, alignment = QtCore.Qt.AlignHCenter)
+            hbox6 = QtGui.QHBoxLayout()
+            hbox6.addWidget(self.allTracesAllSections, alignment = QtCore.Qt.AlignHCenter)
+             
+            # Main Layout
+            vbox = QtGui.QVBoxLayout()
+            vbox.addLayout(hbox1)
+            vbox.addLayout(hbox2)
+            vbox.addLayout(hbox3)
+            vbox.addLayout(hbox4)
+            vbox.addLayout(hbox5)
+            vbox.addLayout(hbox6)
+            self.setLayout(vbox)
+         
+        def buttonClicked(self):
+            for button in [self.contAButton, self.contBButton, self.bothButton]:
+                if button == self.sender():
+                    button.setPalette(QtGui.QPalette('lightblue'))
+                else:
+                    button.setPalette(QtGui.QPalette('lightgray'))
         
 class textResolveDetail(QtGui.QFrame):
     '''Detailed resolver for text-based item conflicts'''
