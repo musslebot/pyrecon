@@ -40,8 +40,8 @@ class mainContainer(QtGui.QFrame):
     def loadFunctionality(self):
         self.seriesPath1.setText('Please enter or browse for path to primary series')
         self.seriesPath2.setText('Please enter or browse for path to secondary series')
-        self.seriesPath1.setText('/home/michaelm/Documents/Test Series/BBCHZ/BBCHZ.ser') #===
-        self.seriesPath2.setText('/home/michaelm/Documents/Test Series/BBCHZ2/BBCHZ.ser') #===
+        self.seriesPath1.setText('/home/michaelm/Documents/Test Series/rmtgTest/ser1/BBCHZ.ser') #===
+        self.seriesPath2.setText('/home/michaelm/Documents/Test Series/rmtgTest/ser2/BBCHZ.ser') #===
         
         self.seriesPath1.setAlignment(QtCore.Qt.AlignCenter)
         self.seriesPath2.setAlignment(QtCore.Qt.AlignCenter)
@@ -164,12 +164,38 @@ class mainContainer(QtGui.QFrame):
             self.finishButton.setPalette(QtGui.QPalette(QtGui.QColor('lightgreen')))
         
     def finish(self): #===
-        # update merged stuff
-        # Popup showing which areas are going to be defaulted due to no human resolution
-        # ask for output path
-        # create new series object
-        # push out
-        return
+        # Let user know what things were defaulted, choose to continue
+        defaultedThings = []
+        if self.serWin.mergedAttributes == None:
+            defaultedThings.append('Series Attributes')
+        if self.serWin.mergedContours == None:
+            defaultedThings.append('Series Contours')
+        if self.serWin.mergedZContours == None:
+            defaultedThings.append('Series ZContours')
+        if self.secWin.mergedAttributes == None:
+            defaultedThings.append('Section Attributes')
+        if self.secWin.mergedImages == None:
+            defaultedThings.append('Section Images')
+        if self.secWin.mergedContours == None:
+            defaultedThings.append('Section Contours')
+        defMsg = QtGui.QMessageBox(self)
+        msgTxt = 'The following items have been defaulted to the primary series due to lack of resolution:\n'
+        for item in defaultedThings:
+            msgTxt+='\t'+item+'\n'
+        defMsg.setText(msgTxt)
+        defMsg.addButton(QtGui.QMessageBox.Ok)
+        defMsg.addButton(QtGui.QMessageBox.Cancel)
+        ret = defMsg.exec_()
+        
+        if ret == QtGui.QMessageBox.Ok:
+            print('OKAY PRESSED') #===
+            # Display new message saying that it may take a few moments to merge everything
+            # Merge everything
+            return
+        else:
+            defMsg.close()
+        
+
 
 class seriesConflictWindow(QtGui.QFrame):
     def __init__(self, parent=None, pSeries=None, sSeries=None):
