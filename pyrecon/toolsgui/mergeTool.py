@@ -257,6 +257,8 @@ class mainContainer(QtGui.QFrame):
             self.close()
     
     def finish(self):
+        if self.check1 != True or self.check2 != True:
+            return
         # Let user know what things were defaulted, choose to continue
         defaultedThings = []
         if self.serWin.mergedAttributes == None:
