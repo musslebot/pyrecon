@@ -1008,6 +1008,8 @@ class Series:
         else:
             return string.lower() in ('true')
     def writeseries(self, outpath):
+        if outpath[-1] != '/':
+            outpath += '/'
         print('Creating output directory...'),
         if not os.path.exists(outpath):
             os.makedirs(outpath)
@@ -1070,6 +1072,8 @@ class Series:
         print('DONE')
         print('\tSeries output to: '+str(outpath+self.name+'.ser'))
     def writesections(self, outpath):
+        if outpath[-1] != '/':
+            outpath += '/'
         print('Writing section file(s)...'),
         count = 0
         for section in self.sections:

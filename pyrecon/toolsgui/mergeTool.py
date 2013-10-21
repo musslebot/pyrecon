@@ -70,7 +70,11 @@ class mainContainer(QtGui.QFrame):
             self.seriesPath1.setText(path)
         elif self.sender() == self.browseSeriesFile2:
             self.seriesPath2.setText(path)
-        
+    
+    def browseOutpath(self):
+        path = QtGui.QFileDialog.getExistingDirectory(self)
+        self.outpathLine.setText(path)
+            
     def loadLayout(self):
         mainBox = QtGui.QVBoxLayout()
         
@@ -170,6 +174,7 @@ class mainContainer(QtGui.QFrame):
         hbox.addWidget(self.outpathLine)
         outpathBrowse = QtGui.QPushButton(self)
         outpathBrowse.setText('Browse')
+        outpathBrowse.clicked.connect( self.browseOutpath )
         hbox.addWidget(outpathBrowse)
         
         hbox2 = QtGui.QHBoxLayout()
@@ -246,7 +251,7 @@ class mainContainer(QtGui.QFrame):
             except: sec.contours = self.series1.sections[secNum].contours
                 
             mergedSeries.sections.append(sec)
-
+        
         mergedSeries.writeseries(self.outpathLine.text())
         mergedSeries.writesections(self.outpathLine.text())
         
