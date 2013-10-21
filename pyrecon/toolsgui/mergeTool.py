@@ -252,8 +252,8 @@ class mainContainer(QtGui.QFrame):
                 
             mergedSeries.sections.append(sec)
         
-        mergedSeries.writeseries(self.outpathLine.text())
-        mergedSeries.writesections(self.outpathLine.text())
+        mergedSeries.writeseries( self.outpathLine.text() )
+        mergedSeries.writesections( self.outpathLine.text() )
         
         compMsg = QtGui.QMessageBox(self)
         compMsg.setText('ALL DONE! Everything output to:\n'+str(self.outpathLine.text()))
