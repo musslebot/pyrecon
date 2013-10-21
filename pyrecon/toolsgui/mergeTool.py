@@ -1,5 +1,6 @@
 from PySide import QtCore, QtGui
 from pyrecon.tools import classes, mergeTool
+from lxml import etree as ET
 import sys
 
 def main():
@@ -163,7 +164,109 @@ class mainContainer(QtGui.QFrame):
             self.finishButton.setFlat(False)
             self.finishButton.setPalette(QtGui.QPalette(QtGui.QColor('lightgreen')))
         
-    def finish(self): #===
+    def getOutpathAndName(self):
+        # box with directory input line and optional new name
+        box = QtGui.QWidget(self)
+        box.setGeometry(0,0,600,300)
+        box.setAutoFillBackground(True)
+        vbox = QtGui.QVBoxLayout() # Holds all stuff in the box
+        
+        hbox = QtGui.QHBoxLayout() # Holds output directory line/browse
+        self.outpathLine = QtGui.QLineEdit(self)
+        self.outpathLine.setText('Enter directory to save merged series')
+        self.outpathLine.setText('/home/michaelm/Documents/Test Series/bacon/') #===
+        self.outpathLine.setAlignment(QtCore.Qt.AlignCenter)
+        hbox.addWidget(self.outpathLine)
+        outpathBrowse = QtGui.QPushButton(self)
+        outpathBrowse.setText('Browse')
+        hbox.addWidget(outpathBrowse)
+        
+        hbox2 = QtGui.QHBoxLayout()
+        self.newNameLine = QtGui.QLineEdit(self)
+        self.newNameLine.setText('(Optional) Enter a new name for the series')
+        self.newNameLine.setText('POOCHZ') #===
+        self.newNameLine.setAlignment(QtCore.Qt.AlignCenter)
+        hbox2.addWidget(self.newNameLine)
+        
+        vbox2 = QtGui.QVBoxLayout()
+        doneButton = QtGui.QPushButton(self)
+        doneButton.setText('Finish!')
+        doneButton.clicked.connect( self.mergeEverything )
+        hbox3 = QtGui.QHBoxLayout()
+        hbox3.addWidget(doneButton)
+        hbox3.insertSpacing(0,200)
+        hbox3.insertSpacing(-1,200)
+        cancelButton = QtGui.QPushButton(self)
+        cancelButton.setText('Cancel')
+        cancelButton.clicked.connect( box.close )
+        hbox4 = QtGui.QHBoxLayout()
+        hbox4.addWidget(cancelButton)
+        hbox4.insertSpacing(0,200)
+        hbox4.insertSpacing(-1,200)
+        vbox2.addLayout(hbox3)
+        vbox2.addLayout(hbox4)
+        
+        vbox.addLayout(hbox)
+        vbox.addLayout(hbox2)
+        vbox.addLayout(vbox2)
+        box.setLayout(vbox)
+        box.show()
+    
+    def mergeEverything(self): #===
+        if '/' not in self.outpathLine.text() or self.outpathLine.text() == '':
+            msg = QtGui.QMessageBox(self)
+            msg.setText('Invalid outpath, please re-enter')
+            msg.show()
+            return
+        
+        if '(Optional)' not in self.newNameLine.text() and self.newNameLine.text() != '':
+            name = self.newNameLine.text()
+        else:
+            name = self.series1.name
+         
+        #===== SERIES FILE MERGE =====
+        # Create new .ser file
+        try: mergedSeries = classes.Series( root=ET.Element('Series',self.serWin.mergedAttributes), name=name )
+        except: mergedSeries = classes.Series( root=ET.Element('Series',self.series1.output()[0]), name=name)
+            
+        # Append contours/zcontours to .ser file
+        try: mergedSeries.contours = list(self.serWin.mergedContours+self.serWin.mergedZContours)
+        except: mergedSeries.contours = self.series1.contours
+        
+        #===== SECTION FILES MERGE =====
+        # For each section, make a section object
+        for secNum in range(max(len(self.series1.sections),len(self.series2.sections))):
+
+            # Attributes
+            try:
+                elem = ET.Element('Section')
+                for att in self.secWin.mergedAttributes[secNum]:
+                    elem.set(str(att), self.secWin.mergedAttributes[att])
+                sec = classes.Section(elem, name+'.'+self.secWin.mergedAttributes[secNum].index)
+            except:
+                sec = self.series1.sections[secNum]
+                sec.name = str(name+'.'+str(sec.index))
+            
+            # Images
+            try: sec.imgs = list(self.secWin.mergedImages[secNum])
+            except: sec.imgs = self.series1.sections[secNum].imgs
+            
+            # Contours
+            try: sec.contours = self.secWin.mergedContours[str(secNum)]
+            except: sec.contours = self.series1.sections[secNum].contours
+                
+            mergedSeries.sections.append(sec)
+
+        mergedSeries.writeseries(self.outpathLine.text())
+        mergedSeries.writesections(self.outpathLine.text())
+        
+        compMsg = QtGui.QMessageBox(self)
+        compMsg.setText('ALL DONE! Everything output to:\n'+str(self.outpathLine.text()))
+        ret = compMsg.exec_()
+        if ret == QtGui.QMessageBox.Ok:
+            self.close()
+    
+    def finish(self):
         # Let user know what things were defaulted, choose to continue
         defaultedThings = []
         if self.serWin.mergedAttributes == None:
@@ -178,20 +281,29 @@ class mainContainer(QtGui.QFrame):
             defaultedThings.append('Section Images')
         if self.secWin.mergedContours == None:
             defaultedThings.append('Section Contours')
-        defMsg = QtGui.QMessageBox(self)
-        msgTxt = 'The following items have been defaulted to the primary series due to lack of resolution:\n'
-        for item in defaultedThings:
-            msgTxt+='\t'+item+'\n'
-        defMsg.setText(msgTxt)
-        defMsg.addButton(QtGui.QMessageBox.Ok)
-        defMsg.addButton(QtGui.QMessageBox.Cancel)
-        ret = defMsg.exec_()
+        
+        if len(defaultedThings) != 0:
+            defMsg = QtGui.QMessageBox(self)
+            msgTxt = 'The following items have been defaulted to the primary series due to lack of resolution:\n'
+            for item in defaultedThings:
+                msgTxt+='\t'+item+'\n'
+            defMsg.setText(msgTxt)
+            defMsg.addButton(QtGui.QMessageBox.Ok)
+            defMsg.addButton(QtGui.QMessageBox.Cancel)
+            ret = defMsg.exec_()
         
         if ret == QtGui.QMessageBox.Ok:
-            print('OKAY PRESSED') #===
             # Display new message saying that it may take a few moments to merge everything
-            # Merge everything
-            return
+            msg = QtGui.QMessageBox(self)
+            msgTxt = 'This process may take time depending on the size of the series... please be patient!'
+            msg.setText(msgTxt)
+            msg.addButton(QtGui.QMessageBox.Ok)
+            msg.addButton(QtGui.QMessageBox.Cancel)
+            ret = msg.exec_()
+            if ret == QtGui.QMessageBox.Ok:
+                self.getOutpathAndName()
+            else:
+                msg.close()
         else:
             defMsg.close()
         
