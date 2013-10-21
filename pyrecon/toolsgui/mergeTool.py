@@ -41,6 +41,8 @@ class mainContainer(QtGui.QFrame):
     def loadFunctionality(self):
         self.seriesPath1.setText('Please enter or browse for path to primary series')
         self.seriesPath2.setText('Please enter or browse for path to secondary series')
+        self.seriesPath1.setText('/home/michaelm/Documents/Test Series/test/ser1/BBCHZ.ser') #===
+        self.seriesPath2.setText('/home/michaelm/Documents/Test Series/test/ser2/BBCHZ.ser') #===
         
         self.seriesPath1.setAlignment(QtCore.Qt.AlignCenter)
         self.seriesPath2.setAlignment(QtCore.Qt.AlignCenter)
@@ -170,6 +172,7 @@ class mainContainer(QtGui.QFrame):
         hbox = QtGui.QHBoxLayout() # Holds output directory line/browse
         self.outpathLine = QtGui.QLineEdit(self)
         self.outpathLine.setText('Enter directory to save merged series')
+        self.outpathLine.setText('/home/michaelm/Documents/Test Series/test/merged') #===
         self.outpathLine.setAlignment(QtCore.Qt.AlignCenter)
         hbox.addWidget(self.outpathLine)
         outpathBrowse = QtGui.QPushButton(self)
@@ -180,6 +183,7 @@ class mainContainer(QtGui.QFrame):
         hbox2 = QtGui.QHBoxLayout()
         self.newNameLine = QtGui.QLineEdit(self)
         self.newNameLine.setText('(Optional) Enter a new name for the series')
+        self.newNameLine.setText('testout') #===
         self.newNameLine.setAlignment(QtCore.Qt.AlignCenter)
         hbox2.addWidget(self.newNameLine)
         
@@ -220,13 +224,17 @@ class mainContainer(QtGui.QFrame):
             name = self.series1.name
          
         #===== SERIES FILE MERGE =====
-        # Create new .ser file
+        # Create new .ser file w/ attributes
         try: mergedSeries = classes.Series( root=ET.Element('Series',self.serWin.mergedAttributes), name=name )
         except: mergedSeries = classes.Series( root=ET.Element('Series',self.series1.output()[0]), name=name)
             
-        # Append contours/zcontours to .ser file
-        try: mergedSeries.contours = list(self.serWin.mergedContours+self.serWin.mergedZContours)
-        except: mergedSeries.contours = self.series1.contours
+        # Append contours
+        try: mergedSeries.contours = list(self.serWin.mergedContours)
+        except: mergedSeries.contours = [cont for cont in self.series1.contours if cont.tag == 'Contour']
+        
+        # Append zcontours
+        try: mergedSeries.contours.extend(list(self.serWin.mergedZContours))
+        except: mergedSeries.contours.extend([cont for cont in self.series1.contours if cont.tag == 'ZContour'])
         
         #===== SECTION FILES MERGE =====
         # For each section, make a section object
