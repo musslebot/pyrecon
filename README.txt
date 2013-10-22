@@ -11,17 +11,20 @@ This package should also be used to develop scripts/programs for various tasks t
 these XML files. Included examples are mergeTool for merging multiple RECONSTRUCT series
 and excelTool for pushing object data into an excel workbook (.xlsx).
 
-The GUI for mergeTool is still under construction... please be patient! :)
-
-PyRECONSTRUCT should be imported with the name 'pyrecon' (i.e. import pyrecon)
-
-To import only the XML-parse portion of PyRECONSTRUCT:
-	
-	from pyrecon.tools import classes
-		or
-	from pyrecon.tool.classes import * 
-
 ---------------------------------------------------------------------------
+INSTALLATION
+---------------------------------------------------------------------------
+PyRECONSTRUCT can be installed in multiple ways:
+	
+	The easiest being through pip*:
+		pip install PyRECONSTRUCT
+	
+	Alternatively (from parent folder):
+		python setup.py install
+	
+	*this method can have problems. Specifically, prerequisite packages may not install correctly
+	on their own and will interrupt the PyRECONSTRUCT installation
+
 These dependencies are required to run on a linux system (currently working to get functionality on Windows):
 	python-dev
 	python-setuptools
@@ -35,6 +38,20 @@ These dependencies are required to run on a linux system (currently working to g
 	libxslt-dev
 	cmake
 	libshiboken-dev
+
+---------------------------------------------------------------------------
+IMPORTING INTO PYTHON
+---------------------------------------------------------------------------
+PyRECONSTRUCT should be imported with the name 'pyrecon' (i.e. import pyrecon)
+
+To import only the XML-parse portion of PyRECONSTRUCT:
+	
+	from pyrecon.tools import classes
+		or
+	from pyrecon.tool.classes import * 
+
+---------------------------------------------------------------------------
+
 ----------------------------------------------------------------------------
 
 More info on RECONSTRUCT can be found here:
