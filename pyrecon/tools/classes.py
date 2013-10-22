@@ -1018,8 +1018,7 @@ class Series:
         print('Writing series file...'),
         seriesoutpath = outpath+self.name+'.ser'
         if os.path.exists(seriesoutpath):
-            print('Filename %s already exists, please delete to avoid overwrite')%seriesoutpath
-            return
+            raise NameError('Filename %s already exists.\nPlease delete to avoid overwrite'%seriesoutpath)
         #Build series root element
         attdict, contours = self.output()
         root = ET.Element(self.tag, attdict)
@@ -1082,8 +1081,7 @@ class Series:
         for section in self.sections:
             sectionoutpath = outpath+section.name
             if os.path.exists(sectionoutpath):
-                print('Filename %s already exists, please delete to avoid overwrite')%sectionoutpath
-                return
+                raise NameError('Filename %s already exists.\nPlease delete to avoid overwrite'%sectionoutpath)
             count += 1
             #Build section root element
             attdict = section.output()
