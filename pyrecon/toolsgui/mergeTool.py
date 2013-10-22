@@ -9,6 +9,7 @@ def main():
     sys.exit( app.exec_() )
 
 class mainContainer(QtGui.QFrame):
+    '''Holds all the resolved data and objects required for loading series.'''
     def __init__(self, parent=None):
         QtGui.QFrame.__init__(self, parent)
         self.setGeometry(0,0,600,300)
@@ -313,6 +314,7 @@ class mainContainer(QtGui.QFrame):
             defMsg.close()
         
 class seriesConflictWindow(QtGui.QFrame):
+    '''Window for selecting conflicts to be resolved in .ser files'''
     def __init__(self, parent=None, pSeries=None, sSeries=None, window=None):
         QtGui.QFrame.__init__(self, parent)
         self.setGeometry(0,325,300,150)
@@ -403,6 +405,8 @@ class seriesConflictWindow(QtGui.QFrame):
         self.zcontoursButton.setPalette(QtGui.QPalette(QtGui.QColor('lightgreen')))
 
 class sectionConflictWindow(QtGui.QFrame):
+    '''Window for selecting what kind of conflicts two resolve between section
+    files in a series'''
     def __init__(self, parent=None, pSeries=None, sSeries=None, window=None):
         QtGui.QFrame.__init__(self, parent)
         self.setGeometry(300,325,300,150)
@@ -499,6 +503,7 @@ class sectionConflictWindow(QtGui.QFrame):
         self.close()
 
 class seriesAttributeResolver(QtGui.QFrame):
+    '''Window for resolving attribute differences between two .ser files'''
     def __init__(self, parent=None, pSeries=None, sSeries=None):
         QtGui.QFrame.__init__(self, parent)
         self.setGeometry(0,0,400,400)
@@ -569,6 +574,7 @@ class seriesAttributeResolver(QtGui.QFrame):
         self.close()
     
 class seriesContourResolver(QtGui.QFrame):
+    '''Window for resolving contour differences between two .ser files'''
     def __init__(self, parent=None, pSeries=None, sSeries=None):
         QtGui.QFrame.__init__(self, parent)
         self.setGeometry(0,0,400,100)
@@ -608,6 +614,7 @@ class seriesContourResolver(QtGui.QFrame):
         self.close()
 
 class seriesZContourResolver(QtGui.QFrame):
+    '''Window for resolving ZContour differences between two .ser files'''
     def __init__(self, parent=None, pSeries=None, sSeries=None):
         QtGui.QFrame.__init__(self, parent)
         self.setGeometry(0,0,400,200)
@@ -655,6 +662,8 @@ class seriesZContourResolver(QtGui.QFrame):
         self.close()
 
 class sectionAttributeResolver(QtGui.QFrame):
+    '''Window for resolving attribute differences in section pairs of the 
+    two series'.'''
     def __init__(self, parent=None, pSeries=None, sSeries=None):
         QtGui.QFrame.__init__(self, parent)
         self.setGeometry(0,0,400,400)
@@ -726,6 +735,7 @@ class sectionAttributeResolver(QtGui.QFrame):
         self.close()
         
 class sectionImageResolver(QtGui.QFrame):
+    '''Window for resolving src image differences between sections.'''
     def __init__(self, parent=None, pSeries=None, sSeries=None):
         QtGui.QFrame.__init__(self, parent)
         self.setGeometry(0,0,400,400)
@@ -798,6 +808,8 @@ class sectionImageResolver(QtGui.QFrame):
         self.close()
         
 class sectionContourResolver(QtGui.QFrame):
+    '''Window for resolving conflicts between section contours in two series.
+    A single table with an item for each section pair (pink if differences exist)'''
     def __init__(self, parent=None, pSeries=None, sSeries=None):
         QtGui.QFrame.__init__(self, parent)
         self.setGeometry(0,0,400,400)
@@ -868,6 +880,8 @@ class sectionContourResolver(QtGui.QFrame):
         self.close()
     
     class sectionContoursWidget(QtGui.QWidget):
+        '''Displays all the contours in two sections, with the primary section in the left table,
+        secondary in the right, and conflicting/merged in the middle'''
         def __init__(self, parent=None, window=None, pSection=None, sSection=None):
             QtGui.QWidget.__init__(self, parent)
             self.setGeometry(0,0,800,500)
@@ -1008,7 +1022,7 @@ class sectionContourResolver(QtGui.QFrame):
                     sTableConts.append(self.uniqueB[row])
         
             self.secMergedContours.extend(pTableConts+mTableConts+sTableConts)
-        
+            
         def resolveConflict(self, item):
             row = item.row()
             pink = '#ffc0cb'
@@ -1148,10 +1162,12 @@ class sectionContourResolver(QtGui.QFrame):
                 self.parent.allMergedContours = {}
             self.updateSecMergedConts()
             print([cont.name for cont in self.secMergedContours])
+            # Add contours for this section to the dictionary
             self.parent.allMergedContours[ str(self.pSection.index) ] = self.secMergedContours
             self.close()
             
     class sectionContourConflictResolver(QtGui.QWidget):
+        '''Window for resolving conflicts between two contours'''
         def __init__(self, parent=None, contA=None, contB=None):
             QtGui.QWidget.__init__(self, parent)
             self.parent = parent
