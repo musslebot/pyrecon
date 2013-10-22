@@ -3,11 +3,6 @@ from pyrecon.tools import classes, mergeTool
 from lxml import etree as ET
 import sys
 
-def main():
-    app = QtGui.QApplication(sys.argv)
-    a = mainContainer() # Doesn't work unless set to a variable for some reason
-    sys.exit( app.exec_() )
-
 class mainContainer(QtGui.QFrame):
     '''Holds all the resolved data and objects required for loading series.'''
     def __init__(self, parent=None):
@@ -485,17 +480,17 @@ class sectionConflictWindow(QtGui.QFrame):
         try:
             self.mergedAttributes = self.attRes.mergedAttributes
         except:
-            print('Default section attributes chosen')
+            print('Primary Series Section Attributes chosen by default')
             
         try:
             self.mergedImages = self.imgRes.mergedImages
         except:
-            print('Default section images chosen')
+            print('Primary Series Section Images chosen by default')
             
         try:    
             self.mergedContours = self.contRes.allMergedContours
         except:
-            print('Default section contours chosen')
+            print('Primary Series Section Contours chosen by default')
         
         self.parent.check2 = True
         self.parent.sectionFileConflicts.setPalette(QtGui.QPalette(QtGui.QColor('lightgreen')))
@@ -1311,5 +1306,6 @@ class textResolveDetail(QtGui.QFrame):
         vbox.addLayout(hbox2)
         self.setLayout(vbox)
     
-main()
-
+app = QtGui.QApplication(sys.argv)
+a = mainContainer() # Doesn't work unless set to a variable for some reason
+sys.exit( app.exec_() )
