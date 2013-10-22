@@ -25,9 +25,13 @@ class excelToolWindow(QtGui.QWidget):
         self.show()
         
     def functionalItems(self):
+        self.templateMenu = QtGui.QComboBox(self) #=== How to center items, XML settings file
+        self.templateMenu.insertItem(0,'<Default Template>')
+        self.templateMenu.insertItem(1,'Place Holder 2')
+        
         self.seriesPathLine = QtGui.QLineEdit(self)
         self.seriesPathLine.setText( self.seriesPath )
-        self.seriesPathLine.setAlignment( QtCore.Qt.AlignCenter ) #===
+        self.seriesPathLine.setAlignment( QtCore.Qt.AlignCenter )
         
         self.seriesPathBrowse = QtGui.QPushButton(self)
         self.seriesPathBrowse.clicked.connect( self.browse )
@@ -49,6 +53,12 @@ class excelToolWindow(QtGui.QWidget):
 
     def layout(self):
         vbox = QtGui.QVBoxLayout()
+        
+        hbox0 = QtGui.QHBoxLayout()
+        hbox0.addWidget( self.templateMenu )
+        hbox0.insertSpacing(0,200)
+        hbox0.insertSpacing(-1,200)
+        
         hbox1 = QtGui.QHBoxLayout()
         hbox1.addWidget( self.seriesPathLine )
         hbox1.addWidget( self.seriesPathBrowse )
@@ -66,6 +76,7 @@ class excelToolWindow(QtGui.QWidget):
         hbox3.addWidget( self.goButton )
         hbox3.insertSpacing(-1,225)
         
+        vbox.addLayout(hbox0)
         vbox.addLayout(hbox1)
         vbox.addLayout(hbox2)
         vbox.addLayout(hbox3)

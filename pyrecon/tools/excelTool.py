@@ -49,6 +49,7 @@ class excelWorkbook(openpyxl.Workbook):
     def __init__(self):
         openpyxl.Workbook.__init__(self)
         
+        self.template = None #===
         self.dendriteFilter = []
         self.traceTypeFilter = ['d[0-9][0-9]c[0-9][0-9]'] # traces to ignore
         self.dendriteDict = None
