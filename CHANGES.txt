@@ -1,1 +1,11 @@
 Visit https://github.com/wtrdrnkr/pyrecon for more details
+
+=============
+Version 1.0.1
+=============
+*Reorganized and updated README.txt with installation instructions
+
+=============
+Version 1.0.0
+=============
+*mergeTool (gui) is fully functional
