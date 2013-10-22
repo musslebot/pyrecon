@@ -4,8 +4,6 @@ PyRECONSTRUCT
 Date Created: 3/7/2013
 Authors: Michael Musslewhite, Larry Lindsey
 
-** THIS DISTRIBUTION IS STILL IN DEVELOPMENT, BUGS ARE LIKELY TO EXIST **
-
 PyRECONSTRUCT provides easy access to XML files associated with the program RECONSTRUCT.
 This package should also be used to develop scripts/programs for various tasks that use
 these XML files. Included examples are mergeTool for merging multiple RECONSTRUCT series

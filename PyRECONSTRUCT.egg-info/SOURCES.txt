@@ -18,3 +18,4 @@ pyrecon/tools/reScale.py
 pyrecon/toolsgui/__init__.py
 pyrecon/toolsgui/excelTool.py
 pyrecon/toolsgui/mergeTool.py
+pyrecon/toolsgui/mergeTool2.py
