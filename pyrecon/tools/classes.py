@@ -305,7 +305,7 @@ class Contour:
         for elem in self.fill:
             fill += str(elem)+' '
         return str(fill).rstrip()
-    def getxpoints(self): #===
+    def getxpoints(self):
         '''Returns Points attribute (list of strings, each consisting of two numbers \
 separated by a single space)'''
         ret = ''
@@ -488,7 +488,6 @@ class rObject:
         self.surfacearea = self.popSurfaceArea()
         self.flatarea =  self.popFlatArea()
         self.children = [] # actual children rObjects
-           
     def __getitem__(self, index):
         if type(index) == str:
             return self.children[operator.indexOf(self.childrenNames(),index)]
@@ -496,19 +495,14 @@ class rObject:
             return self.children[index]
         else:
             return None
-        
     def __str__(self):
         return 'rObject, from series '+self.series.name+', with the name '+str(self.name)
-    
     def childrenNames(self):
         return [child.name for child in self.children]
-
     def returnAtts(self):
         return self.name, self.start, self.end, self.count, self.volume, self.surfacearea, self.flatarea
-    
     def returnChildren(self):
         return self.children
-    
     def popTraceType(self):
         '''Returns the base trace type (e.g. 'd[0-9][0-9]cfa[0-9][0-9]' to be used for regexp)'''
         trace_expression = ''
@@ -519,19 +513,14 @@ class rObject:
         if trace_expression[-1].isalpha():
             trace_expression = trace_expression[:-1]
         return trace_expression
-    
     def popStartendCount(self):
         return self.series.getStartEndCount( self.name )
-    
     def popVolume(self):
         return self.series.getVolume( self.name )
-
     def popTotalVolume(self):
         return self.series.getTotalVolume( self.name )
-
     def popSurfaceArea(self):
-        return self.series.getSurfaceArea( self.name )
-        
+        return self.series.getSurfaceArea( self.name ) 
     def popFlatArea(self):
         return self.series.getFlatArea( self.name )
 
@@ -628,7 +617,6 @@ class Section:
                     imgflag = None     
         
         return contours, images
-    
     def popindex(self, root):
         if root == None:
             return None
@@ -800,7 +788,6 @@ class Series:
             hierarchy[dendrite] = denObj
             
         return hierarchy
-    
     def getObjectLists(self):
         '''Returns lists of dendrite names, protrusion names, trace names, and a list of other objects in series'''
         dendrite_expression = 'd[0-9]{2}$' # represents base dendrite name (d##)
@@ -832,7 +819,6 @@ class Series:
                 else:
                     others.append(contour.name)
         return list(set(dendrites)), list(set(protrusions)), list(set(traces)), list(set(others))
-
     def output(self):
         '''Returns a dictionary of attributes and a list of contours for building .ser xml file'''
         attributes = {}
@@ -999,7 +985,6 @@ class Series:
                 tmp += str(flt)+' '
             ret += tmp.rstrip()+', '   
         return ret.rstrip()
-
 # Helper functions
     def s2b(self, string):
         '''Converts string to bool'''
@@ -1146,7 +1131,6 @@ class Series:
                     c.transform.xcoef = [0,1,0,0,0,0]
                     c._tform = c.transform.poptform()
         print('DONE')
-
     def addsection(self, section):
         '''Adds a <Section> object to <Series> object'''
         self.sections.append(section)
@@ -1696,7 +1680,6 @@ class Transform:
             tforward.inverse = getrevt
             
             return tforward
-            
     def popyxcoef(self, node):
         '''Populates self.ycoef and self.xcoef'''
         if node == None:
@@ -1743,9 +1726,9 @@ class ZContour:
         '''Allows use of != between multiple objects'''
         return self.output() != other.output()
 # Accessors
-    def overlaps(self, other): #===
+    def overlaps(self, other):
         threshold = (1+2**(-17))
-        
+    
         def distance(pt0, pt1):
             return math.sqrt( (pt0[0] - pt1[0])**2 + (pt0[1] - pt1[1])**2 )
         
@@ -1768,8 +1751,7 @@ class ZContour:
         for elem in distlist:
             if elem > threshold: # no matching point
                 return 0
-        return 1
-                    
+        return 1        
     def getpoints(self):
         return self.points
     def getxbord(self):
@@ -1795,7 +1777,7 @@ class ZContour:
         '''Returns all zcontour attributes, xml formatting (strings)'''
         return str(self.name), str(self.closed).lower(), self.getxbord(), self.getxfill(), \
             str(self.mode), str(self.getxpoints())
-    def output(self): #===
+    def output(self):
         '''Returns a dictionary of attributes'''
         attributes = {}
         keys = self._attribs
@@ -1857,8 +1839,7 @@ class ZContour:
             elsplit = elem.split(' ')
             tup = ( float(elsplit[0]), float(elsplit[1]), int(elsplit[2]) )
             finalList.append(tup)
-        return finalList
-            
+        return finalList   
     def popname(self, node):
         if node == None:
             return None
