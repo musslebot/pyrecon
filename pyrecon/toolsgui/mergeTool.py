@@ -140,7 +140,7 @@ class mainContainer(QtGui.QFrame):
         self.seriesFileConflicts.clicked.connect( self.seriesConflicts )
         self.sectionFileConflicts.clicked.connect( self.sectionConflicts )
         msg = QtGui.QMessageBox(self)
-        msg.setText('Okay, done loading the series!\nClick one of the two conflict buttons below to resolve conflicts.\n\n**Non-resolved conflicts will default to the state of the primary series.    ')
+        msg.setText('Okay, done loading the series!\nClick one of the two conflict buttons below to resolve conflicts.\n\n**Non-resolved conflicts (pink) will default to the state of the primary series.    ')
         msg.show()
     
     def seriesConflicts(self):
