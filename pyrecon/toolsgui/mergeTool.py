@@ -146,7 +146,7 @@ class mainContainer(QtGui.QFrame):
         self.seriesFileConflicts.clicked.connect( self.seriesConflicts )
         self.sectionFileConflicts.clicked.connect( self.sectionConflicts )
         msg = QtGui.QMessageBox(self)
-        msg.setText('Okay, done!\nClick one of the buttons below to resolve conflicts.\n\n**Non-resolved conflicts will default to the state of the primary series.    ')
+        msg.setText('Okay, done loading the series!\nClick one of the two conflict buttons below to resolve conflicts.\n\n**Non-resolved conflicts will default to the state of the primary series.    ')
         msg.show()
     
     def seriesConflicts(self):
@@ -287,16 +287,16 @@ class mainContainer(QtGui.QFrame):
         if self.secWin.mergedContours == None:
             defaultedThings.append('Section Contours')
         
-        if len(defaultedThings) != 0:
-            defMsg = QtGui.QMessageBox(self)
-            msgTxt = 'The following items have been defaulted to the primary series due to lack of resolution:\n'
-            for item in defaultedThings:
-                msgTxt+='\t'+item+'\n'
-            defMsg.setText(msgTxt)
-            defMsg.addButton(QtGui.QMessageBox.Ok)
-            defMsg.addButton(QtGui.QMessageBox.Cancel)
-            ret = defMsg.exec_()
-        
+
+        defMsg = QtGui.QMessageBox(self)
+        msgTxt = 'The following items have been defaulted to the primary series due to lack of resolution:\n'
+        for item in defaultedThings:
+            msgTxt+='\t'+item+'\n'
+        defMsg.setText(msgTxt)
+        defMsg.addButton(QtGui.QMessageBox.Ok)
+        defMsg.addButton(QtGui.QMessageBox.Cancel)
+        ret = defMsg.exec_()
+    
         if ret == QtGui.QMessageBox.Ok:
             # Display new message saying that it may take a few moments to merge everything
             msg = QtGui.QMessageBox(self)
@@ -982,14 +982,14 @@ class sectionContourResolver(QtGui.QFrame):
             self.secMergedContours = []
             
             # pTable
+            pTableConts = []
             if not self.ignorePTable.isChecked():
-                pTableConts = []
                 for row in range(self.pSecTable.rowCount()):
                     pTableConts.append(self.uniqueA[row])
-
+            
             # midTable
+            mTableConts = []
             if not self.ignoreMTable.isChecked():
-                mTableConts = []
                 for row in range(len(self.confOvlp)):
                     if ' (Secondary)' in self.midTable.item(row,0).text():
                         mTableConts.append( self.confOvlp[row][1] )
@@ -1002,8 +1002,8 @@ class sectionContourResolver(QtGui.QFrame):
                 mTableConts.extend( [cont[0] for cont in self.compOvlp] )
             
             # sTable
+            sTableConts = []
             if not self.ignoreSTable.isChecked():
-                sTableConts = []
                 for row in range(self.sSecTable.rowCount()):
                     sTableConts.append(self.uniqueB[row])
         
