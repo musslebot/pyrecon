@@ -1,6 +1,16 @@
 Visit https://github.com/wtrdrnkr/pyrecon for more details
 
 =============
+Version 1.0.3
+=============
+*Removed some unnecessary files from distribution
+
+=============
+Version 1.0.2
+=============
+*Updated README
+
+=============
 Version 1.0.1
 =============
 *Reorganized and updated README.txt with installation instructions
