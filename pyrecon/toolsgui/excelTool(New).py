@@ -7,19 +7,27 @@ class mainContainer(QtGui.QMainWindow):
         self.setGeometry(0,0,1092,728)
         self.setWindowTitle('RECONSTRUCT Spreadsheet Tool')
         
+        # Frame
         self.frame = QtGui.QFrame(self)
         self.frame.setFrameStyle(QtGui.QFrame.Box|QtGui.QFrame.Plain)
         self.frame.setGeometry(self.geometry())
         self.frame.setLineWidth(2)
         self.frame.setMidLineWidth(3)
         
+        # Menu Bar
         menuBar = QtGui.QMenuBar(self.frame)
         menuBar.addMenu('&File')
         menuBar.addMenu('&Edit')
         
-        self.sheetWindow = spreadsheetWindow(parent=self)
+        # Spreadsheet
+        self.sheetWindow = spreadsheetWindow(parent=self.frame)
         
+        # Object List
+        
+        self.loadLayout()
         self.show()
+    def loadLayout(self):
+        return
 
 class spreadsheetWindow(QtGui.QWidget):
     '''Window containing the spreadsheet.'''
@@ -47,7 +55,10 @@ class spreadsheetWindow(QtGui.QWidget):
         hbox.addWidget(self.sheet)
 
         self.setLayout(hbox)
+
         
+        
+               
 app = QtGui.QApplication(sys.argv)
 t = mainContainer()
 sys.exit( app.exec_() )
