@@ -15,8 +15,9 @@ class objectListWidget(QtGui.QWidget):
         self.filterLine = QtGui.QLineEdit(self)
         self.filterLine.setText('Enter object list filters, separated by commas')
         self.refreshButton = QtGui.QPushButton(self)
-        # Refresh arrows in button, resize to square
-        self.refreshButton.setText('Refresh')
+        # Refresh arrows in button, resize to square #===
+#         self.refreshButton.setSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored)
+#         self.refreshButton.setText('Refresh')
     
     def initTable(self):
         self.table = QtGui.QTableWidget(40,1,self)
