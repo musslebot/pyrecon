@@ -49,9 +49,7 @@ PyRECONSTRUCT for Windows has only been tested using the following method:
 3. Download PyRECONSTRUCT code from pypi:
 	https://pypi.python.org/pypi/PyRECONSTRUCT
 4. Run 'setup.py install' after cding into parent folder
-	*This will be unsuccessful due to missing dependencies, but it will tell you why.
-	This will most likely be resolved in the following steps, but rerun this command
-	after every step to determine if problems are being resolved successfully 
+	*This will be unsuccessful due to missing dependencies, but it will tell you why. This will most likely be resolved in the following steps, but rerun this command after every step to determine if problems are being resolved successfully 
 5. Download and install lxml (includes libxml2/libxslt):
 	https://pypi.python.org/packages/2.7/l/lxml/lxml-3.2.3.win-amd64-py2.7.exe#md5=3720e7d124275b728f553eb93831869c
 6. Download and install Cython:
