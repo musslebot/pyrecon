@@ -21,9 +21,12 @@ class objectListWidget(QtGui.QWidget):
     def initTable(self):
         self.table = QtGui.QTableWidget(40,1,self)
         self.table.verticalHeader().setVisible(False) # No row numbers
-        self.table.setSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored) # Scales with anysize window
+        self.table.setSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored) # Scales with anysize window, necessary? #===
         self.table.setHorizontalHeaderLabels(['Objects'])
         self.table.resizeRowsToContents()
+        self.table.setColumnWidth(0, 240) #=== Replace 240 with scalable width
+
+        #=== Test Items
         for i in range(40):
             item = QtGui.QTableWidgetItem('Item '+str(i+1))
             item.setTextAlignment(QtCore.Qt.AlignCenter)

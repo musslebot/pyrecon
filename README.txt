@@ -10,8 +10,9 @@ these XML files. Included examples are mergeTool for merging multiple RECONSTRUC
 and excelTool for pushing object data into an excel workbook (.xlsx).
 
 ---------------------------------------------------------------------------
-INSTALLATION
+# INSTALLATION
 ---------------------------------------------------------------------------
+# Linux
 PyRECONSTRUCT can be installed in multiple ways:
 	
 	The easiest being through pip*:
@@ -37,8 +38,9 @@ These dependencies are required to run on a linux system (currently working to g
 	cmake
 	libshiboken-dev
 
+# Windows
 ---------------------------------------------------------------------------
-IMPORTING INTO PYTHON
+# IMPORTING INTO PYTHON
 ---------------------------------------------------------------------------
 PyRECONSTRUCT should be imported with the name 'pyrecon' (i.e. import pyrecon)
 
@@ -49,8 +51,8 @@ To import only the XML-parse portion of PyRECONSTRUCT:
 	from pyrecon.tool.classes import * 
 
 ---------------------------------------------------------------------------
-
-----------------------------------------------------------------------------
+# More Information
+---------------------------------------------------------------------------
 
 More info on RECONSTRUCT can be found here:
 	http://synapses.clm.utexas.edu/tools/index.stm
