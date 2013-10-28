@@ -205,11 +205,18 @@ class mainContainer(QtGui.QFrame):
     
     def mergeEverything(self):
         if '/' not in self.outpathLine.text() or self.outpathLine.text() == '':
-            msg = QtGui.QMessageBox(self)
-            msg.setText('Invalid outpath, please re-enter')
-            msg.show()
+            try: # For Windows compatability
+                self.outpathLine.setText(self.outpathLine.text().replace('\\','/'))
+                msg = QtGui.QMessageBox(self)
+                msg.setText('Back slashes changed to forward slashes, please retry')
+                msg.show()
+            except:
+                msg = QtGui.QMessageBox(self)
+                msg.setText('Invalid outpath, please re-enter')
+                msg.show()
             return
         
+        # Renaming series
         if '(Optional)' not in self.newNameLine.text() and self.newNameLine.text() != '':
             name = self.newNameLine.text()
         else:

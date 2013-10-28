@@ -1,4 +1,17 @@
 Visit https://github.com/wtrdrnkr/pyrecon for more details
+=============
+Version 1.1.0
+=============
+*mergeTool (toolsgui) Should now properly output in windows: added a .replace('\\', '/') to mergeEverything function
+*Removed getSeries/getSeriesXML from mergeTool, now using loadSeries/loadSeriesXML from classes
+
+=============
+Version 1.0.4
+=============
+*Replaced os.sep with '/' in the loadSeries functions (found in classes and mergeTool)
+*Working on Windows 7 (have not tested other Windows versions)
+*Removed template option in excelTool (it was not functional)
+*Added excelTool-dev (in development, more sophisticated GUI)
 
 =============
 Version 1.0.3

@@ -20,8 +20,8 @@ def main():
         return
     if len(sys.argv) > 1:
         #1)Create series object
-        series = getSeries( inpath+ser )
-        series2 = getSeries( inpath2+ser2 )
+        series = loadSeries( inpath+ser )
+        series2 = loadSeries( inpath2+ser2 )
         
         #2)Merge series attributes
         mergeSer = mergeSeries( series, series2 )
@@ -32,28 +32,6 @@ def main():
         
         #5)Output section file(s)
         mergeSer.writesections( mergeoutpath )
-
-def getSeries(path_to_series):
-    '''Create a series object, fully populated.'''
-    if path_to_series.find(os.sep) < 0:
-        path_to_series = './' + path_to_series
-    series = getSeriesXML(path_to_series)
-    series.getSectionsXML(path_to_series)
-    return series
-    
-def getSeriesXML(path_to_series):
-    '''Creates a series object representation from a .ser XML file in path_to_series'''
-    print('Creating series object from ' + path_to_series + '...'),
-    #Parse series
-    tree = ET.parse( path_to_series )
-    
-    root = tree.getroot() #Series
-    #Create series object
-    serName = path_to_series.split('/')[len(path_to_series.split('/'))-1].replace('.ser','')
-    series = Series(root, serName)
-    print('DONE')
-    print('\tSeries: '+series.name)
-    return series
 
 def serAttHandler(ser1atts, ser2atts, ser3atts, conflicts):
     '''Resolves conflicts regarding series attributes'''
@@ -82,6 +60,7 @@ def serContHandler(ser1conts, ser2conts, ser3conts):
         ser3conts.pop( int(a) )
         print('\n')
     return ser3conts
+
 def serZContHandler(ser1zconts, ser2zconts, ser3zconts ):
     # add leftover, unique zcontours to ser3zconts
     ser3zconts.extend(ser1zconts)
@@ -139,7 +118,6 @@ def secContHandler(uniqueA, compOvlp, confOvlp, uniqueB):
         else:
             outputContours.append(pair[0])
             outputContours.append(pair[1])
-    
     return outputContours
 
 def mergeSeries(serObj1, serObj2, name=None, \
@@ -394,7 +372,7 @@ def bethBellMerge(path_FPNCT_BB, path_FPNCT_JNB): #===
                 re.compile('[d][0-9]{0,2}c[0-9]{0,2}[a-z]?$', re.I), # d##c##_
                 re.compile('[d][0-9]{0,2}c[0-9]{0,2}scale[0-9]{0,2}[a-z]?$', re.I), # d##c##scale##_
                 re.compile('[d][0-9]{0,2}cfa[0-9]{0,2}[a-z]?$', re.I)] # d##cfa##_
-    ser1 = getSeries(path_FPNCT_BB)
+    ser1 = loadSeries(path_FPNCT_BB)
     for section in ser1.sections:
         savedContours = []
         for contour in section.contours:
@@ -408,7 +386,7 @@ def bethBellMerge(path_FPNCT_BB, path_FPNCT_JNB): #===
     delList = [re.compile('[d][0-9]{0,2}c[0-9]{0,2}[a-z]?$', re.I), # d##c##_
                re.compile('[d][0-9]{0,2}cfa[0-9]{0,2}[a-z]?$', re.I)] # d##cfa##_
     
-    ser2 = getSeries(path_FPNCT_JNB)
+    ser2 = loadSeries(path_FPNCT_JNB)
     for section in ser2.sections:
         deletedContours = []
         for contour in section.contours:
@@ -447,8 +425,8 @@ class mergeObject:
 # Fxns
     def merge(self, path_to_series1, path_to_series2):
         '''Merges two series together based on mergeObjects' attributes'''
-        s1 = getSeries(path_to_series1)
-        s2 = getSeries(path_to_series2)
+        s1 = loadSeries(path_to_series1)
+        s2 = loadSeries(path_to_series2)
 
         mergedSeries = mergeSeries( s1, s2, name = self.name, \
                                 mergeSerAttfxn = self.handleSerAtts, \

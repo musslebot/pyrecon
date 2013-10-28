@@ -6,7 +6,7 @@ from skimage import transform as tf
 
 def loadSeries(path_to_series):
     '''Create a series object, fully populated.'''
-    if path_to_series.find(os.sep) < 0:
+    if path_to_series.find('/') < 0:
         path_to_series = './' + path_to_series
     series = loadSeriesXML(path_to_series)
     series.getSectionsXML(path_to_series)
