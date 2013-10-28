@@ -1,5 +1,10 @@
 Visit https://github.com/wtrdrnkr/pyrecon for more details
 =============
+Version 1.1.1
+=============
+*Removed QMessageBox at mergeTool(toolsgui).mergeEverything() that states backslashes replaced with forward slashes
+
+=============
 Version 1.1.0
 =============
 *mergeTool (toolsgui) Should now properly output in windows: added a .replace('\\', '/') to mergeEverything function

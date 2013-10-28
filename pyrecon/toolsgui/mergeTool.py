@@ -204,16 +204,13 @@ class mainContainer(QtGui.QFrame):
         box.show()
     
     def mergeEverything(self):
+        if '\\' in self.outpathLine.text(): # Windows compatability
+            self.outpathLine.setText( self.outpathLine.text().replace('\\','/') )
+            print( 'Converted backslashes in output directory path')
         if '/' not in self.outpathLine.text() or self.outpathLine.text() == '':
-            try: # For Windows compatability
-                self.outpathLine.setText(self.outpathLine.text().replace('\\','/'))
-                msg = QtGui.QMessageBox(self)
-                msg.setText('Back slashes changed to forward slashes, please retry')
-                msg.show()
-            except:
-                msg = QtGui.QMessageBox(self)
-                msg.setText('Invalid outpath, please re-enter')
-                msg.show()
+            msg = QtGui.QMessageBox(self)
+            msg.setText('Invalid outpath, please re-enter')
+            msg.show()
             return
         
         # Renaming series
