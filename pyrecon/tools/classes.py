@@ -26,6 +26,18 @@ def loadSeriesXML(path_to_series):
     print('\tSeries: '+series.name)
     return series
 
+def rObjectsFromSeries(series):
+    allConts = []
+    for section in series.sections:
+        for contour in section.contours:
+            allConts.append(contour.name)
+    allConts = set(allConts)
+
+    rObjects = []
+    for contName in allConts:
+        rObjects.append( rObject(name=contName,series=series) )
+    return rObjects
+
 class Contour:
 # Python Functions
     # INITIALIZE

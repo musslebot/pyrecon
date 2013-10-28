@@ -1,37 +1,50 @@
 from PySide import QtCore, QtGui
+from pyrecon.tools import classes
 import sys, os
+
+# Current issues:
+# - Refresh button should be square with arrow-circle in it
 
 class objectListWidget(QtGui.QWidget):
     def __init__(self, parent=None, width=None, height=None):
         QtGui.QWidget.__init__(self, parent)
         # Size (1/3 of total width?) #=== how to make scalable?
         self.setGeometry(0,0,width,height)
+        
+        #===
+        self.series = classes.loadSeries('/home/michaelm/Documents/Test Series/test/ser1/BBCHZ.ser')
+        self.objects = classes.rObjectsFromSeries(self.series)
+        
         self.initFilterLine()
-        self.initTable()
+        self.initTable(rows=40,cols=1) # set initial table size, changed with refreshTable(self)
         self.initLayout()
         self.show()
     
+    def refreshTable(self):
+        # Reload table with new specs
+        self.objects = classes.rObjectsFromSeries(self.series)
+        self.initTable(rows=len(self.objects), cols=1)
+        
     def initFilterLine(self):
         self.filterLine = QtGui.QLineEdit(self)
-        self.filterLine.setText('Enter object list filters, separated by commas')
-        self.refreshButton = QtGui.QPushButton(self)
-        # Refresh arrows in button, resize to square #===
-#         self.refreshButton.setSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored)
-#         self.refreshButton.setText('Refresh')
+        self.filterLine.setText('Enter filters, separated by commas')
+        self.refreshButton = QtGui.QPushButton('Refresh')
+        self.refreshButton.clicked.connect( self.refreshTable )
     
-    def initTable(self):
-        self.table = QtGui.QTableWidget(40,1,self)
+    def initTable(self, rows, cols):
+        self.table = QtGui.QTableWidget(rows,cols,self)
         self.table.verticalHeader().setVisible(False) # No row numbers
-        self.table.setSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored) # Scales with anysize window, necessary? #===
         self.table.setHorizontalHeaderLabels(['Objects'])
-        self.table.resizeRowsToContents()
-        self.table.setColumnWidth(0, 240) #=== Replace 240 with scalable width
-
-        #=== Test Items
-        for i in range(40):
-            item = QtGui.QTableWidgetItem('Item '+str(i+1))
-            item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.table.setItem(i,0,item)
+        self.table.resizeRowsToContents() # Reduces item row height to minimum 
+        
+        row = 0 #=== space before loading correct object 
+        for obj in self.objects:
+            print(row)
+            item = QtGui.QTableWidgetItem(obj.name)
+            self.table.setItem(row, cols, item)
+            row+=1
+        
+        self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch) # Keeps columns at width of window
         
     def initLayout(self):
         filterLineBox = QtGui.QHBoxLayout()
