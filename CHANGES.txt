@@ -1,5 +1,11 @@
 Visit https://github.com/wtrdrnkr/pyrecon for more details
 =============
+Version 1.1.2
+=============
+*Problem with excelTool(tools) where deleting the sheet names 'Sheet' caused an index error when saving; unfortunately,
+this seems to be a problem with the openpyxl library and thus I can not remove the empty 'Sheet' in the workbook
+
+=============
 Version 1.1.1
 =============
 *Removed QMessageBox at mergeTool(toolsgui).mergeEverything() that states backslashes replaced with forward slashes

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys, re, openpyxl
-import pyrecon.tools.mergeTool as rmt
+from pyrecon.tools.classes import *
 import argparse
 
 def main( path_to_series, save_path ):
@@ -10,7 +10,7 @@ def main( path_to_series, save_path ):
     if '.xlsx' not in save_path:
         save_path += path_to_series.replace('.ser','').split('/')[-1]
         save_path += '.xlsx'
-    series = rmt.getSeries(path_to_series)
+    series = loadSeries(path_to_series)
     wkbk = excelWorkbook()
     print('Preparing dendrite hierarchy...'),
     wkbk.getDendriteDict(series)
@@ -18,8 +18,9 @@ def main( path_to_series, save_path ):
     print('Saving workbook...'),
     wkbk.writeWorkbook()
     
-    try: wkbk.remove_sheet( wkbk.get_sheet_by_name('Sheet') )
-    except: print('No sheet named \'Sheet\'')
+    #=== openpyxl getting index error after deleting this sheet
+    #try: wkbk.remove_sheet( wkbk.get_sheet_by_name('Sheet') )
+    #except: print('No sheet named \'Sheet\'')
     
     wkbk.save(save_path)
     print('DONE')

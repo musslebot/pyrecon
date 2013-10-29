@@ -5,45 +5,41 @@ import sys, os
 # Current issues:
 # - Refresh button should be square with arrow-circle in it
 
-class objectListWidget(QtGui.QWidget):
+class ObjectListWidget(QtGui.QWidget):
     def __init__(self, parent=None, width=None, height=None):
         QtGui.QWidget.__init__(self, parent)
         # Size (1/3 of total width?) #=== how to make scalable?
         self.setGeometry(0,0,width,height)
+        self.initUI()
         
-        #===
+    def initUI(self):
+        '''Initial load of layout/objects'''
         self.series = classes.loadSeries('/home/michaelm/Documents/Test Series/test/ser1/BBCHZ.ser')
         self.objects = classes.rObjectsFromSeries(self.series)
-        
+
         self.initFilterLine()
-        self.initTable(rows=40,cols=1) # set initial table size, changed with refreshTable(self)
+        self.loadTable(rows=len(self.objects),cols=1)
         self.initLayout()
         self.show()
-    
-    def refreshTable(self):
-        # Reload table with new specs
-        self.objects = classes.rObjectsFromSeries(self.series)
-        self.initTable(rows=len(self.objects), cols=1)
         
     def initFilterLine(self):
+        '''Loads filter input line and refresh button'''
         self.filterLine = QtGui.QLineEdit(self)
         self.filterLine.setText('Enter filters, separated by commas')
         self.refreshButton = QtGui.QPushButton('Refresh')
-        self.refreshButton.clicked.connect( self.refreshTable )
+        self.refreshButton.clicked.connect( self.refresh )
     
-    def initTable(self, rows, cols):
-        self.table = QtGui.QTableWidget(rows,cols,self)
+    def loadTable(self, rows, cols):
+        '''Creates a QTableWidget with specified parameters'''
+        self.table = QtGui.QTableWidget(len(self.objects), cols, self)
+        
+        for object in range(len(self.objects)):
+            item = QtGui.QTableWidgetItem(str(self.objects[object]))
+            self.table.setItem(1,0,item)
+        
         self.table.verticalHeader().setVisible(False) # No row numbers
         self.table.setHorizontalHeaderLabels(['Objects'])
-        self.table.resizeRowsToContents() # Reduces item row height to minimum 
-        
-        row = 0 #=== space before loading correct object 
-        for obj in self.objects:
-            print(row)
-            item = QtGui.QTableWidgetItem(obj.name)
-            self.table.setItem(row, cols, item)
-            row+=1
-        
+        self.table.resizeRowsToContents() # Reduces item row height to minimum         
         self.table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch) # Keeps columns at width of window
         
     def initLayout(self):
@@ -56,7 +52,17 @@ class objectListWidget(QtGui.QWidget):
         vbox.addWidget(self.table)
         
         self.setLayout(vbox)
-         
+            
+    def refresh(self):
+        # Reload table with new specs
+        try:
+            self.objects = classes.rObjectsFromSeries(self.series)
+            self.loadTable(rows=len(self.objects), cols=1)
+            self.initUI()
+            print( 'refreshing table') #===
+        except:
+            print ('No series file loaded')
+        
 app = QtGui.QApplication(sys.argv)
-objL = objectListWidget(width=300, height=800)
+objL = ObjectListWidget(width=300, height=800)
 sys.exit( app.exec_() )
