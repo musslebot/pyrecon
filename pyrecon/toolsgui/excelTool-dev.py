@@ -3,6 +3,8 @@ from pyrecon.tools import classes
 import sys, os, re
 # THIS IS A DEVELOPMENT FILE AND SHOULD NOT BE EXPECTED TO WORK
 # Current issues:
+# * Can't load multiple series into QListWidget simultaneously
+# * Needs to filter multiple things
 
 class ObjectListWidget(QtGui.QWidget):
     def __init__(self, parent=None, width=None, height=None):
