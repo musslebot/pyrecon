@@ -1,10 +1,8 @@
 from PySide import QtCore, QtGui
 from pyrecon.tools import classes
-import sys, os
+import sys, os, re
 # THIS IS A DEVELOPMENT FILE AND SHOULD NOT BE EXPECTED TO WORK
 # Current issues:
-# - Initially loads list correctly, can't update with refresh
-# - Refresh button should be square with arrow-circle in it
 
 class ObjectListWidget(QtGui.QWidget):
     def __init__(self, parent=None, width=None, height=None):
@@ -35,6 +33,8 @@ class ObjectListWidget(QtGui.QWidget):
         self.delSerBut.setText('Remove Series')
         self.delSerBut.clicked.connect( self.delSer )
         
+        self.objects = None
+        
     def initLayout(self):
         widgetLayout = QtGui.QVBoxLayout()
         
@@ -54,12 +54,42 @@ class ObjectListWidget(QtGui.QWidget):
         
         self.setLayout(widgetLayout)
     
-    def ref(self):
-        print('ref')
+    def ref(self): #===
+        self.objList.clear()
+        filters = self.filter.text()
+        if self.objects is not None:
+            allObjects = sorted([object.name for object in self.objects])
+            filteredObjects = [name for name in allObjects if str(filters) not in name] #=== filtering line
+            
+            if filters != 'Enter filters, sep. by commas' and filters != '':
+                print 'Filter the list'
+                self.objList.addItems(filteredObjects)
+            else:
+                print 'invalid filter'
+                self.objList.addItems(allObjects)
+        print filters
+    
     def addSer(self):
-        print('add ser')
+        def getObjects():
+            path = QtGui.QFileDialog.getOpenFileName(self, 'Series File', '/home/', 'Series Files (*.ser)')
+            path = str(path[0])
+            ser = classes.loadSeries(path)
+            self.objects = classes.rObjectsFromSeries(ser)
+            self.ref()
+        msg = QtGui.QMessageBox(self)
+        msg.setText('This process may take a moment, please be patient.')
+        msg.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+        ret = msg.exec_()
+        if ret == QtGui.QMessageBox.Ok:
+            getObjects()
+
     def delSer(self):
         print('del ser')
+
+    
+        
+        
+        
         
 #===== Below is pre-ListWidget        
 #     def initFilterLine(self):
