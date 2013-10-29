@@ -18,7 +18,7 @@ def main( path_to_series, save_path ):
     print('Saving workbook...'),
     wkbk.writeWorkbook()
     
-    #=== openpyxl getting index error after deleting this sheet
+    #=== openpyxl getting index error after deleting this 'Sheet'
     #try: wkbk.remove_sheet( wkbk.get_sheet_by_name('Sheet') )
     #except: print('No sheet named \'Sheet\'')
     
