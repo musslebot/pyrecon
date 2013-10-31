@@ -820,7 +820,7 @@ class Series:
         traces = []
         others = []
         for section in self.sections:
-            for contour in section.contours:
+            for contour in section.contours: #*** changed the following statements to 'if'
                 # Dendrite
                 if dendrite_expression.match(contour.name) != None:
                     dendrites.append(contour.name[0:3]) #*** added [0:3]
