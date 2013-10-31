@@ -27,7 +27,7 @@ class excelToolWindow(QtGui.QWidget):
     def functionalItems(self):
         self.seriesPathLine = QtGui.QLineEdit(self)
         self.seriesPathLine.setText( self.seriesPath )
-        self.seriesPathLine.setAlignment( QtCore.Qt.AlignCenter ) #===
+        self.seriesPathLine.setAlignment( QtCore.Qt.AlignCenter )
         
         self.seriesPathBrowse = QtGui.QPushButton(self)
         self.seriesPathBrowse.clicked.connect( self.browse )
@@ -49,6 +49,7 @@ class excelToolWindow(QtGui.QWidget):
 
     def layout(self):
         vbox = QtGui.QVBoxLayout()
+        
         hbox1 = QtGui.QHBoxLayout()
         hbox1.addWidget( self.seriesPathLine )
         hbox1.addWidget( self.seriesPathBrowse )

@@ -650,7 +650,7 @@ class Series:
         self.tag = 'Series'
         
         self.contours = self.popcontours(root)
-        self.sections = [] #Sorted 
+        self.sections = [] #Sorted in self.getSectionsXML()
         
         self.index = self.popindex(root)
         self.viewport = self.popviewport(root)
@@ -803,7 +803,7 @@ class Series:
             hierarchy[dendrite] = denObj
             
         return hierarchy
-    def getObjectLists(self):
+    def getObjectLists(self, filters=[]):
         '''Returns lists of dendrite names, protrusion names, trace names, and a list of other objects in series'''
         dendrite_expression = 'd[0-9]{2}' # represents base dendrite name (d##) #*** removed $
         protrusion_expression = 'd[0-9]{2}p[0-9]{2}$' # represents base protrusion name (d##p##)
@@ -821,20 +821,27 @@ class Series:
         others = []
         for section in self.sections:
             for contour in section.contours: #*** changed the following statements to 'if'
-                # Dendrite
-                if dendrite_expression.match(contour.name) != None:
-                    dendrites.append(contour.name[0:3]) #*** added [0:3]
-                # Protrusion
-                if protrusion_expression.match(contour.name) != None:
-                    protrusions.append(contour.name)
-                # Trace
-                if trace_expression.match(contour.name) != None:
-                    traces.append(contour.name)
-                # Everything else
-                if (dendrite_expression.match(contour.name) == None and
-                    protrusion_expression.match(contour.name) == None and
-                    trace_expression.match(contour.name) == None):
-                    others.append(contour.name)
+                for filt in filters: #*** added to filter before adding to dendrite dictionary
+                    if re.compile(filt).match(contour.name) != None:
+                        print('chk '+contour.name) #***
+                        pause = raw_input('pause') #***
+                        continue#*** make sure it is breaking away successfully
+                    else: #***
+                        print('chk2 '+contour.name) #***
+                        # Dendrite
+                        if dendrite_expression.match(contour.name) != None:
+                            dendrites.append(contour.name[0:3]) #*** added [0:3]; set at end to maintain unique
+                        # Protrusion
+                        if protrusion_expression.match(contour.name) != None:
+                            protrusions.append(contour.name)
+                        # Trace
+                        if trace_expression.match(contour.name) != None:
+                            traces.append(contour.name)
+                        # Everything else
+                        if (dendrite_expression.match(contour.name) == None and
+                            protrusion_expression.match(contour.name) == None and
+                            trace_expression.match(contour.name) == None):
+                            others.append(contour.name)
         return list(set(dendrites)), list(set(protrusions)), list(set(traces)), list(set(others))
     def output(self):
         '''Returns a dictionary of attributes and a list of contours for building .ser xml file'''
