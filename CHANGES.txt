@@ -1,45 +1,54 @@
-Visit https://github.com/wtrdrnkr/pyrecon for more details
--------------
-Version 1.1.2
--------------
-*Problem with excelTool(tools) where deleting the sheet names 'Sheet' caused an index error when saving; unfortunately, this seems to be a problem with the openpyxl library and thus I can not remove the empty 'Sheet' in the workbook
-*Updated how version changes are displayed in CHANGES.txt to reflect major/minor/micro (===,***,--- respectively)
+Visit https://github.com/wtrdrnkr/pyrecon for more detail
 
--------------
-Version 1.1.1
--------------
-*Removed QMessageBox at mergeTool(toolsgui).mergeEverything() that states backslashes replaced with forward slashes
+	*************
+	Version 1.2.0
+	*************
+	*classes.Series.getDendriteDict() was not correctly building dendrite dictionaries, missing dendrites that did not have a sole "d##" trace
+		- also added output to show ignored objects
+	*Added GNU General Public License to LICENSE.txt
+	*Indented changes in CHANGES.txt to reflect major/minor/micro hierarchy
 
-*************
-Version 1.1.0
-*************
-*mergeTool (toolsgui) Should now properly output in windows: added a .replace('\\', '/') to mergeEverything function
-*Removed getSeries/getSeriesXML from mergeTool, now using loadSeries/loadSeriesXML from classes
+		-------------
+		Version 1.1.2
+		-------------
+		*Problem with excelTool(tools) where deleting the sheet names 'Sheet' caused an index error when saving; unfortunately, this seems to be a problem with the openpyxl library and thus I can not remove the empty 'Sheet' in the workbook
+		*Updated how version changes are displayed in CHANGES.txt to reflect major/minor/micro (===,***,--- respectively)
+		
+		-------------
+		Version 1.1.1
+		-------------
+		*Removed QMessageBox at mergeTool(toolsgui).mergeEverything() that states backslashes replaced with forward slashes
 
--------------
-Version 1.0.4
--------------
-*Replaced os.sep with '/' in the loadSeries functions (found in classes and mergeTool)
-*Working on Windows 7 (have not tested other Windows versions)
-*Removed template option in excelTool (it was not functional)
-*Added excelTool-dev (in development, more sophisticated GUI)
+	*************
+	Version 1.1.0
+	*************
+	*mergeTool(toolsgui) Should now properly output in windows: added a .replace('\\', '/') to mergeEverything function
+	*Removed getSeries/getSeriesXML from mergeTool, now using loadSeries/loadSeriesXML from classes
 
--------------
-Version 1.0.3
--------------
-*Removed some unnecessary files from distribution
-
--------------
-Version 1.0.2
--------------
-*Updated README
-
--------------
-Version 1.0.1
--------------
-*Reorganized and updated README.txt with installation instructions
+		-------------
+		Version 1.0.4
+		-------------
+		*Replaced os.sep with '/' in the loadSeries functions (found in classes and mergeTool)
+		*Working on Windows 7 (have not tested other Windows versions)
+		*Removed template option in excelTool (it was not functional)
+		*Added excelTool-dev (in development, more sophisticated GUI)
+		
+		-------------
+		Version 1.0.3
+		-------------
+		*Removed some unnecessary files from distribution
+		
+		-------------
+		Version 1.0.2
+		-------------
+		*Updated README
+		
+		-------------
+		Version 1.0.1
+		-------------
+		*Reorganized and updated README.txt with installation instructions
 
 =============
 Version 1.0.0
 =============
-*mergeTool (gui) is fully functional
+*mergeTool(toolsgui) is fully functional
