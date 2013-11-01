@@ -88,12 +88,6 @@ class excelWorkbook(openpyxl.Workbook):
                 newProts.append(prot)
             dendrite.children = newProts
             dendriteDict[dendrite.name] = dendrite
-
-        for dendrite in dendriteDict:
-            prots = [prot for prot in dendriteDict[dendrite].children]
-            for prot in prots:
-                children = [child for child in prot.children]
-                print [child.name for child in children]
                 
         self.dendriteDict = dendriteDict
                 
