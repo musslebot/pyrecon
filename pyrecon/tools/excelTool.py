@@ -132,6 +132,8 @@ class excelWorkbook(openpyxl.Workbook):
         for dendrite in self.dendriteDict:
             # Create sheet
             sheet_name = self.dendriteDict[dendrite].series.name+' '+self.dendriteDict[dendrite].name
+            if len(sheet_name) > 10:
+                sheet_name = self.dendriteDict[dendrite].series.name[0:5]+' '+self.dendriteDict[dendrite].name
             self.create_sheet(title=sheet_name)
             sheet = self.get_sheet_by_name(sheet_name)
             

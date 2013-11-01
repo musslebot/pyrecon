@@ -12,7 +12,11 @@ MAJOR RELEASE
 ***********************************************************************
 ** Visit  https://github.com/wtrdrnkr/pyrecon  for additional detail **
 ***********************************************************************
-
+		-------------
+		Version 1.2.1
+		-------------
+		*tools.excelTool will now name sheets based on the 5 first characters of the .ser file name (openpyxl module doesnt allow creation of pages with a name >~30 characters)
+		
 	+++++++++++++
 	Version 1.2.0
 	+++++++++++++
