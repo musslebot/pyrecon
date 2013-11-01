@@ -1,4 +1,4 @@
-Changes are structured as follows (in reverse-chronological order):
+Changes are structured (in reverse-chronological order) as follows:
 =============
 MAJOR RELEASE
 =============
@@ -13,20 +13,26 @@ MAJOR RELEASE
 ** Visit  https://github.com/wtrdrnkr/pyrecon  for additional detail **
 ***********************************************************************
 
-
 	+++++++++++++
 	Version 1.2.0
 	+++++++++++++
-	*classes.Series.getDendriteDict() was not correctly building dendrite dictionaries
-		- removed $ cap from d## matching -> makes a sheet for d## even if contains no protrusions
-		- added filters to classes.Series.getObjectLists()
-		- also added output to show ignored objects
-	*Ignore 'copy' traces added to excelTool(tools).writeWorkbook()
-	*Removed excelTool(tools).excelWorkbook.getProtrusionSpacingCount(); redundant
-	*Added GNU General Public License to LICENSE.txt
-	*Indented changes in CHANGES.txt to reflect major/minor/micro hierarchy, replaced * with +
+	*tools.classes.Series.getObjectLists()
+		- removed $ cap from d## matching -> makes a sheet for d## even if it contains no protrusions
+	*tools.classes.Series.getObjectHierarchy()
+		- added output to show ignored objects
+	*tools.excelTool.getDendriteDict()
+		- implemented a filter to filter regex in self.filters
+		- added regex to filter objects containing a space+word after the conventional name
+			- (e.g. 'd17sp09 copy' and 'd19rh37 total' are filtered)
+	*tools.excelTool.getProtrusionSpacing()
+		- NEEDS A BETTER METHOD FOR IDENTIFYING PROTRUSION CHILDREN, soon
+		- Removed tools.excelTool.excelWorkbook.getProtrusionSpacingCount(); redundant
+	*LICENSE.txt
+		- Added GNU General Public License
+	*CHANGES.txt 
+		- Indentation to reflect major/minor/micro hierarchy
+		- Replaced * with +
 	
-
 		-------------
 		Version 1.1.2
 		-------------

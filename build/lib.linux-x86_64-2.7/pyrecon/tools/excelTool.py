@@ -55,11 +55,49 @@ class excelWorkbook(openpyxl.Workbook):
         openpyxl.Workbook.__init__(self)
         
         self.dendriteFilter = []
-        self.traceTypeFilter = ['d[0-9][0-9]c[0-9][0-9]', '.{0,}copy.{0,}'] # traces to ignore in series.getObjectLists()
+        self.filter = ['d[0-9][0-9]c[0-9][0-9]',
+                       '.{0,} .{0,}'] # traces to ignore in self.getDendriteDict()
         self.dendriteDict = None
         
     def getDendriteDict(self, series): #*** added filter
-        self.dendriteDict = series.getObjectHierarchy(*series.getObjectLists(filters=self.traceTypeFilter))
+        def shouldBeFiltered(child):
+            for filt in self.filter:
+                if re.compile(filt).match(child.name) != None:
+                    return True
+            return False
+            
+        # Need to filter out objects in self.filter, make copy of dict 1st
+        preDendriteDict = series.getObjectHierarchy(*series.getObjectLists())
+        dendrites = [preDendriteDict[dendrite] for dendrite in preDendriteDict]
+        
+        # Make new dict for after filter
+        dendriteDict = {}
+        newDendrites = {}
+        for dendrite in dendrites:
+            prots = [prot for prot in dendrite.children] # list of protrusion rObjects
+            newProts = []
+            for prot in prots:
+                children = [child for child in prot] # list of children rObjects
+                
+                # check each child.name, if matches a filter -> remove for children list
+                newChildren = []
+                for child in children:
+                    if shouldBeFiltered(child): continue
+                    else: newChildren.append(child)
+                    
+                prot.children = newChildren
+                newProts.append(prot)
+            dendrite.children = newProts
+            newDendrites[dendrite.name] = dendrite
+
+        for dendrite in newDendrites:
+            prots = [prot for prot in newDendrites[dendrite].children]
+            for prot in prots:
+                children = [child for child in prot.children]
+                print [child.name for child in children]
+                
+        self.dendriteDict = newDendrites
+                
 
     def writeProtrusions(self, dendrite_rObj, sheet):
         '''Writes data and headers for protrusions with correct with spacing'''
@@ -110,7 +148,7 @@ class excelWorkbook(openpyxl.Workbook):
             # Write traces
             column = 8
             # Each trace type
-            types = [tType for tType in types if tType not in self.traceTypeFilter]
+            types = [tType for tType in types if tType not in self.filter]
             for tType in types:
                 # Column headers
                 sheet.cell(row=0, column=column).value = 'Object Name'
