@@ -558,7 +558,7 @@ class Section:
         # Private
         self._attribs = ['index','thickness','alignLocked'] # List of all attributes, used for creating an attribute dictionary for output (see output(self))
         
-        self.checkMultImgs()
+        self.checkMultImgs() # Deletes all but the first image in self.imgs
         
     # LENGTH
     def __len__(self):
