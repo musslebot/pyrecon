@@ -15,7 +15,9 @@ MAJOR RELEASE
 		-------------
 		Version 1.2.2
 		-------------
+		*Removed pause in toosl.excelTool.getDendriteDict()
 		*Removed some extra verbose code
+		*Added some comments
 		
 		-------------
 		Version 1.2.1

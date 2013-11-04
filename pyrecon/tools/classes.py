@@ -26,13 +26,15 @@ def loadSeriesXML(path_to_series):
     print('\tSeries: '+series.name)
     return series
 
-def rObjectsFromSeries(series):
+def rObjectsFromSeries(series): #===
     allConts = []
     for section in series.sections:
         for contour in section.contours:
             allConts.append(contour.name)
     allConts = set(allConts)
 
+    #=== curation tool; check for conflicting rObjs
+    #=== (e.g. one may exist on sections 1-5 and 90-101 but shouldn't be the same name)
     rObjects = []
     for contName in allConts:
         rObjects.append( rObject(name=contName,series=series) )
@@ -92,7 +94,8 @@ class Contour:
         For open traces: return 0 if # pts differs or distance between parallel pts > threshold
                          return 1 otherwise'''
         # Check bounding box
-        if not self.box().intersects( other.box() ) and not self.box().touches( other.box() ):
+        if (not self.box().intersects(other.box()) and
+            not self.box().touches(other.box()) ):
             return 0
         # Check if both same class of contours
         if self.closed != other.closed:
@@ -387,13 +390,15 @@ class Image:
         if other == None:
             return False
 #         return self.output() == other.output()
-        return self.transform == other.transform or self.src == other.src
+        return (self.transform == other.transform or
+                self.src == other.src)
     def __ne__(self, other):
         '''Allows use of != between multiple objects'''
         if other == None:
             return True
 #         return self.output() != other.output()
-        return self.transform != other.transform or self.src != other.src
+        return (self.transform != other.transform or
+                self.src != other.src)
 # Accessors
     def output(self):
         '''Returns a dictionary of attributes'''
@@ -769,18 +774,20 @@ class Series:
         return 'Name: %s\nTag: %s' %(self.name,self.tag)
     def __eq__(self, other):
         '''Allows use of == between multiple objects'''
-        return self.output()[0] == other.output()[0] and self.output()[1] == other.output()[1]
+        return (self.output()[0] == other.output()[0] and
+                self.output()[1] == other.output()[1])
     def __ne__(self, other):
         '''Allows use of != between multiple objects'''
-        return self.output()[0] != other.output()[0] and self.output()[1] != other.output()[1]
+        return (self.output()[0] != other.output()[0] and
+                self.output()[1] != other.output()[1])
 # Accessors
     def getObjectHierarchy(self, dendrites, protrusions, traces, others):
         '''Returns a single hierarchical dictionary with data for each object not in others list'''
         
-        # Print out objects in 'others' list; these are not included in the resulting hierarcy dict
+        # Print out objects in 'others' list; these are not included in the resulting hierarchy dict
         print('The following objects were not classified and thus ignored:')
         for thing in others:
-            print('\t'+str(thing))
+            print('IGNORED: '+str(thing))
         
         # Combine lists (except 'others') into a hierarchical dictionary
         hierarchy = {}
@@ -795,14 +802,17 @@ class Series:
                 protObj = rObject(name=prot, series=self, tag='protrusion')
                 
                 # 2) Load traces into protrusion rObjs
-                traceList = [trace for trace in traces if prot[-2:len(prot)] in trace[3:] and prot[0:3] in trace[0:3]]
+                traceList = [trace for trace in traces if prot[-2:len(prot)] in trace[3:] and
+                             prot[0:3] in trace[0:3]]
                 for trace in traceList:
                     # 1) Create rObject for traces
                     traceObj = rObject(name=trace, series=self, tag='trace')
                     
                     # Add children to parent rObjs
                     protObj.children.append(traceObj)
+                # Add protrusion rObjs to dendrite rObj as child
                 denObj.children.append(protObj)
+            # Map dendrite name to dendrite rObj in dict
             hierarchy[dendrite] = denObj
             
         return hierarchy
@@ -834,7 +844,7 @@ class Series:
                 if (trace_expression.match(contour.name) != None and
                     protrusion_expression.match(contour.name) == None):
                     traces.append(contour.name)
-                # Everything else
+                # Everything else (other)
                 if (dendrite_expression.match(contour.name) == None and
                     protrusion_expression.match(contour.name) == None and
                     trace_expression.match(contour.name) == None):
