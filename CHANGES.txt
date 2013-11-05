@@ -12,6 +12,16 @@ MAJOR RELEASE
 ***********************************************************************
 ** Visit  https://github.com/wtrdrnkr/pyrecon  for additional detail **
 ***********************************************************************
+	
+	+++++++++++++
+	Version 1.3.0 - IN PROGRESS
+	+++++++++++++
+	*tools.classes:
+		- Added Protrusion class and Trace class
+		- Removed rObject class (and associated functions)
+	*tools.excelTool:
+		- Implemented more robust excelTool
+			
 		-------------
 		Version 1.2.2
 		-------------

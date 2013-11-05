@@ -34,7 +34,8 @@ def getTraceTypes(dendrite_rObj):
             trace_types.append(trace.type)
     return sorted(list(set(trace_types)))
 
-def getProtrusionSpacing( dendrite_rObject ): #=== subchildren finding sucks, fix this (cant just go off of last character)
+def getProtrusionSpacing( dendrite_rObject ):
+    #=== subchildren finding sucks, fix this (cant just go off of last character)
     '''Returns a dictionary of protrusion keys and values representing how much extra spacing is needed in the sheet'''
     prot_spacing = {}
     for protrusion in dendrite_rObject.children:
@@ -90,7 +91,7 @@ class excelWorkbook(openpyxl.Workbook):
             dendriteDict[dendrite.name] = dendrite
                 
         self.dendriteDict = dendriteDict
-
+    
     def writeProtrusions(self, dendrite_rObj, sheet):
         '''Writes data and headers for protrusions with correct with spacing'''
         prot_spacing = getProtrusionSpacing(self.dendriteDict[dendrite_rObj.name])
@@ -125,6 +126,7 @@ class excelWorkbook(openpyxl.Workbook):
         for dendrite in self.dendriteDict:
             # Create sheet
             sheet_name = self.dendriteDict[dendrite].series.name+' '+self.dendriteDict[dendrite].name
+            # Rename the sheet if series name > 10 characters long
             if len(sheet_name) > 10:
                 sheet_name = self.dendriteDict[dendrite].series.name[0:5]+' '+self.dendriteDict[dendrite].name
             self.create_sheet(title=sheet_name)

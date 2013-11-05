@@ -26,18 +26,6 @@ def loadSeriesXML(path_to_series):
     print('\tSeries: '+series.name)
     return series
 
-def rObjectsFromSeries(series):
-    allConts = []
-    for section in series.sections:
-        for contour in section.contours:
-            allConts.append(contour.name)
-    allConts = set(allConts)
-
-    rObjects = []
-    for contName in allConts:
-        rObjects.append( rObject(name=contName,series=series) )
-    return rObjects
-
 class Contour:
 # Python Functions
     # INITIALIZE
@@ -92,7 +80,8 @@ class Contour:
         For open traces: return 0 if # pts differs or distance between parallel pts > threshold
                          return 1 otherwise'''
         # Check bounding box
-        if not self.box().intersects( other.box() ) and not self.box().touches( other.box() ):
+        if (not self.box().intersects(other.box()) and
+            not self.box().touches(other.box()) ):
             return 0
         # Check if both same class of contours
         if self.closed != other.closed:
@@ -387,13 +376,15 @@ class Image:
         if other == None:
             return False
 #         return self.output() == other.output()
-        return self.transform == other.transform or self.src == other.src
+        return (self.transform == other.transform or
+                self.src == other.src)
     def __ne__(self, other):
         '''Allows use of != between multiple objects'''
         if other == None:
             return True
 #         return self.output() != other.output()
-        return self.transform != other.transform or self.src != other.src
+        return (self.transform != other.transform or
+                self.src != other.src)
 # Accessors
     def output(self):
         '''Returns a dictionary of attributes'''
@@ -487,54 +478,51 @@ class Image:
             return None
         return float( node.get('brightness') )
 
-class rObject:
-    '''rObject contain information for reconstruct objects that requires computation over multiple sections'''
-    def __init__(self, name=None, series=None, tag=None):
-        self.name = name
-        self.series = series
+class Protrusion:
+    def __init__(self, name=None, series=None, tag='Protrusion'):
+        self.name = self.chkName(name)
+        self.series = self.chkSeries(series)
         self.tag = tag
-        self.type = self.popTraceType()
-        self.start, self.end, self.count = self.popStartendCount()
-        self.volume = self.popVolume()
-        self.totalvolume = self.popTotalVolume()
-        self.surfacearea = self.popSurfaceArea()
-        self.flatarea =  self.popFlatArea()
-        self.children = [] # actual children rObjects
-    def __getitem__(self, index):
-        if type(index) == str:
-            return self.children[operator.indexOf(self.childrenNames(),index)]
-        elif type(index) == int:
-            return self.children[index]
+        
+        self.protrusion = name[-2:] # Protrusion number
+        self.dendrite = name[0:3] # Parent dendrite number
+        
+        self.children = {} # Dictionary with trace types as keys and a list of children names as values
+        
+        self.findChildren()
+        
+    def findChildren(self):
+        '''Finds children of this protrusion and puts in self.children dict under trace type'''
+        child_exp = re.compile(self.dendrite+'.{0,}'+self.protrusion)
+        for child in self.series.getObjectLists()[2]:
+            if child_exp.match(child) != None:
+                try: # Try to add to existing entry in dictionary
+                    self.children[str(child[3:child.rfind(self.protrusion)])].append(child)
+                except: # Make entry and then add to it
+                    self.children[str(child[3:child.rfind(self.protrusion)])] = []
+                    self.children[str(child[3:child.rfind(self.protrusion)])].append(child)
+    
+    def getSpacing(self):
+        '''Returns number of spaces to add after excel sheet'''
+        return max([len(self.children[child]) for child in self.children])-1
+        
+    def chkSeries(self, series):
+        '''Checks if series is str, if so: try to load as series object'''
+        if type(series) == str:
+            try:
+                return loadSeries(series)
+            except:
+                print('Could not create series from string: '+series)
         else:
-            return None
-    def __str__(self):
-        return 'rObject, from series '+self.series.name+', with the name '+str(self.name)
-    def childrenNames(self):
-        return [child.name for child in self.children]
-    def returnAtts(self):
-        return self.name, self.start, self.end, self.count, self.volume, self.surfacearea, self.flatarea
-    def returnChildren(self):
-        return self.children
-    def popTraceType(self):
-        '''Returns the base trace type (e.g. 'd[0-9][0-9]cfa[0-9][0-9]' to be used for regexp)'''
-        trace_expression = ''
-        for character in self.name:
-            if character.isdigit():
-                character = '[0-9]'
-            trace_expression+=character
-        if trace_expression[-1].isalpha():
-            trace_expression = trace_expression[:-1]
-        return trace_expression
-    def popStartendCount(self):
-        return self.series.getStartEndCount( self.name )
-    def popVolume(self):
-        return self.series.getVolume( self.name )
-    def popTotalVolume(self):
-        return self.series.getTotalVolume( self.name )
-    def popSurfaceArea(self):
-        return self.series.getSurfaceArea( self.name ) 
-    def popFlatArea(self):
-        return self.series.getFlatArea( self.name )
+            return series
+        
+    def chkName(self, name):
+        '''Checks if name is proper protrusion name'''
+        prot_exp = re.compile('d[0-9]{2}p[0-9]{2}')
+        if prot_exp.match(name) != None:
+            return name
+        else:
+            print('Invalid protrusion name: '+name)
 
 class Section:
 # Python Functions
@@ -553,7 +541,7 @@ class Section:
         # Private
         self._attribs = ['index','thickness','alignLocked'] # List of all attributes, used for creating an attribute dictionary for output (see output(self))
         
-        self.checkMultImgs()
+        self.checkMultImgs() # Deletes all but the first image in self.imgs
         
     # LENGTH
     def __len__(self):
@@ -769,54 +757,24 @@ class Series:
         return 'Name: %s\nTag: %s' %(self.name,self.tag)
     def __eq__(self, other):
         '''Allows use of == between multiple objects'''
-        return self.output()[0] == other.output()[0] and self.output()[1] == other.output()[1]
+        return (self.output()[0] == other.output()[0] and
+                self.output()[1] == other.output()[1])
     def __ne__(self, other):
         '''Allows use of != between multiple objects'''
-        return self.output()[0] != other.output()[0] and self.output()[1] != other.output()[1]
+        return (self.output()[0] != other.output()[0] and
+                self.output()[1] != other.output()[1])
 # Accessors
-    def getObjectHierarchy(self, dendrites, protrusions, traces, others):
-        '''Returns a single hierarchical dictionary with data for each object not in others list'''
-        
-        # Print out objects in 'others' list; these are not included in the resulting hierarcy dict
-        print('The following objects were not classified and thus ignored:')
-        for thing in others:
-            print('\t'+str(thing))
-        
-        # Combine lists (except 'others') into a hierarchical dictionary
-        hierarchy = {}
-        for dendrite in dendrites:
-            # 1) Create rObject for dendrite
-            denObj = rObject(name=dendrite, series=self, tag='dendrite')
-
-            # 2) Load protrusions into dendrite rObjs
-            protList = [prot for prot in protrusions if prot[0:3] == dendrite]
-            for prot in protList:
-                # 1) Create rObject for protrusions
-                protObj = rObject(name=prot, series=self, tag='protrusion')
-                
-                # 2) Load traces into protrusion rObjs
-                traceList = [trace for trace in traces if prot[-2:len(prot)] in trace[3:] and prot[0:3] in trace[0:3]]
-                for trace in traceList:
-                    # 1) Create rObject for traces
-                    traceObj = rObject(name=trace, series=self, tag='trace')
-                    
-                    # Add children to parent rObjs
-                    protObj.children.append(traceObj)
-                denObj.children.append(protObj)
-            hierarchy[dendrite] = denObj
-            
-        return hierarchy
     def getObjectLists(self):
-        '''Returns lists of dendrite names, protrusion names, trace names, and a list of other objects in series'''
+        '''Returns sorted lists of dendrite names, protrusion names, trace names, and a list of other objects in series'''
         dendrite_expression = 'd[0-9]{2}' # represents base dendrite name (d##)
         protrusion_expression = 'd[0-9]{2}p[0-9]{2}$' # represents base protrusion name (d##p##)
-        trace_expression = 'd[0-9]{2}[a-z]{1,6}' # represents trace name (d##
+        trace_expression = 'd[0-9]{2}.{1,}[0-9]{2}' # represents trace name (d##<tracetype>##)
         
         # Convert expressions to usable regular expressions
         dendrite_expression = re.compile(dendrite_expression)
         protrusion_expression = re.compile(protrusion_expression, re.I)
         trace_expression = re.compile(trace_expression, re.I)
-        
+
         # Create lists for names of dendrites, protrusions, traces, and other objects
         dendrites = []
         protrusions = []
@@ -834,12 +792,17 @@ class Series:
                 if (trace_expression.match(contour.name) != None and
                     protrusion_expression.match(contour.name) == None):
                     traces.append(contour.name)
-                # Everything else
+                    # Make sure a d##p## exists for this trace
+                    thisProt = contour.name[0:3]+'p'+contour.name[4:6]
+                    if (protrusion_expression.match(thisProt) and
+                        thisProt not in protrusions):
+                        protrusions.append(thisProt)
+                # Everything else (other)
                 if (dendrite_expression.match(contour.name) == None and
                     protrusion_expression.match(contour.name) == None and
                     trace_expression.match(contour.name) == None):
                     others.append(contour.name)
-        return list(set(dendrites)), list(set(protrusions)), list(set(traces)), list(set(others))
+        return sorted(list(set(dendrites))), sorted(list(set(protrusions))), sorted(list(set(traces))), sorted(list(set(others)))
     def output(self):
         '''Returns a dictionary of attributes and a list of contours for building .ser xml file'''
         attributes = {}

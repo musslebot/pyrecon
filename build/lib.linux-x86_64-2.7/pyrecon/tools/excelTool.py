@@ -34,7 +34,8 @@ def getTraceTypes(dendrite_rObj):
             trace_types.append(trace.type)
     return sorted(list(set(trace_types)))
 
-def getProtrusionSpacing( dendrite_rObject ): #*** subchildren finding sucks, fix this (cant just go off of last character)
+def getProtrusionSpacing( dendrite_rObject ):
+    #=== subchildren finding sucks, fix this (cant just go off of last character)
     '''Returns a dictionary of protrusion keys and values representing how much extra spacing is needed in the sheet'''
     prot_spacing = {}
     for protrusion in dendrite_rObject.children:
@@ -43,10 +44,6 @@ def getProtrusionSpacing( dendrite_rObject ): #*** subchildren finding sucks, fi
             # If child has subchildren, adjust spacing
             if child.name[-1].isalpha() and ord(child.name[-1]) - 97 > spacing:
                 spacing = ord(child.name[-1])-97
-                if child.name[0:3] in ['d17', 'd23','d24']: #***
-                    print child.name
-                    print spacing
-                    pause = raw_input('pause2')
         prot_spacing[protrusion.name] = spacing
     return prot_spacing
 
@@ -55,11 +52,13 @@ class excelWorkbook(openpyxl.Workbook):
         openpyxl.Workbook.__init__(self)
         
         self.dendriteFilter = []
+        # traces to ignore in self.getDendriteDict()
         self.filter = ['d[0-9][0-9]c[0-9][0-9]',
-                       '.{0,} .{0,}'] # traces to ignore in self.getDendriteDict()
+                       '.{0,} .{0,}']
         self.dendriteDict = None
         
-    def getDendriteDict(self, series): #*** added filter
+    def getDendriteDict(self, series):
+       
         def shouldBeFiltered(child):
             for filt in self.filter:
                 if re.compile(filt).match(child.name) != None:
@@ -72,7 +71,6 @@ class excelWorkbook(openpyxl.Workbook):
         
         # Make new dict for after filter
         dendriteDict = {}
-        newDendrites = {}
         for dendrite in dendrites:
             prots = [prot for prot in dendrite.children] # list of protrusion rObjects
             newProts = []
@@ -82,23 +80,18 @@ class excelWorkbook(openpyxl.Workbook):
                 # check each child.name, if matches a filter -> remove for children list
                 newChildren = []
                 for child in children:
-                    if shouldBeFiltered(child): continue
-                    else: newChildren.append(child)
+                    if shouldBeFiltered(child):
+                        continue
+                    else:
+                        newChildren.append(child)
                     
                 prot.children = newChildren
                 newProts.append(prot)
             dendrite.children = newProts
-            newDendrites[dendrite.name] = dendrite
-
-        for dendrite in newDendrites:
-            prots = [prot for prot in newDendrites[dendrite].children]
-            for prot in prots:
-                children = [child for child in prot.children]
-                print [child.name for child in children]
+            dendriteDict[dendrite.name] = dendrite
                 
-        self.dendriteDict = newDendrites
-                
-
+        self.dendriteDict = dendriteDict
+    
     def writeProtrusions(self, dendrite_rObj, sheet):
         '''Writes data and headers for protrusions with correct with spacing'''
         prot_spacing = getProtrusionSpacing(self.dendriteDict[dendrite_rObj.name])
@@ -133,6 +126,9 @@ class excelWorkbook(openpyxl.Workbook):
         for dendrite in self.dendriteDict:
             # Create sheet
             sheet_name = self.dendriteDict[dendrite].series.name+' '+self.dendriteDict[dendrite].name
+            # Rename the sheet if series name > 10 characters long
+            if len(sheet_name) > 10:
+                sheet_name = self.dendriteDict[dendrite].series.name[0:5]+' '+self.dendriteDict[dendrite].name
             self.create_sheet(title=sheet_name)
             sheet = self.get_sheet_by_name(sheet_name)
             
