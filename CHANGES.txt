@@ -20,6 +20,8 @@ MAJOR RELEASE
 		- Reimplemented a new rObject class (specific data depending on trace type)
 	*tools.excelTool:
 		- Implemented more robust excelTool
+	*tools.reScale:
+		- getSeries -> loadSeries
 			
 		-------------
 		Version 1.2.2

@@ -12,7 +12,6 @@ pyrecon/__init__.py
 pyrecon/tools/__init__.py
 pyrecon/tools/classes.py
 pyrecon/tools/excelTool.py
-pyrecon/tools/excelToolDEV.py
 pyrecon/tools/findCalFactor.py
 pyrecon/tools/mergeTool.py
 pyrecon/tools/reScale.py

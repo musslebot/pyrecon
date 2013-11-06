@@ -14,10 +14,10 @@ if outpath[len(outpath)-1] != '/':
     outpath += '/'
     
 import pyrecon.tools.mergeTool as rmt
-from pyrecon.tools.classes import Transform
+from pyrecon.tools.classes import *
    
 def reScale(ser, newMag, outpath):
-    ser = rmt.getSeries(ser)
+    ser = loadSeries(ser)
     ser.zeroIdentity() # Non-image contour transform -> unity transform
     
     for section in ser.sections:# Set mag field and rescale

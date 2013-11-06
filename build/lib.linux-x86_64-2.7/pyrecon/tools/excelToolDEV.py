@@ -3,8 +3,6 @@ from pyrecon.tools.classes import *
 import argparse
 from operator import attrgetter
 from collections import OrderedDict
-path_to_series = '/home/michaelm/Documents/Test Series/BBCHZ/BBCHZ.ser'
-save_path = '/home/michaelm/Documents/Test Series/'
 
 def main(path_to_series, save_path):
     series = loadSeries(path_to_series)
@@ -47,7 +45,7 @@ class Workbook(openpyxl.Workbook):
 
         # Create worksheet for each dendrite
         for dendrite in self.dendrites:
-            row = 0
+            row = 1
             column = 0
             self.create_sheet(title=dendrite.name)
             sheet = self.get_sheet_by_name(dendrite.name)
@@ -61,6 +59,7 @@ class Workbook(openpyxl.Workbook):
                     column+=1
                     # Write prot data
                     for data_item in protrusion.data:
+                        sheet.cell(row=0, column=column).value = str(data_item)
                         sheet.cell(row=row, column=column).value = protrusion.data[data_item]
                         column+=1
                     row += 1+protrusion.getSpacing()                
@@ -80,26 +79,41 @@ class Workbook(openpyxl.Workbook):
             childList = sorted(list(set(childList)))
            
             # Go through childList
-            row = 0
+            row = 1
             column = 5
             for child in childList:
                 # find prots with this child
                 for prot in protList:
                     if child in prot.children:
+                        
                         # update row to correct prot
                         for row in range(sheet.get_highest_row()):
                             if sheet.cell(row=row, column=0).value == prot.name:
                                 row = row
-                                break 
+                                break
+                            
+                        # Add data for each subChild 
+                        subColumn = column
                         for subChild in prot.children[child]:
+                            subColumn = column
                             subChildObj = rObject(name=subChild, series=self.series)
+                            sheet.cell(row=row, column=subColumn).value = subChildObj.name
+                            subColumn = column+1
                             for data_item in subChildObj.data:
-                                sheet.cell(row=row, column=column).value = subChildObj.name
-                                column+=1
-                                sheet.cell(row=row, column=column).value = subChildObj.data[data_item]
-          
+                                sheet.cell(row=0, column=subColumn).value = str(data_item)
+                                sheet.cell(row=row, column=subColumn).value = subChildObj.data[data_item]
+                                subColumn+=1
+                            row+=1
+                column=subColumn+1
         # Save workbook        
         self.save(save_path+self.series.name+'.xlsx')
                         
-                
-main(path_to_series,save_path)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Creates an excel workbook containing protrusions and data, YAY!')
+    parser.add_argument('series', nargs=1, type=str, help='Path to the series/sections that needs to be re-scaled')
+    parser.add_argument('savepath', nargs=1, help='Directory where the excel workbook will be saved')
+    args = vars(parser.parse_args())
+    # Assign argparse things to their variables
+    path_to_series = str(args['series'][0])
+    save_path = str(args['savepath'][0])
+    main(path_to_series, save_path)
