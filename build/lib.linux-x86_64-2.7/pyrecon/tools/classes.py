@@ -3,6 +3,7 @@ import numpy as np
 from shapely.geometry import Polygon, LineString, box
 from lxml import etree as ET
 from skimage import transform as tf
+from collections import OrderedDict
 
 def loadSeries(path_to_series):
     '''Create a series object, fully populated.'''
@@ -478,33 +479,74 @@ class Image:
             return None
         return float( node.get('brightness') )
 
-class Protrusion:
-    def __init__(self, name=None, series=None, tag='Protrusion'):
-        self.name = self.chkName(name)
+class rObject:
+    def __init__(self, name=None, series=None):
+        self.name = name
         self.series = self.chkSeries(series)
-        self.tag = tag
         
         self.protrusion = name[-2:] # Protrusion number
         self.dendrite = name[0:3] # Parent dendrite number
         
-        self.children = {} # Dictionary with trace types as keys and a list of children names as values
+        self.rType = self.getrType()
+        self.data = {} # updated in makeSpecific
+        self.start = self.series.getStartEndCount(self.name)[0]
+        self.end = self.series.getStartEndCount(self.name)[1]
+        self.count = self.series.getStartEndCount(self.name)[2]
         
-        self.findChildren()
+        self.makeSpecific()
+        
+    def makeSpecific(self):
+        '''Creates unique data for this rObject (depends on type)'''
+        rType = self.rType.lower()
+        if rType == 'p': # Protrusion
+            importantData = ['start', 'end', 'count']
+            self.children = self.findChildren()
+        elif rType == 'c': # C
+            importantData = ['start', 'end', 'count']
+        elif 'cfa' in rType: # CFA
+            importantData = ['start', 'end', 'count', 'surface area', 'flat area']
+        elif 'endo' in rType: # Endosome
+            importantData = ['start', 'end', 'count']
+        elif rType[0:3] == 'ser': # SER
+            importantData = ['start', 'end', 'count']
+        elif rType[0:2] == 'sp': # Spine
+            importantData = ['start', 'end', 'count', 'surface area', 'flat area']
+        elif rType[0:2] == 'ax': # Axon
+            importantData = ['start', 'end', 'count']
+        else:
+            importantData = ['start', 'end', 'count']
+        self.getData( importantData )
+    
+    def getData(self, list_of_desired_data=None):
+        data = OrderedDict()
+        for item in list_of_desired_data:
+            data[item] = self.series.getData(self.name, item)
+        self.data = data
+        self.numColumns = len(list_of_desired_data)
+             
+    def getrType(self):
+        '''Returns type of character'''
+        return str(self.name[3:self.name.rfind(self.protrusion)])
         
     def findChildren(self):
         '''Finds children of this protrusion and puts in self.children dict under trace type'''
+        children = {}
         child_exp = re.compile(self.dendrite+'.{0,}'+self.protrusion)
         for child in self.series.getObjectLists()[2]:
             if child_exp.match(child) != None:
                 try: # Try to add to existing entry in dictionary
-                    self.children[str(child[3:child.rfind(self.protrusion)])].append(child)
+                    children[str(child[3:child.rfind(self.protrusion)])].append(child)
                 except: # Make entry and then add to it
-                    self.children[str(child[3:child.rfind(self.protrusion)])] = []
-                    self.children[str(child[3:child.rfind(self.protrusion)])].append(child)
+                    children[str(child[3:child.rfind(self.protrusion)])] = []
+                    children[str(child[3:child.rfind(self.protrusion)])].append(child)
+        return children
     
     def getSpacing(self):
         '''Returns number of spaces to add after excel sheet'''
-        return max([len(self.children[child]) for child in self.children])-1
+        try:
+            return max([len(self.children[child]) for child in self.children])-1
+        except: #===
+            return 0
         
     def chkSeries(self, series):
         '''Checks if series is str, if so: try to load as series object'''
@@ -515,14 +557,6 @@ class Protrusion:
                 print('Could not create series from string: '+series)
         else:
             return series
-        
-    def chkName(self, name):
-        '''Checks if name is proper protrusion name'''
-        prot_exp = re.compile('d[0-9]{2}p[0-9]{2}')
-        if prot_exp.match(name) != None:
-            return name
-        else:
-            print('Invalid protrusion name: '+name)
 
 class Section:
 # Python Functions
@@ -764,6 +798,22 @@ class Series:
         return (self.output()[0] != other.output()[0] and
                 self.output()[1] != other.output()[1])
 # Accessors
+    def getData(self, object_name, data_string):
+        string = str(data_string).lower()
+        if string == 'volume':
+            return self.getVolume(object_name)
+        elif string == 'total volume':
+            return self.getTotalVolume(object_name)
+        elif string == 'surface area':
+            return self.getSurfaceArea(object_name)
+        elif string == 'flat area':
+            return self.getFlatArea(object_name)
+        elif string == 'start':
+            return self.getStartEndCount(object_name)[0]
+        elif string == 'end':
+            return self.getStartEndCount(object_name)[1]
+        elif string == 'count':    
+            return self.getStartEndCount(object_name)[2]
     def getObjectLists(self):
         '''Returns sorted lists of dendrite names, protrusion names, trace names, and a list of other objects in series'''
         dendrite_expression = 'd[0-9]{2}' # represents base dendrite name (d##)
