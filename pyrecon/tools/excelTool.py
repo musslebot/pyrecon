@@ -81,7 +81,7 @@ class Workbook(openpyxl.Workbook):
             for prot in protList:
                 for child in prot.children:
                     childList.append(child)
-            childList = sorted(list(set(childList)))
+            childList = sorted(list(set(childList))) # Unique child names
            
             # Go through childList
             row = 1
@@ -91,7 +91,7 @@ class Workbook(openpyxl.Workbook):
                 for prot in protList:
                     if child in prot.children:
                         
-                        # update row to correct prot
+                        # update row to correct protrusion row
                         for row in range(sheet.get_highest_row()):
                             if sheet.cell(row=row, column=0).value == prot.name:
                                 row = row
