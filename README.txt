@@ -16,16 +16,14 @@ INSTALLATION (Linux and Windows)
 -------------
 PyRECONSTRUCT can be installed in multiple ways:
 	
-	The easiest being through pip*:
-		pip install PyRECONSTRUCT
-	
-	Alternatively (from parent folder):
+	From parent folder:
 		python setup.py install
 	
-	*this method can have problems. Specifically, prerequisite packages may not install correctly
-	on their own and will interrupt the PyRECONSTRUCT installation
+	Through PIP*:
+		pip install PyRECONSTRUCT
+	*this method commonly has problems. Prerequisite packages may not install correctly on their own and will interrupt the PyRECONSTRUCT installation
 
-These dependencies are required to run on a linux system (currently working to get functionality on Windows):
+These dependencies are required to run on most linux systems:
 	python-dev
 	python-setuptools
 	libgeos-dev
