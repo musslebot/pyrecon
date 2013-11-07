@@ -509,10 +509,8 @@ class rObject:
             importantData = ['start', 'end', 'count']
         elif rType[0:3] == 'ser': # SER
             importantData = ['start', 'end', 'count']
-        elif rType[0:3] == 'sph':
-            importantData = ['start', 'end', 'count', 'surface area', 'flat area', 'volume']
         elif rType[0:2] == 'sp': # Spine
-            importantData = ['start', 'end', 'count', 'surface area', 'flat area']
+            importantData = ['start', 'end', 'count', 'surface area', 'flat area', 'volume']
         elif rType[0:2] == 'ax': # Axon
             importantData = ['start', 'end', 'count']
         else:
