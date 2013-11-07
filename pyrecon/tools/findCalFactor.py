@@ -1,5 +1,5 @@
 import sys
-import pyrecon.tools.mergeTool as rmt
+from pyrecon.tools.classes import *
 from skimage import transform as tf
 import numpy as np
 
@@ -8,7 +8,7 @@ if len(sys.argv) > 1:
 
 def findCalFactor(path_to_series):
     '''Returns the scale factor that was applied to the transformation of a series'''
-    ser = rmt.getSeries(path_to_series)
+    ser = loadSeries(path_to_series)
     # create list of all image transforms in a series
     imgtforms = []
     for section in ser.sections:
