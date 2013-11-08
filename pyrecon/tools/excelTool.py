@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# To change what data is shown in the excelWorkbook for each trace type, edit the function: tools.classes.rObject.makeSpecific()
 import sys, re, openpyxl
 from pyrecon.tools.classes import *
 import argparse
