@@ -1,5 +1,5 @@
 import sys
-from pyrecon.tools.classes import *
+from pyrecon.tools.classes import loadSeries
 from skimage import transform as tf
 import numpy as np
 

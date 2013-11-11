@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from pyrecon.tools.classes import loadSeries, Transform
 import argparse
 parser = argparse.ArgumentParser(description='Rescales a <series> to a new <magnitude>')
 parser.add_argument('series', nargs=1, type=str, help='Path to the series/sections that needs to be re-scaled')
@@ -13,9 +14,6 @@ outpath = str(args['outpath'][0])
 if outpath[len(outpath)-1] != '/':
     outpath += '/'
     
-import pyrecon.tools.mergeTool as rmt
-from pyrecon.tools.classes import *
-   
 def reScale(ser, newMag, outpath):
     ser = loadSeries(ser)
     ser.zeroIdentity() # Non-image contour transform -> unity transform

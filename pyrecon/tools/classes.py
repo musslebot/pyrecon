@@ -1,4 +1,4 @@
-import os, re, math, operator
+import os, re, math
 import numpy as np
 from shapely.geometry import Polygon, LineString, box
 from lxml import etree as ET

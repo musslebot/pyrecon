@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # To change what data is shown in the excelWorkbook for each trace type, edit the function: tools.classes.rObject.makeSpecific()
-import sys, re, openpyxl
-from pyrecon.tools.classes import *
+import openpyxl
+from pyrecon.tools.classes import loadSeries, rObject
 import argparse
 from operator import attrgetter
-from collections import OrderedDict
 
 def main(path_to_series, save_path):
     if save_path[-1] != '/':

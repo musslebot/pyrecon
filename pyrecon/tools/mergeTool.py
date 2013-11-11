@@ -1,8 +1,7 @@
 '''Merge two series together'''
 import sys, os, re
-from pyrecon.tools.classes import *
+from pyrecon.tools.classes import loadSeries, Series, Section
 from lxml import etree as ET
-from skimage import transform as tf
  
 if len(sys.argv) >= 3:
     ser = os.path.basename( sys.argv[1] ) # Name of series
