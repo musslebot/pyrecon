@@ -485,8 +485,8 @@ class rObject:
         self.name = name
         self.series = self.chkSeries(series)
         
-        self.protrusion = name[-2:] # Protrusion number
-        self.dendrite = name[0:3] # Parent dendrite number
+        self.protrusion = self.getProtNumber() # Protrusion number
+        self.dendrite = self.getDendNumber() # Parent dendrite number
         
         self.rType = self.getrType()
         self.data = {} # updated in makeSpecific
@@ -496,6 +496,14 @@ class rObject:
         
         self.makeSpecific()
         
+    def getDendNumber(self):
+        dend = re.compile('d[0-9]{1,}')
+        return self.name[0:dend.match(self.name).end()]
+    
+    def getProtNumber(self):
+        prot = re.compile('p[0-9]{1,}')
+        return self.name[prot.search(self.name).start():prot.search(self.name).end()]
+    
     def makeSpecific(self):
         '''Creates unique data for this rObject (depends on type)'''
         rType = self.rType.lower()

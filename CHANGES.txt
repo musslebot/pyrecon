@@ -19,11 +19,15 @@ MAJOR RELEASE
 			-self.overlaps()
 				-moved threshold variable to parameter, with default 1+2**(-17)
 				-added a checker for Contour._shape population
+		*tools.classes.rObject
+			-created self.getDendNumber(), self.getProtNumber() to get numbers greater than 2 digits
 		*removed wild-card imports, removed unused imports
 		*new renameFRI.py
 		*tools.mergeTool:
 			-added sameName parameter to checkOverlappingContours() and separateOverlappingContours(), with default True
-		
+		*tools.excelTool:
+			-fixed problem with not recognizing dendrites with more than 2 number digits
+			
 		-------------
 		Version 1.3.1
 		-------------

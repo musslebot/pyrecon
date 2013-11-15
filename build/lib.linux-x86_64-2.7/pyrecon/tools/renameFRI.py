@@ -27,11 +27,16 @@ def main(series1Path, series2Path, ovlpingSec, renameTo=1, savePath='./renameFRI
     
     # Gather overlapping contours
     ovlpsA, ovlpsB = mergeTool.checkOverlappingContours(conts1, conts2, sameName=False) # Don't base on same name only
-    print('chkOvlp:\n'+str(ovlpsA)+'\n'+str(ovlpsB))
+    print('chkOvlp:\n'+str([cont.name for cont in ovlpsA])+'\n'+str([cont.name for cont in ovlpsB]))
     
     # Separate overlapping contours into complete overlaps vs conflicting overlaps
     completeOvlps, conflictingOvlps = mergeTool.separateOverlappingContours(ovlpsA, ovlpsB, sameName=False)
-    print('sepOvlps:\n'+str(completeOvlps)+'\n'+str(conflictingOvlps))
+    print('compOvlps:')
+    for item in completeOvlps:
+        print [thing.name for thing in item]
+    print('confOvlps:')
+    for item in conflictingOvlps:
+        print [thing.name for thing in item]
     
 if __name__ == '__main__':
     print ('name == __main__')
