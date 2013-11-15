@@ -16,7 +16,9 @@ MAJOR RELEASE
 		Version 1.3.2
 		-------------
 		*tools.classes.Contour
-			-self.overlaps(): moved threshold variable to parameter, with default 1+2**(-17)
+			-self.overlaps()
+				-moved threshold variable to parameter, with default 1+2**(-17)
+				-added a checker for Contour._shape population
 		*removed wild-card imports, removed unused imports
 		*new renameFRI.py
 		*tools.mergeTool:
