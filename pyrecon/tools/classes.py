@@ -75,7 +75,7 @@ class Contour:
         '''Allows use of != between multiple contours.'''
         return self.output() != other.output()
 # Helper Functions
-    def overlaps(self, other):
+    def overlaps(self, other, threshold=(1+2**(-17))):
         '''Return 0 if no overlap.
         For closed traces: return 1 if AoU/AoI < threshold, return AoU/AoI if not < threshold
         For open traces: return 0 if # pts differs or distance between parallel pts > threshold
@@ -87,7 +87,6 @@ class Contour:
         # Check if both same class of contours
         if self.closed != other.closed:
             return 0
-        threshold = (1+2**(-17))    
         # Closed contours
         if self.closed:
             AoU = self._shape.union( other._shape ).area
