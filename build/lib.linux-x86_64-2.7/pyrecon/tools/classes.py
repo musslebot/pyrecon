@@ -1,4 +1,4 @@
-import os, re, math, operator
+import os, re, math
 import numpy as np
 from shapely.geometry import Polygon, LineString, box
 from lxml import etree as ET
@@ -75,7 +75,7 @@ class Contour:
         '''Allows use of != between multiple contours.'''
         return self.output() != other.output()
 # Helper Functions
-    def overlaps(self, other):
+    def overlaps(self, other, threshold=(1+2**(-17))):
         '''Return 0 if no overlap.
         For closed traces: return 1 if AoU/AoI < threshold, return AoU/AoI if not < threshold
         For open traces: return 0 if # pts differs or distance between parallel pts > threshold
@@ -87,7 +87,6 @@ class Contour:
         # Check if both same class of contours
         if self.closed != other.closed:
             return 0
-        threshold = (1+2**(-17))    
         # Closed contours
         if self.closed:
             AoU = self._shape.union( other._shape ).area
@@ -510,7 +509,7 @@ class rObject:
         elif rType[0:3] == 'ser': # SER
             importantData = ['start', 'end', 'count']
         elif rType[0:2] == 'sp': # Spine
-            importantData = ['start', 'end', 'count', 'surface area', 'flat area']
+            importantData = ['start', 'end', 'count', 'surface area', 'flat area', 'volume']
         elif rType[0:2] == 'ax': # Axon
             importantData = ['start', 'end', 'count']
         else:

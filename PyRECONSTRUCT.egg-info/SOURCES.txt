@@ -15,6 +15,7 @@ pyrecon/tools/excelTool.py
 pyrecon/tools/findCalFactor.py
 pyrecon/tools/mergeTool.py
 pyrecon/tools/reScale.py
+pyrecon/tools/renameFRI.py
 pyrecon/toolsgui/__init__.py
 pyrecon/toolsgui/excelTool-dev.py
 pyrecon/toolsgui/excelTool.py

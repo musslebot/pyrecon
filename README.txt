@@ -16,10 +16,11 @@ INSTALLATION (Linux and Windows)
 -------------
 PyRECONSTRUCT can be installed in multiple ways:
 	
-	From parent folder:
+	[Preferred]: From parent folder:
 		python setup.py install
+	*this command must be run every time changes are made locally to any file in PyRECONSTRUCT
 	
-	Through PIP*:
+	[Optional]: Through PIP*:
 		pip install PyRECONSTRUCT
 	*this method commonly has problems. Prerequisite packages may not install correctly on their own and will interrupt the PyRECONSTRUCT installation
 

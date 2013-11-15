@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, os
+import sys
 from pyrecon.tools import excelTool
 from PySide import QtGui, QtCore
 
