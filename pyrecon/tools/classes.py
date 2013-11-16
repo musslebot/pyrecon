@@ -496,32 +496,41 @@ class rObject:
         
         self.makeSpecific()
         
-    def getDendNumber(self):
+    def getDendNumber(self): #===
         dend = re.compile('d[0-9]{1,}')
-        return self.name[0:dend.match(self.name).end()]
+        try:
+            return self.name[0:dend.match(self.name).end()]
+        except:
+            return None
     
-    def getProtNumber(self):
+    def getProtNumber(self): #===
         prot = re.compile('p[0-9]{1,}')
-        return self.name[prot.search(self.name).start():prot.search(self.name).end()]
-    
-    def makeSpecific(self):
+        try:
+            return self.name[prot.search(self.name).start():prot.search(self.name).end()]
+        except:
+            return None
+            
+    def makeSpecific(self): #=== change to include > 2 dgits
         '''Creates unique data for this rObject (depends on type)'''
-        rType = self.rType.lower()
-        if rType == 'p': # Protrusion
-            importantData = ['start', 'end', 'count']
-            self.children = self.findChildren()
-        elif rType == 'c': # C
-            importantData = ['start', 'end', 'count']
-        elif 'cfa' in rType: # CFA
-            importantData = ['start', 'end', 'count', 'surface area', 'flat area']
-        elif 'endo' in rType: # Endosome
-            importantData = ['start', 'end', 'count']
-        elif rType[0:3] == 'ser': # SER
-            importantData = ['start', 'end', 'count']
-        elif rType[0:2] == 'sp': # Spine
-            importantData = ['start', 'end', 'count', 'surface area', 'flat area', 'volume']
-        elif rType[0:2] == 'ax': # Axon
-            importantData = ['start', 'end', 'count']
+        if self.rType != None:
+            rType = self.rType.lower()
+            if rType == 'p': # Protrusion
+                importantData = ['start', 'end', 'count']
+                self.children = self.findChildren()
+            elif rType == 'c': # C
+                importantData = ['start', 'end', 'count']
+            elif 'cfa' in rType: # CFA
+                importantData = ['start', 'end', 'count', 'surface area', 'flat area']
+            elif 'endo' in rType: # Endosome
+                importantData = ['start', 'end', 'count']
+            elif rType[0:3] == 'ser': # SER #===
+                importantData = ['start', 'end', 'count']
+            elif rType[0:2] == 'sp': # Spine #===
+                importantData = ['start', 'end', 'count', 'surface area', 'flat area', 'volume']
+            elif rType[0:2] == 'ax': # Axon #===
+                importantData = ['start', 'end', 'count']
+            else:
+                importantData = ['start', 'end', 'count']
         else:
             importantData = ['start', 'end', 'count']
         self.getData( importantData )
@@ -535,9 +544,12 @@ class rObject:
              
     def getrType(self):
         '''Returns type of character'''
-        return str(self.name[3:self.name.rfind(self.protrusion)])
+        if self.protrusion != None:
+            return self.name[re.compile(self.dendrite).match(self.name).end():re.compile(self.protrusion).search(self.name).start()+1]
+        else:
+            return None
         
-    def findChildren(self):
+    def findChildren(self): #=== extend to include > 3 digits (replace 3's with regex)
         '''Finds children of this protrusion and puts in self.children dict under trace type'''
         children = {}
         child_exp = re.compile(self.dendrite+'.{0,}'+self.protrusion)
@@ -554,7 +566,7 @@ class rObject:
         '''Returns number of spaces to add after excel sheet'''
         try:
             return max([len(self.children[child]) for child in self.children])-1
-        except: #===
+        except:
             return 0
         
     def chkSeries(self, series):
@@ -823,11 +835,11 @@ class Series:
             return self.getStartEndCount(object_name)[1]
         elif string == 'count':    
             return self.getStartEndCount(object_name)[2]
-    def getObjectLists(self):
+    def getObjectLists(self): #=== added ',' to {2}
         '''Returns sorted lists of dendrite names, protrusion names, trace names, and a list of other objects in series'''
-        dendrite_expression = 'd[0-9]{2}' # represents base dendrite name (d##)
-        protrusion_expression = 'd[0-9]{2}p[0-9]{2}$' # represents base protrusion name (d##p##)
-        trace_expression = 'd[0-9]{2}.{1,}[0-9]{2}' # represents trace name (d##<tracetype>##)
+        dendrite_expression = 'd[0-9]{2,}' # represents base dendrite name (d##)
+        protrusion_expression = 'd[0-9]{2,}p[0-9]{2,}$' # represents base protrusion name (d##p##)
+        trace_expression = 'd[0-9]{2,}.{1,}[0-9]{2,}' # represents trace name (d##<tracetype>##)
         
         # Convert expressions to usable regular expressions
         dendrite_expression = re.compile(dendrite_expression)
@@ -843,11 +855,11 @@ class Series:
             for contour in section.contours:
                 # Dendrite
                 if dendrite_expression.match(contour.name) != None:
-                    dendrites.append(contour.name[0:3])
+                    dendrites.append(contour.name[0:dendrite_expression.match(contour.name).end()]) #===
                 # Protrusion
                 if protrusion_expression.match(contour.name) != None:
                     protrusions.append(contour.name)
-                # Trace
+                # Trace === expand to > 2 digits!
                 if (trace_expression.match(contour.name) != None and
                     protrusion_expression.match(contour.name) == None):
                     traces.append(contour.name)
