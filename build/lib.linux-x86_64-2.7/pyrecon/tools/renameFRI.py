@@ -7,6 +7,8 @@ parser.add_argument('Overlap Section', metavar='section', nargs=1, type=int, hel
 parser.add_argument('Save Path', metavar='savePath', nargs=1, type=str, default='./renameFRI/', help='[string] Save path for the output (default: ./renameFRI/)')
 args = vars(parser.parse_args())  
 from pyrecon.tools import classes, mergeTool
+print(classes.__file__)
+print(mergeTool.__file__)
 
 # Set up object filters (regex and threshold)
 ax = re.compile('a[0-9]{1,}_[a-z]{2}$', re.IGNORECASE)
