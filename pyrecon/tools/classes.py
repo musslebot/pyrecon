@@ -509,14 +509,17 @@ class rObject:
     def getDendNumber(self):
         dend = re.compile('d[0-9]{1,}')
         try:
-            return self.name[0:dend.match(self.name).end()]
+            return self.name[:dend.match(self.name).end()]
         except:
             return None
     
-    def getProtNumber(self):
-        prot = re.compile('p[0-9]{1,}')
+    def getProtNumber(self): 
+        dend = re.compile('d[0-9]{1,}')
+        tmpName = self.name[dend.match(self.name).end():] # remove dendrite portion of name
         try:
-            return self.name[prot.search(self.name).start():prot.search(self.name).end()]
+            prot = re.compile('[0-9]{1,}')
+            protNum = tmpName[prot.search(tmpName).start():prot.search(tmpName).end()]
+            return 'p'+str(protNum)
         except:
             return None
             
@@ -555,14 +558,16 @@ class rObject:
     def getrType(self):
         '''Returns type of character'''
         if self.protrusion != None:
-            return self.name[re.compile(self.dendrite).match(self.name).end():re.compile(self.protrusion).search(self.name).start()+1]
-        else:
-            return None
+            prot = re.compile(self.protrusion[1:]) # dont include the 'p' in self.protrusion
+            dend = re.compile(self.dendrite)
+            tmpName = self.name[dend.match(self.name).end():] # remove dendrite from name
+            return tmpName[:prot.search(tmpName).start()]
+        return None
         
     def findChildren(self):
         '''Finds children of this protrusion and puts in self.children dict under trace type'''
         children = {}
-        child_exp = re.compile(self.dendrite+'.{0,}'+self.protrusion[1:])
+        child_exp = re.compile(self.dendrite+'.{0,}'+self.protrusion[1:]) # dont include 'p' in self.protrusion
         dend_exp = re.compile(self.dendrite)
         for child in self.series.getObjectLists()[2]:
             if child_exp.match(child) != None:
@@ -573,8 +578,7 @@ class rObject:
                     children[str(child[endOfDendrite:beginOfProtrusion])].append(child)
                 except: # Make entry and then add to it
                     children[str(child[endOfDendrite:beginOfProtrusion])] = []
-                    children[str(child[endOfDendrite:beginOfProtrusion])].append(child)
-                    
+                    children[str(child[endOfDendrite:beginOfProtrusion])].append(child)            
         return children
     
     def getSpacing(self):

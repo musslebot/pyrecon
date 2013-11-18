@@ -32,7 +32,9 @@ class Workbook(openpyxl.Workbook):
     def listProtrusionChildren(self): #===
         childList = []
         for protrusion in self.protrusions:
+#             print protrusion.name #===
             for child in protrusion.children:
+#                 print child #===
                 childList.append(child)
         self.protrusionChildren = sorted(list(set(childList)))
     def getProtrusions(self):

@@ -15,8 +15,10 @@ MAJOR RELEASE
 		-------------
 		Version 1.3.3
 		-------------
-		*renameFRI.py
-		
+		*tools.excelTool
+			-fixed error with not recognizing correct trace types/children
+		*tools.renameFRI
+			-still in dev, full of errors :D
 		
 		-------------
 		Version 1.3.2
