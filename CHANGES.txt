@@ -13,6 +13,12 @@ MAJOR RELEASE
 ** Visit  https://github.com/wtrdrnkr/pyrecon  for additional detail **
 ***********************************************************************
 		-------------
+		Version 1.3.3
+		-------------
+		*renameFRI.py
+		
+		
+		-------------
 		Version 1.3.2
 		-------------
 		*tools.classes.Contour
