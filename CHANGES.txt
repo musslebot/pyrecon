@@ -27,7 +27,7 @@ MAJOR RELEASE
 		*tools.mergeTool:
 			-added sameName parameter to checkOverlappingContours() and separateOverlappingContours(), with default True
 		*tools.excelTool:
-			-will now make save directory if doesnt exist
+			-will now make a save directory if does not exist
 			-fixed problem with not recognizing dendrites with more than 2 number digits
 			
 		-------------
