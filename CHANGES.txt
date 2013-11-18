@@ -21,8 +21,9 @@ MAJOR RELEASE
 				-added a checker for Contour._shape population
 		*tools.classes.rObject
 			-created self.getDendNumber(), self.getProtNumber() to get numbers greater than 2 digits
+			-added verbose parameter
 		*removed wild-card imports, removed unused imports
-		*new renameFRI.py
+		*new renameFRI.py (project for FRI students)
 		*tools.mergeTool:
 			-added sameName parameter to checkOverlappingContours() and separateOverlappingContours(), with default True
 		*tools.excelTool:

@@ -1,13 +1,15 @@
 #!/usr/bin/python
 # To change what data is shown in the excelWorkbook for each trace type, edit the function: tools.classes.rObject.makeSpecific()
-import openpyxl
+import openpyxl, argparse, os
 from pyrecon.tools.classes import loadSeries, rObject
-import argparse
 from operator import attrgetter
 
 def main(path_to_series, save_path):
     if save_path[-1] != '/':
         save_path += '/'
+    if not os.path.exists(save_path):
+        print 'Creating new directory: '+save_path
+        os.mkdir(save_path)
     if '.xlsx' not in save_path:
         save_path += path_to_series.replace('.ser','').split('/')[-1]
         save_path += '.xlsx'
@@ -17,7 +19,8 @@ def main(path_to_series, save_path):
     wkbk.getProtrusions()
     wkbk.listProtrusionChildren()
     wkbk.writeProtrusionsPerDendrite()
-    wkbk.writeProtrusionChildrenToProtrusions()
+    wkbk.writeProtrusionChildrenToProtrusions()        
+    wkbk.save(save_path)
 
 class Workbook(openpyxl.Workbook):
     def __init__(self, series=None):
@@ -26,7 +29,7 @@ class Workbook(openpyxl.Workbook):
         self.series = series # Series object for this workbook
         self.objects = series.getObjectLists() # Names of objects in this series
         self.filterType = ['c'] # Ignore these rTypes
-    def listProtrusionChildren(self):
+    def listProtrusionChildren(self): #===
         childList = []
         for protrusion in self.protrusions:
             for child in protrusion.children:
@@ -70,20 +73,21 @@ class Workbook(openpyxl.Workbook):
                         column+=1
                     row += 1+protrusion.getSpacing()                
     
-    def writeProtrusionChildrenToProtrusions(self):
+    def writeProtrusionChildrenToProtrusions(self): #=== make more concise
         # Grab existing wrksht for each dendrite
         for dendrite in self.dendrites:
             sheet = self.get_sheet_by_name(dendrite.name)
             
             # Get list of protrusions in this dendrite
-            protList = [prot for prot in self.protrusions if dendrite.name in prot.name]
+#             protList = [prot for prot in self.protrusions if dendrite.name in prot.name]
+            protList = [prot for prot in self.protrusions if dendrite.name == prot.dendrite] #===
             # Get list of all protrusion children in this dendrite
             childList = []
             for prot in protList:
                 for child in prot.children:
                     childList.append(child)
             childList = sorted(list(set(childList))) # Unique child names
-           
+
             # Go through childList
             row = 1
             column = 5
@@ -111,8 +115,6 @@ class Workbook(openpyxl.Workbook):
                                 subColumn+=1
                             row+=1
                 column=subColumn+1
-        # Save workbook        
-        self.save(save_path+self.series.name+'.xlsx')
                         
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Creates an excel workbook containing protrusions and data, YAY!')

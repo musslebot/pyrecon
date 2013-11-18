@@ -481,12 +481,12 @@ class Image:
         return float( node.get('brightness') )
 
 class rObject:
-    def __init__(self, name=None, series=None):
+    def __init__(self, name=None, series=None, verbose=False):
         self.name = name
         self.series = self.chkSeries(series)
         
-        self.protrusion = self.getProtNumber() # Protrusion number
-        self.dendrite = self.getDendNumber() # Parent dendrite number
+        self.protrusion = self.getProtNumber() # Protrusion number (stored as 'p##')
+        self.dendrite = self.getDendNumber() # Parent dendrite number (stored as 'd##')
         
         self.rType = self.getrType()
         self.data = {} # updated in makeSpecific
@@ -495,22 +495,32 @@ class rObject:
         self.count = self.series.getStartEndCount(self.name)[2]
         
         self.makeSpecific()
-        
-    def getDendNumber(self): #===
+    
+        if verbose:
+            print   
+            print('=== rObject Created ===')
+            print('name: '+self.name)
+            print('den: '+self.dendrite)
+            try:print('prot: '+self.protrusion)
+            except:print('No prot')
+            try:print('type: '+self.rType)
+            except:print('No type')
+    
+    def getDendNumber(self):
         dend = re.compile('d[0-9]{1,}')
         try:
             return self.name[0:dend.match(self.name).end()]
         except:
             return None
     
-    def getProtNumber(self): #===
+    def getProtNumber(self):
         prot = re.compile('p[0-9]{1,}')
         try:
             return self.name[prot.search(self.name).start():prot.search(self.name).end()]
         except:
             return None
             
-    def makeSpecific(self): #=== change to include > 2 dgits
+    def makeSpecific(self):
         '''Creates unique data for this rObject (depends on type)'''
         if self.rType != None:
             rType = self.rType.lower()
@@ -549,17 +559,22 @@ class rObject:
         else:
             return None
         
-    def findChildren(self): #=== extend to include > 3 digits (replace 3's with regex)
+    def findChildren(self):
         '''Finds children of this protrusion and puts in self.children dict under trace type'''
         children = {}
-        child_exp = re.compile(self.dendrite+'.{0,}'+self.protrusion)
+        child_exp = re.compile(self.dendrite+'.{0,}'+self.protrusion[1:])
+        dend_exp = re.compile(self.dendrite)
         for child in self.series.getObjectLists()[2]:
             if child_exp.match(child) != None:
+                # Extract from name what is in between dend and prot
+                endOfDendrite = dend_exp.match(child).end()
+                beginOfProtrusion = child.rfind(self.protrusion[1:])
                 try: # Try to add to existing entry in dictionary
-                    children[str(child[3:child.rfind(self.protrusion)])].append(child)
+                    children[str(child[endOfDendrite:beginOfProtrusion])].append(child)
                 except: # Make entry and then add to it
-                    children[str(child[3:child.rfind(self.protrusion)])] = []
-                    children[str(child[3:child.rfind(self.protrusion)])].append(child)
+                    children[str(child[endOfDendrite:beginOfProtrusion])] = []
+                    children[str(child[endOfDendrite:beginOfProtrusion])].append(child)
+                    
         return children
     
     def getSpacing(self):

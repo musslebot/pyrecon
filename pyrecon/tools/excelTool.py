@@ -29,12 +29,10 @@ class Workbook(openpyxl.Workbook):
         self.series = series # Series object for this workbook
         self.objects = series.getObjectLists() # Names of objects in this series
         self.filterType = ['c'] # Ignore these rTypes
-    def listProtrusionChildren(self):
+    def listProtrusionChildren(self): #===
         childList = []
         for protrusion in self.protrusions:
-            print 'prot: '+protrusion.name #===
             for child in protrusion.children:
-                print 'child: '+child #===
                 childList.append(child)
         self.protrusionChildren = sorted(list(set(childList)))
     def getProtrusions(self):
@@ -81,7 +79,8 @@ class Workbook(openpyxl.Workbook):
             sheet = self.get_sheet_by_name(dendrite.name)
             
             # Get list of protrusions in this dendrite
-            protList = [prot for prot in self.protrusions if dendrite.name in prot.name]
+#             protList = [prot for prot in self.protrusions if dendrite.name in prot.name]
+            protList = [prot for prot in self.protrusions if dendrite.name == prot.dendrite] #===
             # Get list of all protrusion children in this dendrite
             childList = []
             for prot in protList:
