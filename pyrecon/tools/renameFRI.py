@@ -1,21 +1,21 @@
 #!/usr/bin/python
 import argparse, re
-parser = argparse.ArgumentParser(description='Renames objects in a series to match a specified series, based on overlapping sections in a specified section number')
-parser.add_argument('Primary Series', metavar='primary', nargs=1, type=str, help='[string] Path to primary series')
-parser.add_argument('Secondary Series', metavar='secondary', nargs=1, type=str, help='[string] Path to secondary series')
-parser.add_argument('Overlap Section', metavar='section', nargs=1, type=int, help='[integer] Section number with overlapping objects')
-parser.add_argument('Save Path', metavar='savePath', nargs=1, type=str, default='./renameFRI/', help='[string] Save path for the output (default: ./renameFRI/)')
-args = vars(parser.parse_args())  
+# parser = argparse.ArgumentParser(description='Renames objects in a series to match a specified series, based on overlapping sections in a specified section number')
+# parser.add_argument('Primary Series', metavar='primary', nargs=1, type=str, help='[string] Path to primary series')
+# parser.add_argument('Secondary Series', metavar='secondary', nargs=1, type=str, help='[string] Path to secondary series')
+# parser.add_argument('Overlap Section', metavar='section', nargs=1, type=int, help='[integer] Section number with overlapping objects')
+# parser.add_argument('Save Path', metavar='savePath', nargs=1, type=str, default='./renameFRI/', help='[string] Save path for the output (default: ./renameFRI/)')
+# args = vars(parser.parse_args())  
 from lxml import etree as ET
 from pyrecon.tools import classes, mergeTool
 
 # Set up object filters (regex and threshold)
 initials = re.compile('.{0,}_[a-z]{2}$', re.IGNORECASE)
-ax = re.compile('a[0-9]{1,}_[a-z]{2}$', re.IGNORECASE)
-dend = re.compile('d[0-9]{1,}_[a-z]{2}$', re.IGNORECASE)
-cfa = re.compile('d[0-9]{1,}cfa[0-9]{1,}.{1,}_[a-z]{2}', re.IGNORECASE)
-c = re.compile('d[0-9]{1,}c[0-9]{1,}.{1,}_[a-z]{2}', re.IGNORECASE)
-astro = re.compile('astro_[a-z]{2}', re.IGNORECASE)
+ax = re.compile('a[0-9]{1,}$$', re.IGNORECASE)
+dend = re.compile('d[0-9]{1,}$', re.IGNORECASE)
+cfa = re.compile('d[0-9]{1,}cfa[0-9]{1,}.{1,}$', re.IGNORECASE)
+c = re.compile('d[0-9]{1,}c[0-9]{1,}.{1,}$', re.IGNORECASE)
+astro = re.compile('astro', re.IGNORECASE)
 threshold=(1+3**(-1))
 
 def main(primarySerPath, secondarySerPath, ovlpingSec, savePath='./renameFRI/'):
@@ -27,6 +27,73 @@ def main(primarySerPath, secondarySerPath, ovlpingSec, savePath='./renameFRI/'):
     series1 = getRidOfMess(series1) 
     series2 = getRidOfMess(series2)
     
+    # filter unwanted traces
+    for section in series1.sections:
+        print section.name
+        print [cont.name for cont in section.contours]
+    for section in series2.sections:
+        print section.name
+        print [cont.name for cont in section.contours]
+    
+#     # Create new series
+    newSeries = makeEmptySeries(series1) # make empty series, copy attributes from series1
+    renameSer2to1(newSeries, series1, series2, ovlpingSec)
+#     
+#     newSeries.writeseries(savePath)
+#     newSeries.writesections(savePath)
+
+def renameSer2to1(newSeries, series1, series2, ovlpingSec):
+    # Populate section[pre to ovlpingSec] with correct names
+    for i in range(99,ovlpingSec+1):
+        newSec = newSeries.sections[i]
+        oldSec = series1.sections[i]
+        newSec.contours = oldSec.contours
+        newSec.imgs = oldSec.imgs
+        newSec.index = oldSec.index
+        newSec.thickness = oldSec.thickness
+        newSec.alignLocked = oldSec.alignLocked
+    
+    # Get overlapping traces from ovlpingSec
+    traces = extractTracesFromSec(series1, series2, ovlpingSec) # Extract desired traces from series
+    matchingTraces = extractOverlapsFromTraces(traces) # find overlapping traces
+
+    
+
+    # Populate the rest of the lists with other traces
+    for i in range(ovlpingSec,110):
+        newSec = newSeries.sections[i]
+        print(newSec.name)
+        oldSec = series2.sections[i]
+        newSec.contours = renameAxons(matchingTraces, oldSec.contours)
+        newSec.imgs = oldSec.imgs
+        newSec.index = oldSec.index
+        newSec.thickness = oldSec.thickness
+        newSec.alignLocked = oldSec.alignLocked
+
+def renameAxons(matchingTraces, oldContours):
+    renamedConts = []
+    # Rename axons
+    for contour in oldContours:
+        for axonPair in matchingTraces[0]:
+            if contour.name == axonPair[1].name: # rename secondary to primary axon
+                print(contour.name+' --> '+axonPair[0].name)
+                contour.name = axonPair[0].name
+                break
+        renamedConts.append(contour)
+        print('appended: '+contour.name)
+    return renamedConts
+                             
+def extractOverlapsFromTraces(traces):
+    ovlpList = []
+    for tup in traces:
+        # Get overlaps
+        a = checkOverlappingContours(tup[0], tup[1], threshold, sameName=False)
+        a = separateOverlappingContours(a[0], a[1], threshold, False)
+        pairs = a[0] # matching axon pairs
+        ovlpList.append(pairs)
+    return ovlpList
+
+def extractTracesFromSec(series1, series2, ovlpingSec):
     # Extract Contours (traces/stamps/etc.) from the overlapping section (ovlpingSec) 
     conts1, conts2 = getContours(series1, series2, ovlpingSec) # get sets of contours in ovlpingSec
     
@@ -36,53 +103,27 @@ def main(primarySerPath, secondarySerPath, ovlpingSec, savePath='./renameFRI/'):
     cfa1, cfa2 = getCFAs(conts1, conts2)
     c1, c2 = getCs(conts1, conts2)
 
-    # Get overlaps
-    a = checkOverlappingContours(ax1, ax2, threshold, sameName=False)
-    a = separateOverlappingContours(a[0], a[1], threshold, False)
-    mAxons = a[0] # matching axon pairs
-    
-    b = checkOverlappingContours(den1, den2, threshold, sameName=False)
-    b = separateOverlappingContours(b[0], b[1], threshold, sameName=False)
-    mDendrites = b[0] # matching dendrite pairs
-    
-    c = checkOverlappingContours(cfa1, cfa2, threshold, sameName=False)
-    c = separateOverlappingContours(c[0], c[1], threshold, sameName=False)
-    mCFAs = c[0] # matching CFA pairs
-    
-    d = checkOverlappingContours(c1, c2, threshold, sameName=False)
-    d = separateOverlappingContours(d[0], d[1], threshold, sameName=False)
-    mCs = d[0] # matching c pairs
-    
-    newSeries = makeEmptySeries(series1) # make empty series
-    # Populate sections with contours, *****except 104*****
-    for i in range(99,104): # Alicia traced these
-        newSeries.sections[i].contours = series1.sections[i].contours
-    for i in range(105, 110): # Nathaniel traced these
-        newSeries.sections[i].contours = series2.sections[i].contours
-    
-    # Remove initials from astrocytes
-    for section in newSeries.sections:
-        for contour in section.contours:
-            if astro.match(contour.name) != None:
-                contour.name = 'Astro'
-    
-    # Get overlapping objects on 104
-    axons = mergeAxons(mAxons)
-    dendrites = mergeDendrites(mDendrites)
-    cfas = mergeCFAs(mCFAs)
-    cs = mergeCs(mCs)
-    
-    # Rename objects according to overlaps found  
-    
-    # Print the new contour names for each section            
-    for section in newSeries.sections:
-        print section.name
-        print [cont.name for cont in section.contours]
+    # make list of tuples
+    return [(ax1, ax2), (den1, den2), (cfa1, cfa2), (c1, c2)]
    
 def getRidOfMess(series):
     messlessSeries = makeEmptySeries(series)
     for i in range(len(messlessSeries.sections)):
         messlessSeries.sections[i].contours = [cont for cont in series.sections[i].contours if initials.match(cont.name)]
+        # Remove initials
+        for cont in messlessSeries.sections[i].contours:
+            cont.name = cont.name[:-3]
+        # Remove unwanted traces
+        newContours = []
+        for cont in messlessSeries.sections[i].contours:
+            if (dend.match(cont.name) != None
+                or ax.match(cont.name) != None
+                or cfa.match(cont.name) != None
+                or c.match(cont.name) != None
+                or astro.match(cont.name) != None):
+                newContours.append(cont)
+        messlessSeries.sections[i].contours = newContours
+                
     return messlessSeries
 
 def getContours(series1, series2, section):
@@ -233,9 +274,8 @@ def checkMatches(matchList):
         print('Aborting...')
         quit()
 
-if __name__ == '__main__':
-    print ('name == __main__')
-    main(args['Primary Series'][0],
-         args['Secondary Series'][0],
-         args['Overlap Section'][0],
-         args['Save Path'][0])
+# if __name__ == '__main__':
+#     main(args['Primary Series'][0],
+#          args['Secondary Series'][0],
+#          args['Overlap Section'][0],
+#          args['Save Path'][0])

@@ -15,7 +15,6 @@ if len(sys.argv) >= 3:
 
 def main():
     if __name__ != '__main__':
-        print('Welcome to reconstructmergetool')
         return
     if len(sys.argv) > 1:
         #1)Create series object
@@ -172,13 +171,13 @@ def mergeSeriesContours(ser1conts, ser2conts, handler=serContHandler):
                 ser2conts.remove( elem2 )
     return handler(ser1conts, ser2conts, ser3conts)
     
-def mergeSeriesZContours(ser1conts, ser2conts, handler=serZContHandler):
+def mergeSeriesZContours(ser1conts, ser2conts, threshold=(1+2**(-17)), handler=serZContHandler):
     ser1zconts = [cont for cont in ser1conts if cont.tag == 'ZContour']
     ser2zconts = [cont for cont in ser2conts if cont.tag == 'ZContour']
     ser3zconts = []
     for elem in ser1zconts:
         for elem2 in ser2zconts:
-            if elem.name == elem2.name and elem.overlaps(elem2):
+            if elem.name == elem2.name and elem.overlaps(elem2, threshold):
                 ser3zconts.append( elem ) 
                 ser1zconts.remove( elem )
                 ser2zconts.remove( elem2 )
@@ -285,7 +284,7 @@ def mergeSectionImgs(s1, s2, handler=secImgHandler):
     # If all the same, just copy 1st series' images
     return s1.imgs
 
-def checkOverlappingContours(contsA, contsB, sameName=True):
+def checkOverlappingContours(contsA, contsB, threshold=(1+2**(-17)), sameName=True):
     '''Returns lists of mutually overlapping contours.''' 
     ovlpsA = [] # Section A contours that have overlaps in section B
     ovlpsB = [] # Section B contours that have overlaps in section A
@@ -294,10 +293,10 @@ def checkOverlappingContours(contsA, contsB, sameName=True):
         ovlpA = []
         ovlpB = []
         for contB in contsB:
-            if sameName and contA.name == contB.name and contA.overlaps(contB) != 0:
+            if sameName and contA.name == contB.name and contA.overlaps(contB, threshold) != 0:
                 ovlpA.append(contA)
                 ovlpB.append(contB)
-            elif not sameName and contA.overlaps(contB) != 0:
+            elif not sameName and contA.overlaps(contB, threshold) != 0:
                 ovlpA.append(contA)
                 ovlpB.append(contB)
         ovlpsA.extend(ovlpA)
@@ -314,7 +313,7 @@ def checkOverlappingContours(contsA, contsB, sameName=True):
 
     return ovlpsA, ovlpsB
 
-def separateOverlappingContours(ovlpsA, ovlpsB, sameName=True):
+def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName=True):
     '''Returns a list of completely overlapping pairs and a list of conflicting overlapping pairs.'''
     compOvlps = [] # list of completely overlapping contour pairs
     confOvlps = [] # list of conflicting overlapping contour pairs
@@ -323,21 +322,21 @@ def separateOverlappingContours(ovlpsA, ovlpsB, sameName=True):
     for contA in ovlpsA:
         for contB in ovlpsB:
             if sameName and contA.name == contB.name:
-                if contA.overlaps(contB) == 1:
+                if contA.overlaps(contB, threshold) == 1:
                     compOvlps.append([contA, contB])
             elif not sameName:
-                if contA.overlaps(contB) == 1:
+                if contA.overlaps(contB, threshold) == 1:
                     compOvlps.append([contA, contB])
                 
     # Check for CONFLICTING overlapping contours
     for contA in ovlpsA:
         for contB in ovlpsB:
             if sameName and contA.name == contB.name:
-                overlap = contA.overlaps(contB)
+                overlap = contA.overlaps(contB, threshold)
                 if overlap != 0 and overlap != 1:
                     confOvlps.append([contA, contB])
             elif not sameName:
-                overlap = contA.overlaps(contB)
+                overlap = contA.overlaps(contB, threshold)
                 if overlap != 0 and overlap != 1:
                     confOvlps.append([contA, contB])
 

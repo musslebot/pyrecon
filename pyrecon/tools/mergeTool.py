@@ -15,7 +15,6 @@ if len(sys.argv) >= 3:
 
 def main():
     if __name__ != '__main__':
-        print('Welcome to reconstructmergetool')
         return
     if len(sys.argv) > 1:
         #1)Create series object
