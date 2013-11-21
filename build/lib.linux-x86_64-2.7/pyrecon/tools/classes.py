@@ -724,7 +724,7 @@ class Series:
         self.tag = 'Series'
         
         self.contours = self.popcontours(root)
-        self.sections = [] #Sorted in self.getSectionsXML()
+        self.sections = [] #Sorted by index in self.getSectionsXML()
         
         self.index = self.popindex(root)
         self.viewport = self.popviewport(root)
