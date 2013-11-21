@@ -838,6 +838,12 @@ class Series:
         return (self.output()[0] != other.output()[0] and
                 self.output()[1] != other.output()[1])
 # Accessors
+    def renameObject(self, oldName, newName):
+        '''Renames all occurances of oldName in a series to newName.'''
+        for section in self.sections:
+            for contour in section.contours:
+                if contour.name == oldName:
+                    contour.name = newName
     def getData(self, object_name, data_string):
         string = str(data_string).lower()
         if string == 'volume':
@@ -854,7 +860,7 @@ class Series:
             return self.getStartEndCount(object_name)[1]
         elif string == 'count':    
             return self.getStartEndCount(object_name)[2]
-    def getObjectLists(self): #=== added ',' to {2}
+    def getObjectLists(self):
         '''Returns sorted lists of dendrite names, protrusion names, trace names, and a list of other objects in series'''
         dendrite_expression = 'd[0-9]{2,}' # represents base dendrite name (d##)
         protrusion_expression = 'd[0-9]{2,}p[0-9]{2,}$' # represents base protrusion name (d##p##)
