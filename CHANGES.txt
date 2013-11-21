@@ -16,7 +16,10 @@ MAJOR RELEASE
 		Version 1.3.4
 		-------------
 		*tools.renameFRI
-			-in dev
+			-removed
+		*tools.classes
+			-renameObject() added to Series and Section
+			-getObject(regex) added to Series and Section
 		
 		-------------
 		Version 1.3.3

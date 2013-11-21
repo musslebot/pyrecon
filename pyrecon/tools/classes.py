@@ -663,6 +663,18 @@ class Section:
         '''Returns attributes in xml output format'''
         return str(self.index), str(self.thickness), str(self.alignLocked).lower()
 # Mutators
+    def renameObject(self, oldName, newName):
+        '''Renames all occurances of oldName in section to newName'''
+        for contour in self.contours:
+            if contour.name == oldName:
+                contour.name = newName
+    def getObject(self, regex):
+        '''Returns a list of objects, in this section, that match the regex'''
+        objects = []
+        for contour in self.contours:
+            if regex.match(contour.name) != None:
+                objects.append(contour)
+        return objects
     def s2b(self, string):
         '''Converts string to bool'''
         if string == 'None':
@@ -841,9 +853,13 @@ class Series:
     def renameObject(self, oldName, newName):
         '''Renames all occurances of oldName in a series to newName.'''
         for section in self.sections:
-            for contour in section.contours:
-                if contour.name == oldName:
-                    contour.name = newName
+            section.renameObject(oldName, newName)
+    def getObject(self, regex):
+        '''Returns a list of 1 list per section containing all the contour that match the regex'''
+        objects = []
+        for section in self.sections:
+            section.append(section.getObject(regex))
+        return objects  
     def getData(self, object_name, data_string):
         string = str(data_string).lower()
         if string == 'volume':
