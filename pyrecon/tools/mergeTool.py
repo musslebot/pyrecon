@@ -9,9 +9,9 @@ if len(sys.argv) >= 3:
     inpath = os.path.abspath( os.path.dirname(sys.argv[1]) )+'/' # Directory of series
     inpath2 = os.path.abspath( os.path.dirname(sys.argv[2]) )+'/'
     if len(sys.argv) == 4:
-        mergeoutpath = os.path.abspath(sys.argv[3])+'/merged/' #===
+        mergeoutpath = os.path.abspath(sys.argv[3])+'/merged/'
     else:
-        mergeoutpath = os.path.dirname( os.path.dirname(inpath) )+'/merged/' #===
+        mergeoutpath = os.path.dirname( os.path.dirname(inpath) )+'/merged/'
 
 def main():
     if __name__ != '__main__':
@@ -270,8 +270,8 @@ def mergeSectionAttributes(sec1, sec2, name=None, handler=secAttHandler):
     elem = ET.Element('Section')
     for att in mergedAttributes:
         elem.set(str(att), mergedAttributes[att])
-    if not name: #=== sec1 name?
-        name = sec1.name
+    if not name:
+        name = sec1.name # If name not specified, default to sec1's name
     else:
         name = name+'.'+str(sec1.index)
     sec3 = Section(elem, name)
@@ -342,7 +342,7 @@ def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName
 
     return compOvlps, confOvlps
 
-def mergeSectionContours(sA,sB, handler=secContHandler): #===
+def mergeSectionContours(sA,sB, handler=secContHandler):
     '''Returns merged contours between two sections'''
     # Populate shapely shapes
     sA.popshapes()
@@ -356,7 +356,7 @@ def mergeSectionContours(sA,sB, handler=secContHandler): #===
     ovlpsA, ovlpsB = checkOverlappingContours(contsA, contsB)
     
     # Separate into completely overlapping or incompletely overlapping
-    compOvlp, confOvlp = separateOverlappingContours(ovlpsA, ovlpsB) #===
+    compOvlp, confOvlp = separateOverlappingContours(ovlpsA, ovlpsB)
 
     # Identify unique contours
     uniqueA, uniqueB = contsA, contsB
@@ -411,7 +411,7 @@ def bethBellMerge(path_FPNCT_BB, path_FPNCT_JNB): #===
     ser3.writeseries('/home/michaelm/Documents/Test Series/bb/FPNCT_merge/')
     ser3.writesections('/home/michaelm/Documents/Test Series/bb/FPNCT_merge/')
     
-class mergeObject:
+class mergeObject: #=== incomplete
     '''Abstract class to easily change functions for reconstructmergetool.py'''
     def __init__(self):
         

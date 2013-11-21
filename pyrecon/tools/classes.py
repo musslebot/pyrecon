@@ -238,7 +238,7 @@ class Contour:
             tupList.append(tup)
         return tupList
 # Accessors
-    def getLength(self): #===
+    def getLength(self):
         '''Returns the sum of all line segments in the contour object'''
         length = 0
         for index in range( len(self.points) ):
@@ -896,7 +896,7 @@ class Series:
             for contour in section.contours:
                 # Dendrite
                 if dendrite_expression.match(contour.name) != None:
-                    dendrites.append(contour.name[0:dendrite_expression.match(contour.name).end()]) #===
+                    dendrites.append(contour.name[0:dendrite_expression.match(contour.name).end()])
                 # Protrusion
                 if protrusion_expression.match(contour.name) != None:
                     protrusions.append(contour.name)
