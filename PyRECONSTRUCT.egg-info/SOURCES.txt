@@ -11,6 +11,7 @@ PyRECONSTRUCT.egg-info/top_level.txt
 pyrecon/__init__.py
 pyrecon/tools/__init__.py
 pyrecon/tools/classes.py
+pyrecon/tools/curationTool.py
 pyrecon/tools/excelTool.py
 pyrecon/tools/findCalFactor.py
 pyrecon/tools/mergeTool.py
