@@ -850,6 +850,32 @@ class Series:
         return (self.output()[0] != other.output()[0] and
                 self.output()[1] != other.output()[1])
 # Accessors
+    def locateDuplicates(self): #===
+        '''Locates overlapping traces of the same name in a section. Returns a dictionary of section numbers with duplicates'''
+        # Build dictionary of sections and contours that have same name
+        duplicateNames = {}
+        for section in self.sections:
+            duplicates = []
+            contourNames = [cont.name for cont in section.contours] # List of contour names
+            # Go through each contour, see if name appears in contourName > 1 time
+            for contour in section.contours:
+                if contourNames.count(contour.name) > 1:
+                    duplicates.append(contour)
+            if len(duplicates) > 0:
+                duplicateNames[section.index] = duplicates
+
+        # Go through each section in duplicateNames
+        duplicateDict = {}
+        for section in duplicateNames:
+            duplicates = []
+            for contour in duplicateNames[section]:
+                # Filter contours of same memory address
+                copyContours = [cont for cont in duplicateNames[section] if id(cont) != id(contour)]
+                for cont in copyContours:
+                    if contour.overlaps(cont) != 0:
+                        duplicates.append(cont)
+            duplicateDict[section] = duplicates
+        return duplicateDict
     def renameObject(self, oldName, newName):
         '''Renames all occurances of oldName in a series to newName.'''
         for section in self.sections:
