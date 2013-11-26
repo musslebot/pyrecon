@@ -80,7 +80,7 @@ class Contour:
         self.popshape()
         if self.closed:
             ring = LinearRing(self._shape.exterior.coords) # convert polygon to ring
-            return not ring.is_ccw # For some reason, the opposite is true
+            return not ring.is_ccw # For some reason, the opposite is true (image vs biological coordinate system?)
         else:
             return False
     def overlaps(self, other, threshold=(1+2**(-17))):
@@ -893,12 +893,13 @@ class Series:
                         for contList in allSectionContours[sec+threshold+1:]:
                             thresholdToEndContours.extend(contList)
                         if contour in thresholdToEndContours:
+                            print('frome above %s')%contour
                             traces.append(contour)
                 # Check below
                 if sec-threshold-1 >= 0:
                     # Check and ignore if in section-threshold:section
                     minusThresholdToSectionContours = []
-                    for contList in allSectionContours[sec-threshold-1:sec]:
+                    for contList in allSectionContours[sec-threshold:sec]:
                         minusThresholdToSectionContours.extend(contList)
                     if contour not in minusThresholdToSectionContours:
                         # Check if contour is in section-threshold and down
@@ -906,6 +907,7 @@ class Series:
                         for contList in allSectionContours[:sec-threshold]:
                             beginToMinusThresholdContours.extend(contList)
                         if contour in beginToMinusThresholdContours:
+                            print('frome below %s')%contour
                             traces.append(contour)
                 # Add traces to distantTraces dictionary
                 if len(traces) != 0:
