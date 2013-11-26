@@ -850,7 +850,51 @@ class Series:
         return (self.output()[0] != other.output()[0] and
                 self.output()[1] != other.output()[1])
 # Accessors
-    def locateDuplicates(self): #===
+    def locateDistantTraces(self, threshold=7): #===
+        '''Returns a dictionary of indexes containing traces that exist on adjacent sections separated by a <threshold (def: 7)> with the same name'''
+        # Build a list of lists for all the contours in each section
+        allSectionContours = []
+        for section in self.sections:
+            contours = list(set([cont.name for cont in section.contours]))
+            allSectionContours.append(contours)
+        # Go through list of contours and check for distances
+        index = int(self.sections[0].index)
+        distantTraces = {}
+        for sec in range(len(allSectionContours)):
+            traces = []
+            for contour in allSectionContours[sec]:
+                # Check above
+                if sec+threshold <= len(self.sections):
+                    # Check and ignore if in section:section+threshold
+                    sectionToThresholdContours = [] 
+                    for contList in allSectionContours[sec+1:sec+1+threshold]:
+                        sectionToThresholdContours.extend(contList)
+                    if contour not in sectionToThresholdContours:
+                        # Check if contour is in section+threshold and up
+                        thresholdToEndContours = []
+                        for contList in allSectionContours[sec+threshold:]:
+                            thresholdToEndContours.extend(contList)
+                        if contour in thresholdToEndContours:
+                            traces.append(contour)
+                # Check below
+                if sec-threshold >= 0:
+                    # Check and ignore if in section-threshold:section
+                    minusThresholdToSectionContours = []
+                    for contList in allSectionContours[sec-threshold:sec]:
+                        minusThresholdToSectionContours.extend(contList)
+                    if contour not in minusThresholdToSectionContours:
+                        # Check if contour is in section-threshold and down
+                        beginToMinusThresholdContours = []
+                        for contList in allSectionContours[:sec-threshold+1]:
+                            beginToMinusThresholdContours.extend(contList)
+                        if contour in beginToMinusThresholdContours:
+                            traces.append(contour)
+                # Add traces to distantTraces dictionary
+                if len(traces) != 0:
+                    distantTraces[index] = traces
+            index += 1
+        return distantTraces
+    def locateDuplicates(self):
         '''Locates overlapping traces of the same name in a section. Returns a dictionary of section numbers with duplicates'''
         # Build dictionary of sections and contours that have same name
         duplicateNames = {}
@@ -863,7 +907,6 @@ class Series:
                     duplicates.append(contour)
             if len(duplicates) > 0:
                 duplicateNames[section.index] = duplicates
-
         # Go through each section in duplicateNames
         duplicateDict = {}
         for section in duplicateNames:
