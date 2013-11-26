@@ -1,6 +1,10 @@
 #!/usr/bin/python
 from pyrecon.tools.classes import *
 
+
+
+
+
 def main(seriesPath):
 	series = loadSeries(seriesPath)
 	print('curationTool on (%s)')%series.name
@@ -14,7 +18,7 @@ def findDups(series):
 	print('Locating duplicate traces:')
 	print('--------------------------')
 	duplicateDict = series.locateDuplicates()
-	for sec in duplicateDict:
+	for sec in sorted(duplicateDict):
 		print('Section index: '+str(sec))
 		for name in list(set([cont.name for cont in duplicateDict[sec]])):
 			print('\t'+name)
@@ -23,11 +27,10 @@ def findDups(series):
 def findDistantTraces(series, threshold=7): #===
 	'''Prints traces of the same name separated by <threshold (default: 7)> sections that do not contain that section'''
 	print('--------------------------------------')
-	print('Locating distant traces (treshold: %d):')%threshold
+	print('Locating distant traces (treshold: +/-%d):')%threshold
 	print('--------------------------------------')
 	distantDict = series.locateDistantTraces() #=== make sure the + and - thresholds are inclusive
-	print distantDict #===
-	for sec in distantDict:
+	for sec in sorted(distantDict):
 		print('Section index: '+str(sec))
 		for name in distantDict[sec]:
 			print('\t'+name)
@@ -38,4 +41,8 @@ def findReverseTraces(series):
 	print('------------------------')
 	print('Locating reverse traces:')
 	print('------------------------')
-	return
+	reverseDict = series.locateReverseTraces()
+	for sec in sorted(reverseDict):
+		print('Section index: '+str(sec))
+		for cont in reverseDict[sec]:
+			print('\t'+cont.name)

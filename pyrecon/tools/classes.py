@@ -1,6 +1,6 @@
 import os, re, math
 import numpy as np
-from shapely.geometry import Polygon, LineString, box
+from shapely.geometry import Polygon, LineString, box, LinearRing
 from lxml import etree as ET
 from skimage import transform as tf
 from collections import OrderedDict
@@ -75,6 +75,14 @@ class Contour:
         '''Allows use of != between multiple contours.'''
         return self.output() != other.output()
 # Helper Functions
+    def isReverse(self):
+        '''Returns true if contour is a reverse trace (negative area)'''
+        self.popshape()
+        if self.closed:
+            ring = LinearRing(self._shape.exterior.coords) # convert polygon to ring
+            return not ring.is_ccw # For some reason, the opposite is true
+        else:
+            return False
     def overlaps(self, other, threshold=(1+2**(-17))):
         '''Return 0 if no overlap.
         For closed traces: return 1 if AoU/AoI < threshold, return AoU/AoI if not < threshold
@@ -850,8 +858,17 @@ class Series:
         return (self.output()[0] != other.output()[0] and
                 self.output()[1] != other.output()[1])
 # Accessors
-    def locateDistantTraces(self, threshold=7): #===
-        '''Returns a dictionary of indexes containing traces that exist on adjacent sections separated by a <threshold (def: 7)> with the same name'''
+    def locateReverseTraces(self):
+        reverseDict = {}
+        for section in self.sections:
+            revTraces = []
+            for contour in section.contours:
+                if contour.isReverse():
+                    revTraces.append(contour)
+            reverseDict[section.index] = revTraces
+        return reverseDict
+    def locateDistantTraces(self, threshold=7):
+        '''Returns a dictionary of indexes containing traces that exist after <threshold (def: 7)> sections of non-existence'''
         # Build a list of lists for all the contours in each section
         allSectionContours = []
         for section in self.sections:
@@ -864,28 +881,28 @@ class Series:
             traces = []
             for contour in allSectionContours[sec]:
                 # Check above
-                if sec+threshold <= len(self.sections):
+                if sec+threshold+1 <= len(self.sections):
                     # Check and ignore if in section:section+threshold
                     sectionToThresholdContours = [] 
-                    for contList in allSectionContours[sec+1:sec+1+threshold]:
+                    for contList in allSectionContours[sec+1:sec+threshold+1]:
                         sectionToThresholdContours.extend(contList)
                     if contour not in sectionToThresholdContours:
                         # Check if contour is in section+threshold and up
                         thresholdToEndContours = []
-                        for contList in allSectionContours[sec+threshold:]:
+                        for contList in allSectionContours[sec+threshold+1:]:
                             thresholdToEndContours.extend(contList)
                         if contour in thresholdToEndContours:
                             traces.append(contour)
                 # Check below
-                if sec-threshold >= 0:
+                if sec-threshold-1 >= 0:
                     # Check and ignore if in section-threshold:section
                     minusThresholdToSectionContours = []
-                    for contList in allSectionContours[sec-threshold:sec]:
+                    for contList in allSectionContours[sec-threshold-1:sec]:
                         minusThresholdToSectionContours.extend(contList)
                     if contour not in minusThresholdToSectionContours:
                         # Check if contour is in section-threshold and down
                         beginToMinusThresholdContours = []
-                        for contList in allSectionContours[:sec-threshold+1]:
+                        for contList in allSectionContours[:sec-threshold]:
                             beginToMinusThresholdContours.extend(contList)
                         if contour in beginToMinusThresholdContours:
                             traces.append(contour)
