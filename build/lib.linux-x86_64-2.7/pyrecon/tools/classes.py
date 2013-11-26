@@ -893,7 +893,6 @@ class Series:
                         for contList in allSectionContours[sec+threshold+1:]:
                             thresholdToEndContours.extend(contList)
                         if contour in thresholdToEndContours:
-                            print('frome above %s')%contour
                             traces.append(contour)
                 # Check below
                 if sec-threshold-1 >= 0:
@@ -907,7 +906,6 @@ class Series:
                         for contList in allSectionContours[:sec-threshold]:
                             beginToMinusThresholdContours.extend(contList)
                         if contour in beginToMinusThresholdContours:
-                            print('frome below %s')%contour
                             traces.append(contour)
                 # Add traces to distantTraces dictionary
                 if len(traces) != 0:
@@ -925,7 +923,7 @@ class Series:
             for contour in section.contours:
                 if contourNames.count(contour.name) > 1:
                     duplicates.append(contour)
-            if len(duplicates) > 0:
+            if len(duplicates) != 0:
                 duplicateNames[section.index] = duplicates
         # Go through each section in duplicateNames
         duplicateDict = {}
@@ -937,7 +935,8 @@ class Series:
                 for cont in copyContours:
                     if contour.overlaps(cont) != 0:
                         duplicates.append(cont)
-            duplicateDict[section] = duplicates
+            if len(duplicates) != 0:
+                duplicateDict[section] = duplicates
         return duplicateDict
     def renameObject(self, oldName, newName):
         '''Renames all occurances of oldName in a series to newName.'''
