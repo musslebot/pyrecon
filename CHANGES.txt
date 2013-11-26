@@ -12,6 +12,13 @@ MAJOR RELEASE
 ***********************************************************************
 ** Visit  https://github.com/wtrdrnkr/pyrecon  for additional detail **
 ***********************************************************************
+		-------------
+		Version 1.4.1
+		-------------
+		*tools.curationTool
+			-fixed adding empty lists in find duplicates
+			-fixed extra verbosity
+
 	+++++++++++++
 	Version 1.4.0
 	+++++++++++++
