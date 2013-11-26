@@ -46,3 +46,4 @@ def findReverseTraces(series):
 		print('Section index: '+str(sec))
 		for cont in reverseDict[sec]:
 			print('\t'+cont.name)
+		print

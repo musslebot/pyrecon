@@ -865,7 +865,8 @@ class Series:
             for contour in section.contours:
                 if contour.isReverse():
                     revTraces.append(contour)
-            reverseDict[section.index] = revTraces
+            if len(revTraces) != 0:
+                reverseDict[section.index] = revTraces
         return reverseDict
     def locateDistantTraces(self, threshold=7):
         '''Returns a dictionary of indexes containing traces that exist after <threshold (def: 7)> sections of non-existence'''
