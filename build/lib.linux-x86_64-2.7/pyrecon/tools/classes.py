@@ -933,8 +933,13 @@ class Series:
                 # Filter contours of same memory address
                 copyContours = [cont for cont in duplicateNames[section] if id(cont) != id(contour)]
                 for cont in copyContours:
-                    if contour.overlaps(cont) != 0:
-                        duplicates.append(cont)
+                    try: #===
+                        if contour.overlaps(cont) != 0:
+                            duplicates.append(cont)
+                    except: #===
+                        print('Problem on section %d')%section
+                        print('Invalid contour: %s')%cont.name
+                        pause = raw_input('pause')
             if len(duplicates) != 0:
                 duplicateDict[section] = duplicates
         return duplicateDict
