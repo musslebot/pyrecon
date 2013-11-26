@@ -24,12 +24,12 @@ def findDups(series):
 			print('\t'+name)
 		print
 
-def findDistantTraces(series, threshold=7): #===
+def findDistantTraces(series, threshold=7):
 	'''Prints traces of the same name separated by <threshold (default: 7)> sections that do not contain that section'''
 	print('--------------------------------------')
 	print('Locating distant traces (treshold: +/-%d):')%threshold
 	print('--------------------------------------')
-	distantDict = series.locateDistantTraces() #=== make sure the + and - thresholds are inclusive
+	distantDict = series.locateDistantTraces()
 	for sec in sorted(distantDict):
 		print('Section index: '+str(sec))
 		for name in distantDict[sec]:

@@ -80,7 +80,7 @@ class Contour:
         self.popshape()
         if self.closed:
             ring = LinearRing(self._shape.exterior.coords) # convert polygon to ring
-            return not ring.is_ccw # For some reason, the opposite is true
+            return not ring.is_ccw # For some reason, the opposite is true (image vs biological coordinate system?)
         else:
             return False
     def overlaps(self, other, threshold=(1+2**(-17))):
