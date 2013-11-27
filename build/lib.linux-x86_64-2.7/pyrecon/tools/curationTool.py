@@ -6,7 +6,9 @@ def main(seriesPath, threshold):
 	series = loadSeries(seriesPath)
 	print('curationTool on (%s)')%series.name
 	findDups(series)
+	pause = raw_input('Paused: press enter to continue') #===
 	findDistantTraces(series, threshold)
+	pause = raw_input('Paused: press enter to continue') #===
 	findReverseTraces(series)
 
 def findDups(series):
