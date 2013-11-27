@@ -13,6 +13,11 @@ MAJOR RELEASE
 ** Visit  https://github.com/wtrdrnkr/pyrecon  for additional detail **
 ***********************************************************************
 		-------------
+		Version 1.4.3
+		-------------
+
+
+		-------------
 		Version 1.4.2
 		-------------
 		*tools.classes

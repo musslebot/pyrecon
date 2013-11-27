@@ -912,7 +912,7 @@ class Series:
                     distantTraces[index] = traces
             index += 1
         return distantTraces
-    def locateDuplicates(self): #=== false positives, fix this
+    def locateDuplicates(self):
         '''Locates overlapping traces of the same name in a section. Returns a dictionary of section numbers with duplicates'''
         # Build dictionary of sections w/ contours whose name appear more than once in that section
         duplicateNames = {}
@@ -934,12 +934,11 @@ class Series:
                 # Filter contours of same memory address so that overlap isn't tested on itself
                 copyContours = [cont for cont in duplicateNames[key] if id(cont) != id(contour) and cont.name == contour.name]
                 for cont in copyContours:
-                    try: #===
+                    try:
                         if contour.overlaps(cont) == 1: # Perfect overlap (within threshold)
                             duplicates.append(cont)
-                    except: #===
-                        print('Invalid contour: %s')%cont.name
-                        pause = raw_input('paused, press enter')
+                    except:
+                        print('Invalid contour: %s on section %d')%(cont.name, key)
             if len(duplicates) != 0:
                 duplicateDict[key] = duplicates
         return duplicateDict
