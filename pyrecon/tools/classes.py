@@ -932,7 +932,7 @@ class Series:
             duplicates = []
             for contour in duplicateNames[section]:
                 # Filter contours of same memory address so that overlap isn't tested on itself
-                copyContours = [cont for cont in duplicateNames[section] if id(cont) != id(contour)]
+                copyContours = [cont for cont in duplicateNames[section] if id(cont) != id(contour)] #=== does this filter work?
                 for cont in copyContours:
                     try: #===
                         if contour.overlaps(cont) != 0:
@@ -940,7 +940,7 @@ class Series:
                     except: #===
                         print('Problem on section %d')%section
                         print('Invalid contour: %s')%cont.name
-                        pause = raw_input('pause')
+                        pause = raw_input('paused, press enter')
             if len(duplicates) != 0:
                 duplicateDict[section] = duplicates
         return duplicateDict
