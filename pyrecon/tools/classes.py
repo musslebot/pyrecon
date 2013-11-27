@@ -928,21 +928,20 @@ class Series:
         
         # Go through each list of >1 contour names and check if actually overlaps
         duplicateDict = {}
-        for section in duplicateNames:
+        for key in duplicateNames:
             duplicates = []
-            for contour in duplicateNames[section]:
+            for contour in duplicateNames[key]:
                 # Filter contours of same memory address so that overlap isn't tested on itself
-                copyContours = [cont for cont in duplicateNames[section] if id(cont) != id(contour)] #=== does this filter work?
+                copyContours = [cont for cont in duplicateNames[key] if id(cont) != id(contour) and cont.name == contour.name]
                 for cont in copyContours:
                     try: #===
-                        if contour.overlaps(cont) != 0:
+                        if contour.overlaps(cont) == 1: # Perfect overlap (within threshold)
                             duplicates.append(cont)
                     except: #===
-                        print('Problem on section %d')%section
                         print('Invalid contour: %s')%cont.name
                         pause = raw_input('paused, press enter')
             if len(duplicates) != 0:
-                duplicateDict[section] = duplicates
+                duplicateDict[key] = duplicates
         return duplicateDict
     def renameObject(self, oldName, newName):
         '''Renames all occurances of oldName in a series to newName.'''

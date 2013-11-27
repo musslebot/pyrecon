@@ -912,9 +912,9 @@ class Series:
                     distantTraces[index] = traces
             index += 1
         return distantTraces
-    def locateDuplicates(self):
+    def locateDuplicates(self): #=== false positives, fix this
         '''Locates overlapping traces of the same name in a section. Returns a dictionary of section numbers with duplicates'''
-        # Build dictionary of sections and contours that have same name
+        # Build dictionary of sections w/ contours whose name appear more than once in that section
         duplicateNames = {}
         for section in self.sections:
             duplicates = []
@@ -925,23 +925,23 @@ class Series:
                     duplicates.append(contour)
             if len(duplicates) != 0:
                 duplicateNames[section.index] = duplicates
-        # Go through each section in duplicateNames
+        
+        # Go through each list of >1 contour names and check if actually overlaps
         duplicateDict = {}
-        for section in duplicateNames:
+        for key in duplicateNames:
             duplicates = []
-            for contour in duplicateNames[section]:
-                # Filter contours of same memory address
-                copyContours = [cont for cont in duplicateNames[section] if id(cont) != id(contour)]
+            for contour in duplicateNames[key]:
+                # Filter contours of same memory address so that overlap isn't tested on itself
+                copyContours = [cont for cont in duplicateNames[key] if id(cont) != id(contour) and cont.name == contour.name]
                 for cont in copyContours:
                     try: #===
-                        if contour.overlaps(cont) != 0:
+                        if contour.overlaps(cont) == 1: # Perfect overlap (within threshold)
                             duplicates.append(cont)
                     except: #===
-                        print('Problem on section %d')%section
                         print('Invalid contour: %s')%cont.name
-                        pause = raw_input('pause')
+                        pause = raw_input('paused, press enter')
             if len(duplicates) != 0:
-                duplicateDict[section] = duplicates
+                duplicateDict[key] = duplicates
         return duplicateDict
     def renameObject(self, oldName, newName):
         '''Renames all occurances of oldName in a series to newName.'''

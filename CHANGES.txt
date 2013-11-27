@@ -13,6 +13,14 @@ MAJOR RELEASE
 ** Visit  https://github.com/wtrdrnkr/pyrecon  for additional detail **
 ***********************************************************************
 		-------------
+		Version 1.4.2
+		-------------
+		*tools.classes
+			-Series.locateDuplicateTraces() no longer considers different named objects to be duplicates
+		*tools.curationTool
+			-No longer pauses after each curation check
+
+		-------------
 		Version 1.4.1
 		-------------
 		*tools.curationTool

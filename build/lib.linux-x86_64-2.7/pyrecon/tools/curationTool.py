@@ -4,14 +4,14 @@ import argparse
 
 def main(seriesPath, threshold):
 	series = loadSeries(seriesPath)
-	print('curationTool on (%s)')%series.name
-	findDups(series)
-	pause = raw_input('Paused: press enter to continue') #===
+	print('======================')
+	print('curationTool on %s')%series.name
+	print('======================')
+	findDuplicateTraces(series)
 	findDistantTraces(series, threshold)
-	pause = raw_input('Paused: press enter to continue') #===
 	findReverseTraces(series)
 
-def findDups(series):
+def findDuplicateTraces(series):
 	'''Prints the duplicates found within every section of <series>'''
 	print('--------------------------')
 	print('Locating duplicate traces:')
@@ -25,9 +25,9 @@ def findDups(series):
 
 def findDistantTraces(series, threshold):
 	'''Prints traces of the same name separated by <threshold (default: 7)> sections that do not contain that section'''
-	print('--------------------------------------')
-	print('Locating distant traces (treshold: +/-%d):')%threshold
-	print('--------------------------------------')
+	print('-------------------------------------------------')
+	print('Locating distant traces (treshold: +/-%d sections):')%threshold
+	print('-------------------------------------------------')
 	distantDict = series.locateDistantTraces(threshold)
 	for sec in sorted(distantDict):
 		print('Section index: '+str(sec))
