@@ -22,7 +22,6 @@ def loadSeriesXML(path_to_series):
     try:
         #Parse series
         tree = ET.parse( path_to_series )
-        
         root = tree.getroot() #Series
         #Create series object
         serName = path_to_series.split('/')[len(path_to_series.split('/'))-1].replace('.ser','')
