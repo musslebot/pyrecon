@@ -94,7 +94,7 @@ class Contour:
         if (not self.box().intersects(other.box()) and
             not self.box().touches(other.box()) ):
             return 0
-        # Check if both same class of contours
+        # Check if both same type of contour
         if self.closed != other.closed:
             return 0
         # Closed contours
@@ -863,8 +863,12 @@ class Series:
         for section in self.sections:
             revTraces = []
             for contour in section.contours:
-                if contour.isReverse():
-                    revTraces.append(contour)
+                try:
+                    if contour.isReverse():
+                        revTraces.append(contour)
+                except:
+                        print('Invalid contour (%s on section %d) was ignored')%(cont.name, key)
+                        print('\t check coordinates in XML file')
             if len(revTraces) != 0:
                 reverseDict[section.index] = revTraces
         return reverseDict
@@ -938,7 +942,8 @@ class Series:
                         if contour.overlaps(cont) == 1: # Perfect overlap (within threshold)
                             duplicates.append(cont)
                     except:
-                        print('Invalid contour: %s on section %d')%(cont.name, key)
+                        print('Invalid contour (%s on section %d) was ignored')%(cont.name, key)
+                        print('\t check coordinates in XML file')
             if len(duplicates) != 0:
                 duplicateDict[key] = duplicates
         return duplicateDict
