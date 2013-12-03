@@ -1310,11 +1310,14 @@ class Series:
         #Create and add section objects to series
         print('Creating section objects...'),
         for sec in pathlist:
-            secpath = inpath + sec
-            tree = ET.parse(secpath)
-            root = tree.getroot() #Section
-            section = Section(root,sec)
-            self.addsection(section)
+            try:
+                secpath = inpath + sec
+                tree = ET.parse(secpath)
+                root = tree.getroot() #Section
+                section = Section(root,sec)
+                self.addsection(section)
+            except:
+                print('Error loading Section: %s')%inpath+sec
         self.sections = sorted(self.sections, key=lambda Section: Section.index) #sort by index
         print('DONE')
     def zeroIdentity(self):
