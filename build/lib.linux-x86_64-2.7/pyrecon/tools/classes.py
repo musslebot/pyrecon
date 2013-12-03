@@ -9,23 +9,29 @@ def loadSeries(path_to_series):
     '''Create a series object, fully populated.'''
     if path_to_series.find('/') < 0:
         path_to_series = './' + path_to_series
-    series = loadSeriesXML(path_to_series)
-    series.getSectionsXML(path_to_series)
-    return series
+    try:
+        series = loadSeriesXML(path_to_series)
+        series.getSectionsXML(path_to_series)
+        return series
+    except:
+        print('Error loading series: %s')%path_to_series
     
 def loadSeriesXML(path_to_series):
     '''Creates a series object representation from a .ser XML file in path_to_series'''
     print('Creating series object from ' + path_to_series + '...'),
-    #Parse series
-    tree = ET.parse( path_to_series )
-    
-    root = tree.getroot() #Series
-    #Create series object
-    serName = path_to_series.split('/')[len(path_to_series.split('/'))-1].replace('.ser','')
-    series = Series(root, serName)
-    print('DONE')
-    print('\tSeries: '+series.name)
-    return series
+    try:
+        #Parse series
+        tree = ET.parse( path_to_series )
+        
+        root = tree.getroot() #Series
+        #Create series object
+        serName = path_to_series.split('/')[len(path_to_series.split('/'))-1].replace('.ser','')
+        series = Series(root, serName)
+        print('DONE')
+        print('\tSeries: '+series.name)
+        return series
+    except:
+        print('Error loading sections from: %s')%path_to_series
 
 class Contour:
 # Python Functions
@@ -867,7 +873,7 @@ class Series:
                     if contour.isReverse():
                         revTraces.append(contour)
                 except:
-                        print('Invalid contour (%s on section %d) was ignored')%(cont.name, key)
+                        print('Invalid contour (%s on section %d) was ignored')%(contour.name, section.index)
                         print('\t check coordinates in XML file')
             if len(revTraces) != 0:
                 reverseDict[section.index] = revTraces
