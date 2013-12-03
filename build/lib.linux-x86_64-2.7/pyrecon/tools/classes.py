@@ -1318,6 +1318,7 @@ class Series:
                 self.addsection(section)
             except:
                 print('Error loading Section: %s')%inpath+sec
+                quit()
         self.sections = sorted(self.sections, key=lambda Section: Section.index) #sort by index
         print('DONE')
     def zeroIdentity(self):
