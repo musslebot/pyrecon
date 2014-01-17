@@ -1,15 +1,23 @@
 import pyrecon.tools.classes
-import pyrecon.tools.mergeTool
+import pyrecon.toolsgui.mergeTool
 import argparse
 
 print
-print("RECOGNIZED mergeTool-git.py")
+print("USING PYRECONSTRUCTS MERGETOOL")
 
 def main(ancestor, current, other):
 	print("Ancestor path: "+ancestor)
 	print("Current branch path: "+current)
 	print("Other branch path: "+other)
+	
 	print
+	
+	file1 = open(current)
+	file2 = open(other)
+	for line in file1.readlines():
+		if "section.dtd" in line:
+			print loadSeries()
+			print loadSeries()
 
 # ARGPARSE & CALL TO MAIN() 
 # if __name__ == '__main__':
