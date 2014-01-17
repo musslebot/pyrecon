@@ -13,6 +13,7 @@ setup(
                 'pyrecon',
                 'pyrecon.tools',
                 'pyrecon.toolsgui',
+                'pyrecon.dev'
                 ],
       license='LICENSE.txt',
       description='Python tools for interacting with XML files associated with RECONSTRUCT',
