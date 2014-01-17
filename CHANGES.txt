@@ -12,6 +12,11 @@ MAJOR RELEASE
 ***********************************************************************
 ** Visit  https://github.com/wtrdrnkr/pyrecon  for additional detail **
 ***********************************************************************
+	+++++++++++++
+	Version 1.5.0
+	+++++++++++++
+	*mergeTool now works with git -- read "Git + mergeTool" section in README for installation instructions
+
 		-------------
 		Version 1.4.3
 		-------------
