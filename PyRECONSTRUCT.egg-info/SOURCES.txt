@@ -11,9 +11,11 @@ PyRECONSTRUCT.egg-info/top_level.txt
 pyrecon/__init__.py
 pyrecon/dev/__init__.py
 pyrecon/dev/bethBellMerge.py
-pyrecon/dev/excelTool-dev.py
-pyrecon/dev/mergeTool-dev.py
-pyrecon/dev/mergeTool-git.py
+pyrecon/dev/classesDev.py
+pyrecon/dev/excelToolDev.py
+pyrecon/dev/handleXML.py
+pyrecon/dev/mergeToolDev.py
+pyrecon/dev/mergeToolGit.py
 pyrecon/tools/__init__.py
 pyrecon/tools/classes.py
 pyrecon/tools/curationTool.py
