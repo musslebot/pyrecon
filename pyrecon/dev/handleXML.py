@@ -1,4 +1,5 @@
 from lxml import etree as ET
+# from pyrecon.dev.classesDev import Section, Image, Transform
 
 def process(path):
 	'''Process XML file defined by path'''
@@ -37,8 +38,8 @@ def transformAttributes(node): #===
 	'''Returns a Transform attribute dicitonary for a given node.'''
 	attributes = {}
 	attributes['dim'] = int(node.get('dim'))
-	attributes['xcoef'] = node.get('xcoef').strip().split(' ')
-	attributes['ycoef'] = node.get('ycoef').strip().split(' ')
+	attributes['xcoef'] = [int(x) for x in node.get('xcoef').strip().split(' ')]
+	attributes['ycoef'] = [int(x) for x in node.get('ycoef').strip().split(' ')]
 	return attributes
 
 def processSectionFile(tree): #===
@@ -51,13 +52,17 @@ def processSectionFile(tree): #===
 	images = []
 	contours = []
 	for transform in root:
-
+		print('Transform about to be created') #===
+ 		transformObject = Transform( transformAttributes(transform) ) # Create transform object for current XML tree node
+		print('TransformObject created') #===
 		for child in transform:
 			if child.tag == 'Image':
-				continue
-			
+				# images.append( Image(imageAttributes(child),transformObject) ) # Create image object and append to images
+				print('Image about to be created') #===
+				#images.append( Image(imageAttributes(child)) ) # Create image object and append to images
+				print('Image created and appended') #===		
 			elif child.tag == 'Contour':
-				continue
+				print('Contour found and skipped') #===
 
 	#=== DEBUG STATEMENTS
 	print('Section Attributes: '+str(attributes))

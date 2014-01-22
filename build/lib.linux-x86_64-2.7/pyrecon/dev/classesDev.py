@@ -38,6 +38,9 @@ class Image:
                 for key in arg:
                     if key in self.attributes:
                         self.attributes[key] = arg[key]
+            # Transform object #===
+            elif arg.__class__.__name__ == 'Transform':
+                self.transform = arg
             else:
                 print('Non dict argument Image.update()')
         #=== MANAGE KWARGS
@@ -123,15 +126,14 @@ class Section:
         '''Allows use of != between multiple objects'''
         return self.output() != other.output()
 
-class Transform: #===
-# Python functions
+class Transform:
     def __init__(self, *args, **kwargs):
         self.attributes = {
             'dim':None,
             'xcoef':None,
             'ycoef':None
         }
-        self._tform = None # np.array() of transform matrix
+        self._tform = None # skimage.transform._geometric.AffineTransform
         self.processArguments(args, kwargs)
 
     def processArguments(self, args, kwargs):
@@ -146,15 +148,11 @@ class Transform: #===
 
     def update(self, *args, **kwargs):
         for arg in args:
-            print(arg) #===
             if type(arg) == type({}):
                 for key in arg:
-                    print(key) #===
                     if key in self.attributes:
                         self.attributes[key] = arg[key]
-            # Other argument types
-        # Update self._tform
-        print('Updated t: '+str(self.attributes)) #===
+            # Other argument types: transform object? image? contour? zcontour? #===
         self._tform = self.tform()
 
     # ACCESSORS
@@ -251,21 +249,3 @@ class Transform: #===
                 return newpts
             tforward.inverse = getrevt
             return tforward
-    def popyxcoef(self, node):
-        '''Populates self.ycoef and self.xcoef'''
-        if node == None:
-            return [], []
-        # digits added as int, everything else float
-        y = []
-        for elem in node.get('ycoef').split(' '):
-            if elem.isdigit():
-                y.append( int(elem) )
-            elif elem != '':
-                y.append( float(elem) )
-        x = []
-        for elem in node.get('xcoef').split(' '):
-            if elem.isdigit(): 
-                x.append( int(elem) )
-            elif elem != '':
-                x.append( float(elem) )
-        return y,x
