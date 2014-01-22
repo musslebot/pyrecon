@@ -1,5 +1,5 @@
 from lxml import etree as ET
-# from pyrecon.dev.classesDev import Section, Image, Transform
+# from pyrecon.dev.classesDev import Section, Image, Transform #=== PROBLEMS IMPORTING, Loop?
 
 def process(path):
 	'''Process XML file defined by path'''
