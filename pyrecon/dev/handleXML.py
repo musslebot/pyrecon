@@ -1,5 +1,4 @@
 from lxml import etree as ET
-from pyrecon.dev import classesDev
 
 def process(path):
 	'''Process XML file defined by path'''
@@ -12,9 +11,10 @@ def process(path):
 		elif root.tag == 'Series': # Process Series
 			return processSeriesFile(tree)
 	except:
-		print('Problem processing: '+str(path))
+		print('Problem processing: '+str(path)+'\n\thandleXML.process()')
 
 def sectionAttributes(node):
+	'''Returns a Section attribute dictionary for a given node.'''
 	attributes = {}
 	attributes['index']=int(node.get('index'))
 	attributes['thickness']=float(node.get('thickness'))
@@ -22,6 +22,7 @@ def sectionAttributes(node):
 	return attributes
 
 def imageAttributes(node):
+	'''Returns an Image attribute dictionary for a given node.'''
 	attributes = {}
 	attributes['src'] = str(node.get('src'))
 	attributes['mag'] = float(node.get('mag'))
@@ -33,6 +34,7 @@ def imageAttributes(node):
 	return attributes
 
 def transformAttributes(node): #===
+	'''Returns a Transform attribute dicitonary for a given node.'''
 	attributes = {}
 	attributes['dim'] = int(node.get('dim'))
 	attributes['xcoef'] = node.get('xcoef').strip().split(' ')
@@ -40,34 +42,28 @@ def transformAttributes(node): #===
 	return attributes
 
 def processSectionFile(tree): #===
-	'''Returns attribute dictionary, image object, and contour list associated with a section <tree>'''
-	# Process attributes
+	'''Returns attribute dictionary, image object, and contour list associated with a Section's XML <tree>'''
 	root = tree.getroot()
+
 	attributes = sectionAttributes(root)
 
 	# Process images and contours
 	images = []
 	contours = []
 	for transform in root:
-		# Create transform object
-		transformObject = Transform() #===
+
 		for child in transform:
 			if child.tag == 'Image':
-				)
-				images.append( Image(imgAttributes, transformObject) ) )
+				continue
 			
 			elif child.tag == 'Contour':
-				# Create contour object #===
-				contours.append( (contour, transform) )
+				continue
 
-	def processSectionContours(tree): #===
-		contours = [] # Gather all contours
-		# Remove redundant contours
-		return contours
+	#=== DEBUG STATEMENTS
+	print('Section Attributes: '+str(attributes))
+	print('Section Image: '+str(images))
+	print('Section Contours: '+str(contours))
+	#===
 	
-	attributes = processSectionAttributes(tree)
-	image = processSectionImages(tree)
-	contours = processSectionContours(tree)
-	
-	return attributes, image, contours
+	return attributes, images, contours
 

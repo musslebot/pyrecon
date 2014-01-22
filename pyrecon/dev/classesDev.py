@@ -73,24 +73,28 @@ class Section:
 
     def processArguments(self, args, kwargs): #===
         '''Populates data from the *args and **kwargs arguments. If a path to an XML file is given, it will take precedence and ignore other arguments. If all of the data is not present in the XML file, the other arguments will then be processed to locate the missing data. Any data not found will result in None for that data label.'''
-            # 1) ARGS
-            for arg in args:
-                if type(arg) == type(''): # Possible path?
-                    try:
-                        self.update(*xml.process(arg)) #=== only option for now
-                    except:
-                        print('Could not process arguments. Empty Section returned.')
-            # 2) KWARGS
+        # 1) ARGS
+        for arg in args:
+            if type(arg) == type(''): # Possible path?
+                try:
+                    self.update(*xml.process(arg)) #=== only option for now
+                except:
+                    print('Could not process arguments. Empty Section returned.')
+        # 2) KWARGS
     
     def update(self, *args, **kwargs): #===
         '''Changes Section data from arguments.'''
         for arg in args:
+            print('Arg: '+str(arg)) #===
             if type(arg) == type({}):
+                print('--> dictionary') #===
                 for key in arg:
                     if key in self.attributes:
                         self.attributes[key] = arg[key]
-            elif type(arg) == type(Image()): #===?
-                return
+            # elif type(arg) == type(Image()): #===?
+                # return
+            elif type(arg) == type([]): # List arguments: contours
+                self.contours = arg #=== temporary, check for Contours 
         #=== MANAGE KWARGS
 
     # ACCESSORS - Make accessing data in object easier      
@@ -120,12 +124,11 @@ class Section:
         return self.output() != other.output()
 
 class Transform:
-# Python functions
     def __init__(self, *args, **kwargs):
         self.attributes = {
-            'dim':None
+            'dim':None,
+            'xcoef':None,
             'ycoef':None
-            'xcoef':None
         }
         self._tform = None # np.array() of transform matrix
         self.processArguments(args, kwargs)
@@ -133,23 +136,25 @@ class Transform:
     def processArguments(self, args, kwargs):
         # 1) ARGS
         for arg in args:
-            # Attribute dictionary
-            if type(arg) == type({}):
-                try:
-                    self.update(arg)
-                except:
-                    print('Could not process arguments. Empty Transform returned.')
+            try:
+                self.update(arg)
+                break #=== if no Nones, else try other stuff?
+            except:
+                print('Could not process arguments. Empty Transform returned.')
         # 2) KWARGS #===
 
     def update(self, *args, **kwargs):
         for arg in args:
+            print(arg) #===
             if type(arg) == type({}):
                 for key in arg:
+                    print(key) #===
                     if key in self.attributes:
                         self.attributes[key] = arg[key]
             # Other argument types
         # Update self._tform
-        self.poptform()
+        print('Updated t: '+str(self.attributes)) #===
+        self._tform = self.tform()
 
     # ACCESSORS
     def __eq__(self, other):
@@ -178,25 +183,28 @@ class Transform:
         return True
     
     # MUTATORS             
-    def poptform(self):
+    def tform(self):
         '''Creates self._tform variable which represents the transform'''
-        if self.xcoef == [] or self.ycoef == [] or self.dim == []:
+        xcoef = self.attributes['xcoef']
+        ycoef = self.attributes['ycoef']
+        dim = self.attributes['dim']
+        if xcoef == None or ycoef == None or dim == None:
             return None
-        a = self.xcoef
-        b = self.ycoef
+        a = xcoef
+        b = ycoef
         # Affine transform
-        if self.dim in range(0,4):
-            if self.dim == 0: 
+        if dim in range(0,4):
+            if dim == 0: 
                 tmatrix = np.array( [1,0,0,0,1,0,0,0,1] ).reshape((3,3))
-            elif self.dim == 1:
+            elif dim == 1:
                 tmatrix = np.array( [1,0,a[0],0,1,b[0],0,0,1] ).reshape((3,3))
-            elif self.dim == 2: # Special case, swap b[1] and b[2] (look at original Reconstruct code: nform.cpp)
+            elif dim == 2: # Special case, swap b[1] and b[2] (look at original Reconstruct code: nform.cpp)
                 tmatrix = np.array( [a[1],0,a[0],0,b[1],b[0],0,0,1] ).reshape((3,3))
-            elif self.dim == 3:
+            elif dim == 3:
                 tmatrix = np.array( [a[1],a[2],a[0],b[1],b[2],b[0],0,0,1] ).reshape((3,3))
             return tf.AffineTransform(tmatrix)
         # Polynomial transform
-        elif self.dim in range(4,7):
+        elif dim in range(4,7):
             tmatrix = np.array( [a[0],a[1],a[2],a[4],a[3],a[5],b[0],b[1],b[2],b[4],b[3],b[5]] ).reshape((2,6))
             # create matrix of coefficients 
             tforward = tf.PolynomialTransform(tmatrix)
