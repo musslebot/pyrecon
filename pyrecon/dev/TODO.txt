@@ -1,5 +1,5 @@
 TODO LIST FOR DEVELOPMENT
 1) Introduce new classes system using *args **kargs
-	1a) accept both path locations or ET nodes
+	1a) accept path locations, variables, dictionaries, etc.
 2) Reimplement mergeTool gui stuff for individual conflicts
 3) Connect mergeTool-gui from above to git merge stuff
