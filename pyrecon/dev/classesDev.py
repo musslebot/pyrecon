@@ -1,8 +1,9 @@
 from pyrecon.dev import handleXML as xml
 class Section:
     '''Object representing a Section.'''
-# CONSTRUCTOR - Construct Section object from arguments
-    def __init__(self, *args, **kwargs): #=== start with path to xml file as only input option
+    # CONSTRUCTOR - Construct Section object from arguments
+    def __init__(self, *args, **kwargs):
+        '''First creates an empty Section. Next, processes *args and **kwargs to determine best method for populating data (more detail in processArguments().'''
         # Create empty Section
         self.attributes = None
         self.image = None
@@ -11,19 +12,26 @@ class Section:
         self.processArguments(args, kwargs)
 
     def processArguments(self, args, kwargs): #===
-        '''Process input from __init__()'''
+        '''Populates data from the *args and **kwargs arguments. If a path to an XML file is given, it will take precedence and ignore other arguments. If all of the data is not present in the XML file, the other arguments will then be processed to locate the missing data. Any data not found will result in None for that data label.'''
         try: #===
-            self.popFromPath(args[0]) #=== only option for now
-        except: #===
+            self.updateViaPath(args[0]) #=== only option for now
+        
+        except:
             print('Could not process arguments. Empty Section returned.')
 
-    def popFromPath(self, path):
+    def updateViaPath(self, path):
         '''Update the sections data via supplied path to XML file'''
         self.attributes, self.image, self.contours = xml.process(path)
 
-# MUTATORS - Change data in object
+    def updateViaDictionary(self, dictionary):
+        return
 
-# ACCESSORS - Make accessing data in object easier      
+    def updateViaObject(self, object):
+        return
+
+    # MUTATORS - Change data in object
+
+    # ACCESSORS - Make accessing data in object easier      
     def __len__(self):
         '''Return number of contours in Section object'''
         return len(self.contours)
