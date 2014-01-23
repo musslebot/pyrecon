@@ -5,6 +5,51 @@ from shapely.geometry import Polygon, LineString, box, LinearRing
 from skimage import transform as tf
 from collections import OrderedDict
 
+class Contour:
+    def __init__(self, *args, **kwargs):
+        self.attributes = {
+            'name':None,
+            'img':None, # for image contours
+            'comment':None,
+            'hidden':None,
+            'closed':None,
+            'simplified':None,
+            'mode':None,
+            'border':None,
+            'fill':None,
+            'points':None
+        }
+        self.transform = None
+        self.processArguments(args, kwargs)
+    # MUTATORS
+    def processArguments(self, args, kwargs):
+        # 1) ARGS
+        for arg in args:
+            try:
+                self.update(arg)
+            except:
+                print('Could not process Contour arg: '+str(arg))
+        # 2) KWARGS
+        for kwarg in kwargs:
+            try:
+                self.update(kwarg)
+            except:
+                print('Could not process Contour kwarg: '+str(kwarg))
+    def update(self, *args): #=== Kwargs eventually
+        for arg in args:
+            # Dictionary
+            if type(arg) == type({}):
+                for key in arg:
+                    # Dict:attributes
+                    if key in self.attributes:
+                        self.attributes[key] = arg[key]
+                    elif arg[key].__class__.__name__ == 'Transform':
+                        self.transform = arg[key]
+            # Transform
+            elif arg.__class__.__name__ == 'Transform':
+                self.transfrom = arg
+    # ACCESSORS
+
 class Image:
     def __init__(self, *args, **kwargs):
         self.attributes = {
@@ -65,11 +110,11 @@ class Section:
         # Create empty Section
         self.attributes = {
             'index':None,
-            'thickness':None, #===
+            'thickness':None,
             'alignLocked':None
         }
-        self.image = None #===
-        self.contours = None #===
+        self.image = None
+        self.contours = None
         
         # Process arguments to update Section data
         self.processArguments(args, kwargs)
@@ -93,7 +138,6 @@ class Section:
     def update(self, *args): #=== **kwargs eventually
         '''Changes Section data from arguments. Assesses type of argument then determines where to place it.'''
         for arg in args: # Assess type
-            
             # Dictionary argument
             if type(arg) == type({}):
                 for key in arg:
@@ -102,7 +146,7 @@ class Section:
                         self.attributes[key] = arg[key]
                     # Dict:List
                     elif type(arg[key]) == type([]):
-                        for item in list:
+                        for item in arg[key]:
                             if item.__class__.__name__ == 'Image':
                                 self.image = item
                             elif item.__class__.__name__ == 'Contour':
@@ -120,7 +164,6 @@ class Section:
             
             # String argument
             elif type(arg) == type(''): # Possible path to XML?
-                print('Section.update() string argument') #===
                 self.update(*xml.process(arg))
             
             # Contour argument
@@ -135,13 +178,14 @@ class Section:
             
             # List argument
             elif type(arg) == type([]):
-                for item in list:
+                for item in arg:
                     if item.__class__.__name__ == 'Contour':
                         if self.contours == None:
                             self.contours = []
                         self.contours.append(item)
                     elif item.__class__.__name__ == 'Image':
                         self.image = item
+
     # ACCESSORS - Make accessing data in object easier      
     def __len__(self):
         '''Return number of contours in Section object'''
