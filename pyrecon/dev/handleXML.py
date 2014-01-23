@@ -22,31 +22,19 @@ def processSectionFile(tree): #===
 		tForm = makeTransformObject( transformAttributes(transform) )
 		for child in transform:
 			if child.tag == 'Image':
-				print('test image') #===
 				img = makeImageObject( imageAttributes(child), tForm )
-				print('test image passed') #===
 				images.append(img)
 			elif child.tag == 'Contour':
-				print('test contour') #===
 				cont = makeContourObject( contourAttributes(child), tForm)
-				print('test contour passed') #===
 				if contours == None:
 					contours = []
 				contours.append(cont)
  
 	# Get first image from images list
-	print('image pop start') #===
 	try:
 		image = images.pop()
 	except:
 		image = None
-	print('image pop passed') #===
-
-	#=== DEBUG STATEMENTS
-	print('Section Attributes: '+str(attributes))
-	print('Section Image: '+str(image))
-	print('Section Contours: '+str(contours))
-	#===
 
 	return attributes, image, contours
 

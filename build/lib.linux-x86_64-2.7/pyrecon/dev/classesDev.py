@@ -110,11 +110,11 @@ class Section:
         # Create empty Section
         self.attributes = {
             'index':None,
-            'thickness':None, #===
+            'thickness':None,
             'alignLocked':None
         }
-        self.image = None #===
-        self.contours = None #===
+        self.image = None
+        self.contours = None
         
         # Process arguments to update Section data
         self.processArguments(args, kwargs)
@@ -138,7 +138,6 @@ class Section:
     def update(self, *args): #=== **kwargs eventually
         '''Changes Section data from arguments. Assesses type of argument then determines where to place it.'''
         for arg in args: # Assess type
-            print('update arg: '+str(arg)) #===
             # Dictionary argument
             if type(arg) == type({}):
                 for key in arg:
@@ -165,7 +164,6 @@ class Section:
             
             # String argument
             elif type(arg) == type(''): # Possible path to XML?
-                print('Section.update() string argument') #===
                 self.update(*xml.process(arg))
             
             # Contour argument
@@ -181,15 +179,13 @@ class Section:
             # List argument
             elif type(arg) == type([]):
                 for item in arg:
-                    print('item: '+str(item)) #===
                     if item.__class__.__name__ == 'Contour':
                         if self.contours == None:
                             self.contours = []
                         self.contours.append(item)
-                        print('appended cont') #===
                     elif item.__class__.__name__ == 'Image':
                         self.image = item
-                        print('appended img') #===
+
     # ACCESSORS - Make accessing data in object easier      
     def __len__(self):
         '''Return number of contours in Section object'''
