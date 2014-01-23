@@ -38,10 +38,9 @@ def processSectionFile(tree): #===
 
 	return attributes, image, contours
 
-def contourAttributes(node): #=== finish points and img
+def contourAttributes(node): #=== finish points and img (removed)
 	attributes = {}
 	attributes['name'] = str(node.get('name'))
-	attributes['img'] = None #=== Image contour
 	attributes['comment'] = str(node.get('comment'))
 	attributes['hidden'] = bool(node.get('hidden').capitalize())
 	attributes['closed'] = bool(node.get('closed').capitalize())

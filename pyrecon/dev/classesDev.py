@@ -9,7 +9,6 @@ class Contour:
     def __init__(self, *args, **kwargs):
         self.attributes = {
             'name':None,
-            'img':None, # for image contours
             'comment':None,
             'hidden':None,
             'closed':None,
