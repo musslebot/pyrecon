@@ -1,6 +1,6 @@
 import os, re, math
 import numpy as np
-from pyrecon.dev import handleXML as xml
+import pyrecon.dev.handleXML as xml
 from shapely.geometry import Polygon, LineString, box, LinearRing
 from skimage import transform as tf
 from collections import OrderedDict
@@ -17,49 +17,49 @@ class Image:
             'blue':None
         }
         self.transform = None
-
         self.processArguments(args, kwargs)
-    
+
+    # MUTATORS
     def processArguments(self, args, kwargs):
         # 1) ARGS
         for arg in args:
             try:
                 self.update(arg)
             except:
-                print('Could not process arguments. Empty Image returned.')
-        # 2) KWARGS #===
-        return
-     
-    def update(self, *args, **kwargs): #===
+                print('Could not process Image arg: '+str(arg))
+        # 2) KWARGS
+        for kwarg in kwargs:
+            try:
+                self.update(kwarg)
+            except:
+                print('Could not process Image kwarg: '+str(kwarg))   
+    def update(self, *args): #=== **kwargs eventually
         '''Changes Section data from arguments.'''
         for arg in args:
-            # Attribute dictionary
+            # Dictionary  
             if type(arg) == type({}):
                 for key in arg:
+                    # Dict:Attribute
                     if key in self.attributes:
                         self.attributes[key] = arg[key]
-            # Transform object #===
+                    # Dict:Transform
+                    elif arg[key].__class__.__name__ == 'Transform':
+                        self.transform = arg[key]
+            # Transform object
             elif arg.__class__.__name__ == 'Transform':
                 self.transform = arg
-            else:
-                print('Non dict argument Image.update()')
-        #=== MANAGE KWARGS
 
     # ACCESSORS
     def __eq__(self, other):
-        '''Allows use of == between multiple objects'''
         return (self.transform == other.transform or
                 self.src == other.src)
     def __ne__(self, other):
-        '''Allows use of != between multiple objects'''
         return (self.transform != other.transform or
                 self.src != other.src)   
 
-    # MUTATORS
-
 class Section:
     '''Object representing a Section.'''
-    # CONSTRUCTOR - Construct Section object from arguments
+    # CONSTRUCTOR
     def __init__(self, *args, **kwargs):
         '''First creates an empty Section. Next, processes *args and **kwargs to determine best method for populating data (more detail in processArguments().'''
         # Create empty Section
@@ -73,38 +73,80 @@ class Section:
         
         # Process arguments to update Section data
         self.processArguments(args, kwargs)
-
-    def processArguments(self, args, kwargs): #===
-        '''Populates data from the *args and **kwargs arguments. If a path to an XML file is given, it will take precedence and ignore other arguments. If all of the data is not present in the XML file, the other arguments will then be processed to locate the missing data. Any data not found will result in None for that data label.'''
+    
+    # MUTATORS - Change data
+    def processArguments(self, args, kwargs):
+        '''Populates data from the *args and **kwargs arguments via self.update.'''
         # 1) ARGS
         for arg in args:
-            if type(arg) == type(''): # Possible path?
-                try:
-                    self.update(*xml.process(arg)) #=== only option for now
-                except:
-                    print('Could not process arguments. Empty Section returned.')
-        # 2) KWARGS
-    
-    def update(self, *args, **kwargs): #===
-        '''Changes Section data from arguments.'''
-        for arg in args:
-            print('Arg: '+str(arg)) #===
+            try:
+                self.update(arg)
+            except:
+                print('Could not process Section arg: '+str(arg))
+
+        # 2) KWARGS #===
+        for kwarg in kwargs:
+            try:
+                self.update(kwarg)
+            except:
+                print('Could not process Section kwarg: '+str(kwarg))
+    def update(self, *args): #=== **kwargs eventually
+        '''Changes Section data from arguments. Assesses type of argument then determines where to place it.'''
+        for arg in args: # Assess type
+            
+            # Dictionary argument
             if type(arg) == type({}):
-                print('--> dictionary') #===
                 for key in arg:
+                    # Dict:Attribute
                     if key in self.attributes:
                         self.attributes[key] = arg[key]
-            # elif type(arg) == type(Image()): #===?
-                # return
-            elif type(arg) == type([]): # List arguments: contours
-                self.contours = arg #=== temporary, check for Contours 
-        #=== MANAGE KWARGS
-
+                    # Dict:List
+                    elif type(arg[key]) == type([]):
+                        for item in list:
+                            if item.__class__.__name__ == 'Image':
+                                self.image = item
+                            elif item.__class__.__name__ == 'Contour':
+                                if self.contours == None:
+                                    self.contours == []
+                                self.contours.append(item)
+                    # Dict:Image
+                    elif arg[key].__class__.__name__ == 'Image':
+                        self.image = arg[key]
+                    # Dict:Contour
+                    elif arg[key].__class__.__name__ == 'Contour':
+                        if self.contours == None:
+                            self.contours == []
+                        self.contours.append(arg[key])
+            
+            # String argument
+            elif type(arg) == type(''): # Possible path to XML?
+                print('Section.update() string argument') #===
+                self.update(*xml.process(arg))
+            
+            # Contour argument
+            elif arg.__class__.__name__ == 'Contour':
+                if self.contours == None:
+                    self.contours = []
+                self.contours.append(arg)
+            
+            # Image argument
+            elif arg.__class__.__name__ == 'Image':
+                self.image = arg
+            
+            # List argument
+            elif type(arg) == type([]):
+                for item in list:
+                    if item.__class__.__name__ == 'Contour':
+                        if self.contours == None:
+                            self.contours = []
+                        self.contours.append(item)
+                    elif item.__class__.__name__ == 'Image':
+                        self.image = item
     # ACCESSORS - Make accessing data in object easier      
     def __len__(self):
         '''Return number of contours in Section object'''
         return len(self.contours)
-    def __getitem__(self,x):
+    def __getitem__(self,x): #=== test this!
         '''Return <x> associated with Section object'''
         if type(x) == type(''): # If string
             try: #... return attribute of name 'x'
@@ -136,39 +178,43 @@ class Transform:
         self._tform = None # skimage.transform._geometric.AffineTransform
         self.processArguments(args, kwargs)
 
+    # MUTATORS
     def processArguments(self, args, kwargs):
         # 1) ARGS
         for arg in args:
             try:
                 self.update(arg)
-                break #=== if no Nones, else try other stuff?
             except:
-                print('Could not process arguments. Empty Transform returned.')
-        # 2) KWARGS #===
+                print('Could not process Transform arg: '+str(arg))
+        # 2) KWARGS
+        for kwarg in kwargs:
+            try:
+                self.update(kwarg)
+            except:
+                print('Could not process Transform kwarg: '+str(kwarg))
 
-    def update(self, *args, **kwargs):
+    def update(self, *args): #=== Kwargs eventually
         for arg in args:
+            # Dictionary
             if type(arg) == type({}):
                 for key in arg:
                     if key in self.attributes:
                         self.attributes[key] = arg[key]
-            # Other argument types: transform object? image? contour? zcontour? #===
-        self._tform = self.tform()
+                # Recreate self._tform everytime attributes is updated
+                self._tform = self.tform()
+            # self._tform (skimage.transform._geometric.AffineTransform)
+            elif arg.__class__.__name__ == 'AffineTransform':
+                self._tform = arg
 
     # ACCESSORS
     def __eq__(self, other):
-        '''Allows use of == between multiple objects'''
         return self.output() == other.output()
     def __ne__(self, other):
-        '''Allows use of != between multiple objects'''
         return self.output() != other.output()
     def worldpts(self, points):
         '''Returns inverse points'''
         newpts = self._tform.inverse(np.asarray(points))
         return list(map(tuple,newpts))
-    def imgpts(self, points): #===
-        '''Returns imgpts'''
-        return
     def isAffine(self):
         '''Returns true if the transform is affine i.e. if a[3,4,5] and b[3,4,5] are 0'''
         xcheck = self.xcoef[3:6]
