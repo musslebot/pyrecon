@@ -135,7 +135,7 @@ class Section:
                 self.update(kwarg)
             except:
                 print('Could not process Section kwarg: '+str(kwarg))
-    def update(self, *args): #=== **kwargs eventually
+    def update(self, *args): #=== **kwargs eventually, need a way to choose overwrite or append to contours
         '''Changes Section data from arguments. Assesses type of argument then determines where to place it.'''
         for arg in args: # Assess type
             # Dictionary argument
