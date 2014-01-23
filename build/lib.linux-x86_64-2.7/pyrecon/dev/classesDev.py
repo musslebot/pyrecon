@@ -20,7 +20,7 @@ class Contour:
         }
         self.transform = None
         self.processArguments(args, kwargs)
-    # MUTATORS
+# MUTATORS
     def processArguments(self, args, kwargs):
         # 1) ARGS
         for arg in args:
@@ -47,7 +47,7 @@ class Contour:
             # Transform
             elif arg.__class__.__name__ == 'Transform':
                 self.transfrom = arg
-    # ACCESSORS
+# ACCESSORS
 
 class Image:
     def __init__(self, *args, **kwargs):
@@ -63,7 +63,7 @@ class Image:
         self.transform = None
         self.processArguments(args, kwargs)
 
-    # MUTATORS
+# MUTATORS
     def processArguments(self, args, kwargs):
         # 1) ARGS
         for arg in args:
@@ -93,7 +93,7 @@ class Image:
             elif arg.__class__.__name__ == 'Transform':
                 self.transform = arg
 
-    # ACCESSORS
+# ACCESSORS
     def __eq__(self, other):
         return (self.transform == other.transform or
                 self.src == other.src)
@@ -210,6 +210,8 @@ class Section:
     def __ne__(self, other):
         '''Allows use of != between multiple objects'''
         return self.output() != other.output()
+
+#class Series:
 
 class Transform:
     def __init__(self, *args, **kwargs):
@@ -338,3 +340,5 @@ class Transform:
                 return newpts
             tforward.inverse = getrevt
             return tforward
+
+#class ZContour
