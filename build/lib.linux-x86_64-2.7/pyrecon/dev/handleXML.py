@@ -48,7 +48,7 @@ def contourAttributes(node): #=== finish points and img (removed)
 	attributes['mode'] = int(node.get('mode'))
 	attributes['border'] = [float(x) for x in node.get('border').strip().split(' ')]
 	attributes['fill'] = [float(x) for x in node.get('fill').strip().split(' ')]
-	attributes['points'] = None #===
+	attributes['points'] = zip([float(x.replace(',','')) for x in node.get('points').split()][0::2], [float(x.replace(',','')) for x in node.get('points').split()][1::2])
 	return attributes   
 
 def imageAttributes(node):
