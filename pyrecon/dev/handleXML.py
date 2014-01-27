@@ -44,6 +44,14 @@ def processSectionFile(tree):
 
 	return attributes, image, contours
 
+def sectionAttributes(node):
+	attributes = {}
+	attributes['index']=int(node.get('index'))
+	attributes['thickness']=float(node.get('thickness'))
+	attributes['alignLocked']=bool(node.get('alignLocked').upper())
+	return attributes
+
+# CONTOUR
 def contourAttributes(node): #=== finish points and img (removed)
 	attributes = {}
 	attributes['name'] = str(node.get('name'))
@@ -57,6 +65,12 @@ def contourAttributes(node): #=== finish points and img (removed)
 	attributes['points'] = zip([float(x.replace(',','')) for x in node.get('points').split()][0::2], [float(x.replace(',','')) for x in node.get('points').split()][1::2])
 	return attributes   
 
+def makeContourObject(attributes, transformObject):
+	from pyrecon.dev.classesDev import Contour
+	contourObject = Contour(attributes, transformObject)
+	return contourObject
+
+# IMAGE
 def imageAttributes(node):
 	attributes = {}
 	attributes['src'] = str(node.get('src'))
@@ -68,13 +82,12 @@ def imageAttributes(node):
 	attributes['blue'] = bool(node.get('blue').capitalize())
 	return attributes
 
-def sectionAttributes(node):
-	attributes = {}
-	attributes['index']=int(node.get('index'))
-	attributes['thickness']=float(node.get('thickness'))
-	attributes['alignLocked']=bool(node.get('alignLocked').upper())
-	return attributes	
+def makeImageObject(attributes, transformObject):
+	from pyrecon.dev.classesDev import Image
+	imageObject = Image(attributes, transformObject)
+	return imageObject
 
+# TRANSFORM
 def transformAttributes(node):
 	attributes = {}
 	attributes['dim'] = int(node.get('dim'))
@@ -87,16 +100,98 @@ def makeTransformObject(attributes):
 	transformObject = Transform(attributes)
 	return transformObject
 
-def makeImageObject(attributes, transformObject):
-	from pyrecon.dev.classesDev import Image
-	imageObject = Image(attributes, transformObject)
-	return imageObject
-
-def makeContourObject(attributes, transformObject):
-	from pyrecon.dev.classesDev import Contour
-	contourObject = Contour(attributes, transformObject)
-	return contourObject
-
 # Series
-def processSeriesFile(tree):
-	print('Series file!')
+def processSeriesFile(tree): #===
+	print('Series file!') #===
+	root = tree.getroot()
+	attributes = seriesAttributes(root)
+	return attributes #contours, zcontours
+def seriesAttributes(node): #===
+	attributes = {}
+	attributes['index'] = int(node.get('index'))
+	attributes['viewport'] = [float(x) for x in node.get('viewport').split(' ')]
+ #    attributes['units'] = 
+ #    attributes['autoSaveSeries'] = 
+ #    attributes['autoSaveSection'] = 
+ #    attributes['warnSaveSection'] = 
+ #    attributes['beepDeleting'] = 
+ #    attributes['beepPaging'] = 
+ #    attributes['hideTraces'] = 
+ #    attributes['unhideTraces'] = 
+ #    attributes['hideDomains'] = 
+ #    attributes['unhideDomains'] = 
+ #    attributes['useAbsolutePaths'] = 
+ #    attributes['defaultThickness'] = 
+ #    attributes['zMidSection'] = 
+ #    attributes['thumbWidth'] = 
+ #    attributes['thumbHeight'] = 
+ #    attributes['fitThumbSections'] = 
+ #    attributes['firstThumbSection'] = 
+ #    attributes['lastThumbSection'] = 
+	# attributes['skipSections'] = 
+	# attributes['displayThumbContours'] = 
+	# attributes['useFlipbookStyle'] = 
+	# attributes['flipRate'] = 
+	# attributes['useProxies'] = 
+	# attributes['widthUseProxies'] = 
+	# attributes['heightUseProxies'] = 
+	# attributes['scaleProxies'] = 
+	# attributes['significantDigits'] = 
+	# attributes['defaultBorder'] = 
+	# attributes['defaultFill'] = 
+	# attributes['defaultMode'] = 
+	# attributes['defaultName'] = 
+	# attributes['defaultComment'] = 
+	# attributes['listSectionThickness'] = 
+	# attributes['listDomainSource'] = 
+	# attributes['listDomainPixelsize'] = 
+	# attributes['listDomainLength'] = 
+	# attributes['listDomainArea'] =
+	# attributes['listDomainMidpoint'] =
+	# attributes['listTraceComment'] =
+	# attributes['listTraceLength'] = 
+	# attributes['listTraceArea'] = 
+	# attributes['listTraceCentroid'] = 
+	# attributes['listTraceExtent'] = 
+	# attributes['listTraceZ'] = 
+	# attributes['listTraceThickness'] =
+	# attributes['listObjectRange'] = 
+	# attributes['listObjectCount'] = 
+	# attributes['listObjectSurfarea'] = 
+	# attributes['listObjectFlatarea'] = 
+	# attributes['listObjectVolume'] = 
+	# attributes['listZTraceNote'] = 
+	# attributes['listZTraceRange'] = 
+	# attributes['listZTraceLength'] = 
+	# attributes['borderColors'] = 
+	# attributes['fillColors'] =
+	# attributes['offset3D'] = 
+	# attributes['type3Dobject'] = 
+	# attributes['first3Dsection'] = 
+	# attributes['last3Dsection'] = 
+	# attributes['max3Dconnection'] = 
+	# attributes['upper3Dfaces'] = 
+	# attributes['lower3Dfaces'] = 
+	# attributes['faceNormals'] =
+	# attributes['vertexNormals'] = 
+	# attributes['facets3D'] = 
+	# attributes['dim3D'] = 
+	# attributes['gridType'] = 
+	# attributes['gridSize'] = 
+	# attributes['gridDistance'] = 
+	# attributes['gridNumber'] = 
+	# attributes['hueStopWhen'] = 
+	# attributes['hueStopValue'] = 
+	# attributes['satStopWhen'] = 
+	# attributes['satStopValue'] = 
+	# attributes['brightStopWhen'] = 
+	# attributes['brightStopValue'] = 
+	# attributes['tracesStopWhen'] = 
+	# attributes['areaStopPercent'] = 
+	# attributes['areaStopSize'] = 
+	# attributes['ContourMaskWidth'] =
+	# attributes['smoothingLength'] =
+	# attributes['mvmtIncrement'] =
+	# attributes['ctrlIncrement'] = 
+	# attributes['shiftIncrement'] =
+	return attributes

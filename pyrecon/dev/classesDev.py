@@ -399,13 +399,16 @@ class Series: #===
 # MUTATORS
     def update(self, *args): #=== Kwargs eventually
         for arg in args:
+            # String argument
+            if type(arg) == type(''): # Possible path to XML?
+                self.update(*xml.process(arg))
             # Dictionary
-            if type(arg) == type({}):
+            elif type(arg) == type({}):
                 for key in arg:
                     if key in self.__dict__:
                         self.__dict__[key] = arg[key]
             # List
-            elif type(arg) == type{[]}:
+            elif type(arg) == type([]):
                 for item in arg:
                     # Contour
                     if item.__class__.__name__ == 'Contour':
