@@ -18,6 +18,7 @@ class Contour:
             'fill':None,
             'points':None
         }
+        self.image = None
         self.transform = None
         self.shape = None
         self.processArguments(args, kwargs)
@@ -45,11 +46,17 @@ class Contour:
                         self.attributes[key] = arg[key]
                     elif arg[key].__class__.__name__ == 'Transform':
                         self.transform = arg[key]
+                    elif arg[key].__class__.__name__ == 'Image':
+                        self.image = arg[key]
             # Transform
             elif arg.__class__.__name__ == 'Transform':
                 self.transform = arg
-        # shape update
-        self.popshape()
+            # Image
+            elif arg.__class__.__name__ == 'Image':
+                self.image = arg
+        if self.shape != None:
+            self.popshape()
+
     def popshape(self): #===
         '''Adds polygon object (shapely) to self._shape'''
         # Closed trace
@@ -57,8 +64,8 @@ class Contour:
             # If image contour, multiply pts by mag before inverting transform
             if self.attributes['name'].lower() == 'domain1':
                 mag = self.img.mag
-                xvals = [pt[0]*mag for pt in self.points]
-                yvals = [pt[1]*mag for pt in self.points]
+                xvals = [pt[0]*mag for pt in self.attributes['points']]
+                yvals = [pt[1]*mag for pt in self.attributes['points']]
                 pts = zip(xvals,yvals)
             else:
                 if len(self.points) < 3:
