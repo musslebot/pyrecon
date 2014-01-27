@@ -9,7 +9,8 @@ def process(path):
 	elif root.tag == 'Series': # Process Series
 		return processSeriesFile(tree)
 
-def processSectionFile(tree): #===
+# SECTION
+def processSectionFile(tree):
 	'''Returns attribute dictionary, image object, and contour list associated with a Section's XML <tree>'''
 	root = tree.getroot()
 
@@ -38,9 +39,7 @@ def processSectionFile(tree): #===
 
 	# Connect 'domain1' contour with section image
 	for contour in contours:
-		print contour.attributes['name']
-		if contour.attributes['name'] == 'domain1':
-			print 'match'
+		if contour.name == 'domain1':
 			contour.image = image
 
 	return attributes, image, contours
@@ -97,3 +96,7 @@ def makeContourObject(attributes, transformObject):
 	from pyrecon.dev.classesDev import Contour
 	contourObject = Contour(attributes, transformObject)
 	return contourObject
+
+# Series
+def processSeriesFile(tree):
+	print('Series file!')

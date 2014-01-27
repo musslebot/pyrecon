@@ -7,32 +7,20 @@ from collections import OrderedDict
 
 class Contour:
     def __init__(self, *args, **kwargs):
-        self.attributes = {
-            'name':None,
-            'comment':None,
-            'hidden':None,
-            'closed':None,
-            'simplified':None,
-            'mode':None,
-            'border':None,
-            'fill':None,
-            'points':None
-        }
-        self.name = self.attributes['name']
-        self.comment = self.attributes['comment']
-        self.hidden = self.attributes['hidden']
-        self.closed = self.attributes['closed']
-        self.simplified = self.attributes['simplified']
-        self.mode = self.attributes['mode']
-        self.border = self.attributes['border']
-        self.fill = self.attributes['fill']
-        self.points = self.attributes['points']
+        self.name = None
+        self.comment = None
+        self.hidden = None
+        self.closed = None
+        self.simplified = None
+        self.mode = None
+        self.border = None
+        self.fill = None
+        self.points = None
         #Non-attributes
         self.image = None #===
         self.transform = None
         self.shape = None #===
         self.processArguments(args, kwargs)
-# MUTATORS
     def processArguments(self, args, kwargs):
         # 1) ARGS
         for arg in args:
@@ -46,63 +34,58 @@ class Contour:
                 self.update(kwarg)
             except:
                 print('Could not process Contour kwarg: '+str(kwarg))
+# MUTATORS
     def update(self, *args): #=== Kwargs eventually
         for arg in args:
             # Dictionary
             if type(arg) == type({}):
                 for key in arg:
                     # Dict:attributes
-                    if key in self.attributes:
-                        self.attributes[key] = arg[key]
-                    elif arg[key].__class__.__name__ == 'Transform':
-                        self.transform = arg[key]
-                    elif arg[key].__class__.__name__ == 'Image':
-                        self.image = arg[key]
+                    if key in self.__dict__:
+                        self.__dict__[key] = arg[key]
             # Transform
             elif arg.__class__.__name__ == 'Transform':
                 self.transform = arg
             # Image
             elif arg.__class__.__name__ == 'Image':
                 self.image = arg
-
+# ACCESSORS
+    def __eq__(self, other):
+        '''Allows use of == between multiple contours.'''
+        return (self.__dict__ == other.__dict__)
+    def __ne__(self, other):
+        '''Allows use of != between multiple contours.'''
+        return (self.__dict__ != other.__dict__)
+# mergeTool functions
     def popshape(self): #===
         '''Adds polygon object (shapely) to self._shape'''
         # Closed trace
-        if self.attributes['closed'] == True:
+        if self.closed == True:
             # If image contour, multiply pts by mag before inverting transform
-            if self.attributes['name'].lower() == 'domain1':
+            if self.image != None:
                 mag = self.img.mag
-                xvals = [pt[0]*mag for pt in self.attributes['points']]
-                yvals = [pt[1]*mag for pt in self.attributes['points']]
+                xvals = [pt[0]*mag for pt in self.points]
+                yvals = [pt[1]*mag for pt in self.points]
                 pts = zip(xvals,yvals)
             else:
                 if len(self.points) < 3:
                     return None
-                pts = self.attributes['points']
+                pts = self.points
             self.shape = Polygon( self.transform.worldpts(pts) )
         # Open trace
-        elif self.attributes['closed'] == False and len(self.attributes['points'])>1:
+        elif self.closed == False and len(self.points)>1:
             self.shape = LineString( self.transform.worldpts(self.attributes['points']) )
         else:
-            print('\nInvalid shape characteristics: '+self.attributes['name'])
+            print('\nInvalid shape characteristics: '+self.name)
             print('Quit for debug')
-            quit() # for dbugging    
-
-# ACCESSORS
-    def __eq__(self, other):    
-        '''Allows use of == between multiple contours.'''
-        return (self.attributes == other.attributes & self.transform == other.transform)
-    def __ne__(self, other):
-        '''Allows use of != between multiple contours.'''
-        return (self.attributes != other.attributes & self.transform != other.transform)
-# mergeTool functions
+            quit() # for dbugging
     def box(self):
         '''Returns bounding box of shape (shapely) library'''
         if self.shape != None:
             minx, miny, maxx, maxy = self.shape.bounds
             return box(minx, miny, maxx, maxy)
         else:
-            print('NoneType for shape: '+self.attributes['name'])
+            print('NoneType for shape: '+self.name)
     def overlaps(self, other, threshold=(1+2**(-17))):
         '''Return 0 if no overlap.
         For closed traces: return 1 if AoU/AoI < threshold, return AoU/AoI if not < threshold
@@ -115,7 +98,7 @@ class Contour:
             not self.box().touches(other.box()) ):
             return 0
         # Check if both same type of contour
-        if self.attributes['closed'] != other.attributes['closed']:
+        if self.closed != other.closed:
             return 0
         # Closed contours
         if self.closed:
@@ -141,7 +124,7 @@ class Contour:
                 if elem > threshold:
                     return 0
         return 1
-# Curation tool functions
+# curationTool functions
     def getLength(self):
         '''Returns the sum of all line segments in the contour object'''
         length = 0
@@ -172,23 +155,18 @@ class Contour:
         else:
             return False
 
-
-
 class Image:
     def __init__(self, *args, **kwargs):
-        self.attributes = {
-            'src':None,
-            'mag':None,
-            'contrast':None, 
-            'brightness':None,
-            'red':None,
-            'green':None,
-            'blue':None
-        }
+        self.src = None
+        self.mag = None
+        self.contrast = None 
+        self.brightness = None
+        self.red = None
+        self.green = None
+        self.blue = None
+        #Non-attributes
         self.transform = None
         self.processArguments(args, kwargs)
-
-# MUTATORS
     def processArguments(self, args, kwargs):
         # 1) ARGS
         for arg in args:
@@ -201,7 +179,8 @@ class Image:
             try:
                 self.update(kwarg)
             except:
-                print('Could not process Image kwarg: '+str(kwarg))   
+                print('Could not process Image kwarg: '+str(kwarg)) 
+# MUTATORS  
     def update(self, *args): #=== **kwargs eventually
         '''Changes Section data from arguments.'''
         for arg in args:
@@ -209,15 +188,14 @@ class Image:
             if type(arg) == type({}):
                 for key in arg:
                     # Dict:Attribute
-                    if key in self.attributes:
-                        self.attributes[key] = arg[key]
+                    if key in self.__dict__:
+                        self.__dict__[key] = arg[key]
                     # Dict:Transform
                     elif arg[key].__class__.__name__ == 'Transform':
                         self.transform = arg[key]
             # Transform object
             elif arg.__class__.__name__ == 'Transform':
                 self.transform = arg
-
 # ACCESSORS
     def __eq__(self, other):
         return (self.transform == other.transform or
@@ -227,23 +205,14 @@ class Image:
                 self.src != other.src)   
 
 class Section:
-    '''Object representing a Section.'''
-    # CONSTRUCTOR
     def __init__(self, *args, **kwargs):
-        '''First creates an empty Section. Next, processes *args and **kwargs to determine best method for populating data (more detail in processArguments().'''
-        # Create empty Section
-        self.attributes = {
-            'index':None,
-            'thickness':None,
-            'alignLocked':None
-        }
+        self.index = None
+        self.thickness = None
+        self.alignLocked = None
+        #Non-attributes
         self.image = None
         self.contours = None
-        
-        # Process arguments to update Section data
         self.processArguments(args, kwargs)
-    
-    # MUTATORS - Change data
     def processArguments(self, args, kwargs):
         '''Populates data from the *args and **kwargs arguments via self.update.'''
         # 1) ARGS
@@ -259,6 +228,7 @@ class Section:
                 self.update(kwarg)
             except:
                 print('Could not process Section kwarg: '+str(kwarg))
+# MUTATORS
     def update(self, *args): #=== **kwargs eventually, need a way to choose overwrite or append to contours
         '''Changes Section data from arguments. Assesses type of argument then determines where to place it.'''
         for arg in args: # Assess type
@@ -266,8 +236,8 @@ class Section:
             if type(arg) == type({}):
                 for key in arg:
                     # Dict:Attribute
-                    if key in self.attributes:
-                        self.attributes[key] = arg[key]
+                    if key in self.__dict__:
+                        self.__dict__[key] = arg[key]
                     # Dict:List
                     elif type(arg[key]) == type([]):
                         for item in arg[key]:
@@ -309,46 +279,162 @@ class Section:
                         self.contours.append(item)
                     elif item.__class__.__name__ == 'Image':
                         self.image = item
-
-    # ACCESSORS - Make accessing data in object easier      
+# ACCESSORS
     def __len__(self):
         '''Return number of contours in Section object'''
         return len(self.contours)
-    def __getitem__(self,x): #=== test this!
-        '''Return <x> associated with Section object'''
-        if type(x) == type(''): # If string
-            try: #... return attribute of name 'x'
-                return self.attributes[x]
-            except:
-                try: #... return contour with name 'x'
-                    return self.contours[x] #=== should be name, not index
-                except:
-                    print ('Unable to find '+x+ ' (str)')
-        elif type(x) == type(int(0)):
-            try: #... return xth index in contours
-                return self.contours[x]
-            except:
-                print ('Unable to find '+x+' (int)')
     def __eq__(self, other):
         '''Allows use of == between multiple objects'''
-        return self.output() == other.output()
+        return self.__dict__ == other.__dict__
     def __ne__(self, other):
         '''Allows use of != between multiple objects'''
-        return self.output() != other.output()
+        return self.__dict__ != other.__dict__
 
-#class Series:
+class Series: #===
+    def __init__(self, *args, **kwargs):
+        self.name = None
+        self.index = None
+        self.viewport = None
+        self.units = None
+        self.autoSaveSeries = None
+        self.autoSaveSection =  None
+        self.warnSaveSection = None
+        self.beepDeleting = None
+        self.beepPaging = None
+        self.hideTraces = None
+        self.unhideTraces = None
+        self.hideDomains = None
+        self.unhideDomains = None
+        self.useAbsolutePaths = None
+        self.defaultThickness = None
+        self.zMidSection = None
+        self.thumbWidth = None
+        self.thumbHeight = None
+        self.fitThumbSections = None
+        self.firstThumbSection = None
+        self.lastThumbSection = None
+        self.skipSections = None
+        self.displayThumbContours = None
+        self.useFlipbookStyle = None
+        self.flipRate = None
+        self.useProxies = None
+        self.widthUseProxies = None
+        self.heightUseProxies = None
+        self.scaleProxies = None
+        self.significantDigits = None
+        self.defaultBorder = None
+        self.defaultFill = None
+        self.defaultMode = None
+        self.defaultName = None
+        self.defaultComment = None
+        self.listSectionThickness = None
+        self.listDomainSource = None
+        self.listDomainPixelsize = None
+        self.listDomainLength = None
+        self.listDomainArea = None
+        self.listDomainMidpoint = None
+        self.listTraceComment = None
+        self.listTraceLength = None
+        self.listTraceArea = None
+        self.listTraceCentroid = None
+        self.listTraceExtent = None
+        self.listTraceZ = None
+        self.listTraceThickness = None
+        self.listObjectRange = None
+        self.listObjectCount = None
+        self.listObjectSurfarea = None
+        self.listObjectFlatarea = None
+        self.listObjectVolume = None
+        self.listZTraceNote = None
+        self.listZTraceRange = None
+        self.listZTraceLength = None
+        self.borderColors = None
+        self.fillColors = None
+        self.offset3D = None
+        self.type3Dobject = None
+        self.first3Dsection = None
+        self.last3Dsection = None
+        self.max3Dconnection = None
+        self.upper3Dfaces = None
+        self.lower3Dfaces = None
+        self.faceNormals = None
+        self.vertexNormals = None
+        self.facets3D = None
+        self.dim3D = None
+        self.gridType = None
+        self.gridSize = None
+        self.gridDistance = None
+        self.gridNumber = None
+        self.hueStopWhen = None
+        self.hueStopValue = None
+        self.satStopWhen = None
+        self.satStopValue = None
+        self.brightStopWhen = None
+        self.brightStopValue = None
+        self.tracesStopWhen = None
+        self.areaStopPercent = None
+        self.areaStopSize = None
+        self.ContourMaskWidth = None
+        self.smoothingLength = None
+        self.mvmtIncrement = None
+        self.ctrlIncrement = None
+        self.shiftIncrement = None
+        #Non-attributes
+        self.contours = None
+        self.sections = None
+        self.processArguments(args, kwargs)
+    def processArguments(self, args, kwargs):
+        # 1) ARGS
+        for arg in args:
+            try:
+                self.update(arg)
+            except:
+                print('Could not process Contour arg: '+str(arg))
+        # 2) KWARGS
+        for kwarg in kwargs:
+            try:
+                self.update(kwarg)
+            except:
+                print('Could not process Contour kwarg: '+str(kwarg))
+# MUTATORS
+    def update(self, *args): #=== Kwargs eventually
+        for arg in args:
+            # Dictionary
+            if type(arg) == type({}):
+                for key in arg:
+                    if key in self.__dict__:
+                        self.__dict__[key] = arg[key]
+            # List
+            elif type(arg) == type{[]}:
+                for item in arg:
+                    # Contour
+                    if item.__class__.__name__ == 'Contour':
+                        if self.contours == None:
+                            self.contours = []
+                        self.contours.append(item)
+                    # Section
+                    elif item.__class__.__name__ == 'Section':
+                        if self.sections == None:
+                            self.sections = []
+                        self.sections.append(item)
+            # Contour
+            elif arg.__class__.__name__ == 'Contour':
+                if self.contours == None:
+                    self.contours = []
+                self.contours.append(arg)
+            # Section
+            elif arg.__class__.__name__ == 'Section':
+                if self.sections == None:
+                    self.sections = []
+                self.sections.append(arg)
 
 class Transform:
     def __init__(self, *args, **kwargs):
-        self.attributes = {
-            'dim':None,
-            'xcoef':None,
-            'ycoef':None
-        }
+        self.dim = None
+        self.xcoef = None
+        self.ycoef = None
         self._tform = None # skimage.transform._geometric.AffineTransform
         self.processArguments(args, kwargs)
-
-    # MUTATORS
     def processArguments(self, args, kwargs):
         # 1) ARGS
         for arg in args:
@@ -362,25 +448,24 @@ class Transform:
                 self.update(kwarg)
             except:
                 print('Could not process Transform kwarg: '+str(kwarg))
-
+# MUTATORS
     def update(self, *args): #=== Kwargs eventually
         for arg in args:
             # Dictionary
             if type(arg) == type({}):
                 for key in arg:
-                    if key in self.attributes:
-                        self.attributes[key] = arg[key]
+                    if key in self.__dict__:
+                        self.__dict__[key] = arg[key]
                 # Recreate self._tform everytime attributes is updated
                 self._tform = self.tform()
             # self._tform (skimage.transform._geometric.AffineTransform)
             elif arg.__class__.__name__ == 'AffineTransform':
                 self._tform = arg
-
-    # ACCESSORS
+# ACCESSORS
     def __eq__(self, other):
-        return self.output() == other.output()
+        return self.__dict__ == other.__dict__
     def __ne__(self, other):
-        return self.output() != other.output()
+        return self.__dict__ != other.__dict__
     def worldpts(self, points):
         '''Returns inverse points'''
         newpts = self._tform.inverse(np.asarray(points))
@@ -400,9 +485,9 @@ class Transform:
     # MUTATORS             
     def tform(self):
         '''Creates self._tform variable which represents the transform'''
-        xcoef = self.attributes['xcoef']
-        ycoef = self.attributes['ycoef']
-        dim = self.attributes['dim']
+        xcoef = self.xcoef
+        ycoef = self.ycoef
+        dim = self.dim
         if xcoef == None or ycoef == None or dim == None:
             return None
         a = xcoef
@@ -466,4 +551,4 @@ class Transform:
             tforward.inverse = getrevt
             return tforward
 
-#class ZContour
+#class ZContour #===
