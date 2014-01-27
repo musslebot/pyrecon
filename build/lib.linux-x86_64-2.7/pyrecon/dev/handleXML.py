@@ -36,6 +36,13 @@ def processSectionFile(tree): #===
 	except:
 		image = None
 
+	# Connect 'domain1' contour with section image
+	for contour in contours:
+		print contour.attributes['name']
+		if contour.attributes['name'] == 'domain1':
+			print 'match'
+			contour.image = image
+
 	return attributes, image, contours
 
 def contourAttributes(node): #=== finish points and img (removed)

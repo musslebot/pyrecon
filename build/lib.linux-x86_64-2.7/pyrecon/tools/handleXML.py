@@ -5,6 +5,7 @@ def process(path):
 	tree = ET.parse(path)
 	root = tree.getroot()
 	if root.tag == 'Section': # Process Section
+		print('SECTION')
 		return processSectionFile(tree)
 	elif root.tag == 'Series': # Process Series
 		return processSeriesFile(tree)
@@ -36,11 +37,11 @@ def processSectionFile(tree): #===
 	except:
 		image = None
 
-	# Connect 'domain1' contour with section image
+	print('WTF')
+	# Connect image and domain1 contour
 	for contour in contours:
-		print contour.attributes['name']
-		if contour.attributes['name'] == 'domain1':
-			print 'match'
+		print contour.name
+		if contour.name == 'domain1':
 			contour.image = image
 
 	return attributes, image, contours
@@ -84,16 +85,16 @@ def transformAttributes(node):
 	return attributes
 
 def makeTransformObject(attributes):
-	from pyrecon.dev.classesDev import Transform
+	from pyrecon.tools.classes import Transform
 	transformObject = Transform(attributes)
 	return transformObject
 
 def makeImageObject(attributes, transformObject):
-	from pyrecon.dev.classesDev import Image
+	from pyrecon.tools.classes import Image
 	imageObject = Image(attributes, transformObject)
 	return imageObject
 
 def makeContourObject(attributes, transformObject):
-	from pyrecon.dev.classesDev import Contour
+	from pyrecon.tools.classes import Contour
 	contourObject = Contour(attributes, transformObject)
 	return contourObject

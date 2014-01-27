@@ -18,9 +18,19 @@ class Contour:
             'fill':None,
             'points':None
         }
-        self.image = None
+        self.name = self.attributes['name']
+        self.comment = self.attributes['comment']
+        self.hidden = self.attributes['hidden']
+        self.closed = self.attributes['closed']
+        self.simplified = self.attributes['simplified']
+        self.mode = self.attributes['mode']
+        self.border = self.attributes['border']
+        self.fill = self.attributes['fill']
+        self.points = self.attributes['points']
+        #Non-attributes
+        self.image = None #===
         self.transform = None
-        self.shape = None
+        self.shape = None #===
         self.processArguments(args, kwargs)
 # MUTATORS
     def processArguments(self, args, kwargs):
@@ -54,8 +64,6 @@ class Contour:
             # Image
             elif arg.__class__.__name__ == 'Image':
                 self.image = arg
-        if self.shape != None:
-            self.popshape()
 
     def popshape(self): #===
         '''Adds polygon object (shapely) to self._shape'''
@@ -70,44 +78,44 @@ class Contour:
             else:
                 if len(self.points) < 3:
                     return None
-                pts = self.points
-            self._shape = Polygon( self.transform.worldpts(pts) )
+                pts = self.attributes['points']
+            self.shape = Polygon( self.transform.worldpts(pts) )
         # Open trace
-        elif self.closed == False and len(self.points)>1:
-            self._shape = LineString( self.transform.worldpts(self.points) )
+        elif self.attributes['closed'] == False and len(self.attributes['points'])>1:
+            self.shape = LineString( self.transform.worldpts(self.attributes['points']) )
         else:
-            print('\nInvalid shape characteristics: '+self.name)
+            print('\nInvalid shape characteristics: '+self.attributes['name'])
             print('Quit for debug')
             quit() # for dbugging    
 
 # ACCESSORS
     def __eq__(self, other):    
         '''Allows use of == between multiple contours.'''
-        return (self.attributes == other.attributes && self.transform == other.transform)
+        return (self.attributes == other.attributes & self.transform == other.transform)
     def __ne__(self, other):
         '''Allows use of != between multiple contours.'''
-        return (self.attributes != other.attributes && self.transfrom != other.transform)
-# Merge tool functions
+        return (self.attributes != other.attributes & self.transform != other.transform)
+# mergeTool functions
     def box(self):
         '''Returns bounding box of shape (shapely) library'''
         if self.shape != None:
             minx, miny, maxx, maxy = self.shape.bounds
             return box(minx, miny, maxx, maxy)
         else:
-            print('NoneType for shape: '+self.name)
+            print('NoneType for shape: '+self.attributes['name'])
     def overlaps(self, other, threshold=(1+2**(-17))):
         '''Return 0 if no overlap.
         For closed traces: return 1 if AoU/AoI < threshold, return AoU/AoI if not < threshold
         For open traces: return 0 if # pts differs or distance between parallel pts > threshold
                          return 1 otherwise'''
-        if self._shape == None:self.popshape()
-        if other._shape == None:other.popshape()
+        if self.shape == None:self.popshape()
+        if other.shape == None:other.popshape()
         # Check bounding box
         if (not self.box().intersects(other.box()) and
             not self.box().touches(other.box()) ):
             return 0
         # Check if both same type of contour
-        if self.closed != other.closed:
+        if self.attributes['closed'] != other.attributes['closed']:
             return 0
         # Closed contours
         if self.closed:
