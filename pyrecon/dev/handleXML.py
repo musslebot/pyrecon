@@ -1,6 +1,8 @@
 from lxml import etree as ET
+import os
 
-def process(path):
+# MAIN XML PROCESS DRIVER
+def process(path): #===
 	'''Process XML file defined by path'''
 	tree = ET.parse(path)
 	root = tree.getroot()
@@ -8,8 +10,25 @@ def process(path):
 		return processSectionFile(tree)
 	elif root.tag == 'Series': # Process Series
 		return processSeriesFile(tree)
-
-# SECTION
+		
+# Process Files
+def processSeriesFile(tree):
+	root = tree.getroot()
+	attributes = seriesAttributes(root)
+	contours = None
+	zcontours = None
+	for elem in root:
+		if elem.tag == 'Contour':
+			contour = makeContourObject(contourAttributes(elem), None)
+			if contours == None:
+				contours = []
+			contours.append(contour)
+		elif elem.tag == 'ZContour':
+			zcontour = makeZContourObject(zContourAttributes(elem)) #===
+			if zcontours == None:
+				zcontours = []
+			zcontours.append(zcontour)
+	return attributes, contours, zcontours
 def processSectionFile(tree):
 	'''Returns attribute dictionary, image object, and contour list associated with a Section's XML <tree>'''
 	root = tree.getroot()
@@ -44,33 +63,31 @@ def processSectionFile(tree):
 
 	return attributes, image, contours
 
-def sectionAttributes(node):
-	attributes = {}
-	attributes['index']=int(node.get('index'))
-	attributes['thickness']=float(node.get('thickness'))
-	attributes['alignLocked']=bool(node.get('alignLocked').upper())
+# Process attributes from tree nodes
+def contourAttributes(node):
+	try: # Contours in Sections
+		attributes = {}
+		attributes['name'] = str(node.get('name'))
+		attributes['comment'] = str(node.get('comment'))
+		attributes['hidden'] = bool(node.get('hidden').capitalize())
+		attributes['closed'] = bool(node.get('closed').capitalize())
+		attributes['simplified'] = bool(node.get('simplified').capitalize())
+		attributes['mode'] = int(node.get('mode'))
+		attributes['border'] = tuple(float(x) for x in node.get('border').strip().split(' '))
+		attributes['fill'] = tuple(float(x) for x in node.get('fill').strip().split(' '))
+		attributes['points'] = zip([float(x.replace(',','')) for x in node.get('points').split()][0::2], [float(x.replace(',','')) for x in node.get('points').split()][1::2])
+	except: # Contours in Series
+		try:
+			attributes = {}
+			attributes['name'] = str(node.get('name'))
+			attributes['closed'] = bool(node.get('closed').capitalize())
+			attributes['mode'] = int(node.get('mode'))
+			attributes['border'] = tuple(float(x) for x in node.get('border').strip().split(' '))
+			attributes['fill'] = tuple(float(x) for x in node.get('fill').strip().split(' '))
+			attributes['points'] = zip([float(x.replace(',','')) for x in node.get('points').split()][0::2], [float(x.replace(',','')) for x in node.get('points').split()][1::2])
+		except:
+			print('Problem retrieving contourAttributes')
 	return attributes
-
-# CONTOUR
-def contourAttributes(node): #=== finish points and img (removed)
-	attributes = {}
-	attributes['name'] = str(node.get('name'))
-	attributes['comment'] = str(node.get('comment'))
-	attributes['hidden'] = bool(node.get('hidden').capitalize())
-	attributes['closed'] = bool(node.get('closed').capitalize())
-	attributes['simplified'] = bool(node.get('simplified').capitalize())
-	attributes['mode'] = int(node.get('mode'))
-	attributes['border'] = [float(x) for x in node.get('border').strip().split(' ')]
-	attributes['fill'] = [float(x) for x in node.get('fill').strip().split(' ')]
-	attributes['points'] = zip([float(x.replace(',','')) for x in node.get('points').split()][0::2], [float(x.replace(',','')) for x in node.get('points').split()][1::2])
-	return attributes   
-
-def makeContourObject(attributes, transformObject):
-	from pyrecon.dev.classesDev import Contour
-	contourObject = Contour(attributes, transformObject)
-	return contourObject
-
-# IMAGE
 def imageAttributes(node):
 	attributes = {}
 	attributes['src'] = str(node.get('src'))
@@ -81,32 +98,13 @@ def imageAttributes(node):
 	attributes['green'] = bool(node.get('green').capitalize())
 	attributes['blue'] = bool(node.get('blue').capitalize())
 	return attributes
-
-def makeImageObject(attributes, transformObject):
-	from pyrecon.dev.classesDev import Image
-	imageObject = Image(attributes, transformObject)
-	return imageObject
-
-# TRANSFORM
-def transformAttributes(node):
+def sectionAttributes(node):
 	attributes = {}
-	attributes['dim'] = int(node.get('dim'))
-	attributes['xcoef'] = [int(x) for x in node.get('xcoef').strip().split(' ')]
-	attributes['ycoef'] = [int(x) for x in node.get('ycoef').strip().split(' ')]
+	attributes['index']=int(node.get('index'))
+	attributes['thickness']=float(node.get('thickness'))
+	attributes['alignLocked']=bool(node.get('alignLocked').upper())
 	return attributes
-
-def makeTransformObject(attributes):
-	from pyrecon.dev.classesDev import Transform
-	transformObject = Transform(attributes)
-	return transformObject
-
-# Series
-def processSeriesFile(tree): #===
-	print('Series file!') #===
-	root = tree.getroot()
-	attributes = seriesAttributes(root)
-	return attributes #contours, zcontours
-def seriesAttributes(node): #===
+def seriesAttributes(node):
 	attributes = {}
 	attributes['index'] = int(node.get('index'))
 	attributes['viewport'] = tuple(float(x) for x in node.get('viewport').split(' '))
@@ -195,3 +193,36 @@ def seriesAttributes(node): #===
 	attributes['ctrlIncrement'] = tuple(float(x) for x in node.get('ctrlIncrement').split(' '))
 	attributes['shiftIncrement'] = tuple(float(x) for x in node.get('shiftIncrement').split(' '))
 	return attributes
+def transformAttributes(node):
+	attributes = {}
+	attributes['dim'] = int(node.get('dim'))
+	attributes['xcoef'] = [int(x) for x in node.get('xcoef').strip().split(' ')]
+	attributes['ycoef'] = [int(x) for x in node.get('ycoef').strip().split(' ')]
+	return attributes
+def zContourAttributes(node):
+	attributes = {}
+	attributes['name'] = str(node.get('name'))
+	attributes['closed'] = bool(node.get('closed').capitalize())
+	attributes['border'] = tuple(float(x) for x in node.get('border').split(' '))
+	attributes['fill'] = tuple(float(x) for x in node.get('fill').split(' '))
+	attributes['mode'] = int(node.get('mode'))
+	attributes['points'] = [tuple(float(x) for x in x.split(' ') if x != '') for x in [x.strip() for x in node.get('points').split(',')] if len(tuple(float(x) for x in x.split(' ') if x != '')) == 3]
+	return attributes
+
+# Create objects (prevents import loop)
+def makeContourObject(attributes, transformObject):
+	from pyrecon.dev.classesDev import Contour
+	contourObject = Contour(attributes, transformObject)
+	return contourObject
+def makeImageObject(attributes, transformObject):
+	from pyrecon.dev.classesDev import Image
+	imageObject = Image(attributes, transformObject)
+	return imageObject
+def makeTransformObject(attributes):
+	from pyrecon.dev.classesDev import Transform
+	transformObject = Transform(attributes)
+	return transformObject
+def makeZContourObject(attributes):
+	from pyrecon.dev.classesDev import ZContour
+	zcontourObject = ZContour(attributes)
+	return zcontourObject

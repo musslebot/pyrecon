@@ -5,6 +5,14 @@ from shapely.geometry import Polygon, LineString, box, LinearRing
 from skimage import transform as tf
 from collections import OrderedDict
 
+def openSeries(directory):
+    '''Returns a Series object with associated Sections from the directory.'''
+    #check if directory
+    #if so, create series from .ser file
+    #now, create sections and append to series
+    # return series
+
+
 class Contour:
     def __init__(self, *args, **kwargs):
         self.name = None
@@ -381,6 +389,7 @@ class Series: #===
         self.shiftIncrement = None
         #Non-attributes
         self.contours = None
+        self.zcontours = None
         self.sections = None
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
@@ -389,13 +398,13 @@ class Series: #===
             try:
                 self.update(arg)
             except:
-                print('Could not process Contour arg: '+str(arg))
+                print('Could not process Series arg: '+str(arg))
         # 2) KWARGS
         for kwarg in kwargs:
             try:
                 self.update(kwarg)
             except:
-                print('Could not process Contour kwarg: '+str(kwarg))
+                print('Could not process Series kwarg: '+str(kwarg))
 # MUTATORS
     def update(self, *args): #=== Kwargs eventually
         for arg in args:
@@ -415,6 +424,11 @@ class Series: #===
                         if self.contours == None:
                             self.contours = []
                         self.contours.append(item)
+                    # ZSection
+                    elif item.__class__.__name__ == 'ZContour':
+                        if self.zcontours == None:
+                            self.zcontours = []
+                        self.zcontours.append(item)
                     # Section
                     elif item.__class__.__name__ == 'Section':
                         if self.sections == None:
@@ -425,6 +439,11 @@ class Series: #===
                 if self.contours == None:
                     self.contours = []
                 self.contours.append(arg)
+            # ZSection
+            elif item.__class__.__name__ == 'ZContour':
+                if self.zcontours == None:
+                    self.zcontours = []
+                self.zcontours.append(item)         
             # Section
             elif arg.__class__.__name__ == 'Section':
                 if self.sections == None:
@@ -554,4 +573,33 @@ class Transform:
             tforward.inverse = getrevt
             return tforward
 
-#class ZContour #===
+class ZContour: #===
+    def __init__(self, *args, **kwargs):
+        self.name = None
+        self.closed = None
+        self.border = None
+        self.fill = None
+        self.mode = None 
+        self.points = None
+        self.processArguments(args, kwargs)
+    def processArguments(self, args, kwargs):
+        # 1) ARGS
+        for arg in args:
+            try:
+                self.update(arg)
+            except:
+                print('Could not process ZContour arg: '+str(arg))
+        # 2) KWARGS
+        for kwarg in kwargs:
+            try:
+                self.update(kwarg)
+            except:
+                print('Could not process ZContour kwarg: '+str(kwarg))
+    def update(self, *args): #=== KWARGS eventually
+        for arg in args:
+            # Dictionary
+            if type(arg) == type({}):
+                for key in arg:
+                    # Dict:attributes
+                    if key in self.__dict__:
+                        self.__dict__[key] = arg[key]
