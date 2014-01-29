@@ -5,18 +5,29 @@ from shapely.geometry import Polygon, LineString, box, LinearRing
 from skimage import transform as tf
 from collections import OrderedDict
 
-def openSeries(directory):
+def openSeries(path): #===
     '''Returns a Series object with associated Sections from the directory.'''
-    files = [f for f in listdir(directory) if isfile(join(path,f))]
-    series = None
-    sections = None
+    # Path argument is to a .ser file
+    if '.ser' in path:
+        series = Series(path)     
+    else:
+        series = Series([f for f in os.listdir(path) if '.ser' in f].pop())
 
-    for f in files:
-        if '.ser' in f:
-           series = Series(directory+f)
+    ser = os.path.basename(path)
+    inpath = os.path.dirname(path)+'/'
+    serfixer = re.compile(re.escape('.ser'), re.IGNORECASE)
+    sername = serfixer.sub('', ser)
 
-    #now, create sections and append to series
-    # return series
+    # look for files with 'seriesname'+'.'+'number'
+    p = re.compile('^'+sername+'[.][0-9]*$')
+    sectionlist = [f for f in os.listdir(inpath) if p.match(f)]
+
+    for sec in sectionlist:
+        section = Section(inpath+sec)
+        series.update(section)
+
+    series.sections = sorted(series.sections, key=lambda Section: Section.index)
+    return series
 
 class Contour:
     def __init__(self, *args, **kwargs):
@@ -446,7 +457,7 @@ class Series: #===
                     self.contours = []
                 self.contours.append(arg)
             # ZSection
-            elif item.__class__.__name__ == 'ZContour':
+            elif arg.__class__.__name__ == 'ZContour':
                 if self.zcontours == None:
                     self.zcontours = []
                 self.zcontours.append(item)         

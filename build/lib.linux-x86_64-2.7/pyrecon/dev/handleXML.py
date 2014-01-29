@@ -193,10 +193,15 @@ def seriesAttributes(node):
 	attributes['shiftIncrement'] = tuple(float(x) for x in node.get('shiftIncrement').split(' '))
 	return attributes
 def transformAttributes(node):
+	def intorfloat(input):
+		if '.' in input:
+			return float(input)
+		else:
+			return int(input)
 	attributes = {}
 	attributes['dim'] = int(node.get('dim'))
-	attributes['xcoef'] = [int(x) for x in node.get('xcoef').strip().split(' ')]
-	attributes['ycoef'] = [int(x) for x in node.get('ycoef').strip().split(' ')]
+	attributes['xcoef'] = [intorfloat(x) for x in node.get('xcoef').strip().split(' ')]
+	attributes['ycoef'] = [intorfloat(x) for x in node.get('ycoef').strip().split(' ')]
 	return attributes
 def zContourAttributes(node):
 	attributes = {}
