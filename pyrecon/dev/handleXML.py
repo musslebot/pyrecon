@@ -238,10 +238,77 @@ def writeSection(section, directory): #===
 
 def writeSeries(series, directory, sections=False): #===
 	'''Writes <series> to an XML file in directory'''
-	# Write series file
+	# Pre-writing checks
+	# Make sure directory is correctly input
+	if directory[-1] != '/':
+		directory += '/'
+    # Check if directory exists, make if does not exist
+	if not os.path.exists(outpath):
+		os.makedirs(outpath)
+	seriesoutpath = directory+series.name+'.ser'
+    # Raise error if this file already exists to prevent overwrite
+	if os.path.exists(seriesoutpath):
+		raise IOError('\nFilename %s already exists.\nCancelled write to avoid overwrite'%seriesoutpath)
+        
+    #Build series root element
+	attributes = series.__dict__ # take away name, contours, zcontours, sections
 
+
+    # #=== The following are copy/paste from old function
+    # 	attributes, contours = self.output()
+    #     root = ET.Element(self.tag, attdict)
+    #     #Build contour elements and append to root
+    #     for contour in contours:
+    #         root.append( ET.Element(contour.tag,contour.output()) )
+    
+    #     strlist = ET.tostringlist(root)
+    #     #==========================================================================
+    #     # Needs to be in order: hideTraces/unhideTraces/hideDomains/unhideDomains
+    #         # Fix order:
+    #     strlist = strlist[0].split(' ') # Separate single string into multiple strings for each elem
+    #     count = 0
+    #     for elem in strlist:
+    #         if 'hideTraces' in elem and 'unhideTraces' not in elem:
+    #             strlist.insert(1, strlist.pop(count))
+    #         count += 1
+    #     count = 0
+    #     for elem in strlist:
+    #         if 'unhideTraces' in elem:
+    #             strlist.insert(2, strlist.pop(count))
+    #         count += 1
+    #     count = 0
+    #     for elem in strlist:
+    #         if 'hideDomains' in elem and 'unhideDomains' not in elem:
+    #             strlist.insert(3, strlist.pop(count))
+    #         count += 1
+    #     count = 0
+    #     for elem in strlist:
+    #         if 'unhideDomains' in elem:
+    #             strlist.insert(4, strlist.pop(count))
+    #         count += 1
+    #     #==========================================================================
+    #         # Recombine into list of single str
+    #     tempstr = ''
+    #     for elem in strlist:
+    #         tempstr += elem + ' '
+    #     strlist = []
+    #     strlist.append( tempstr.rstrip(' ') ) # Removes last blank space
+    
+    #     # Write to .ser file
+    #     f = open(seriesoutpath, 'w')
+    #     f.write('<?xml version="1.0"?>\n')
+    #     f.write('<!DOCTYPE Section SYSTEM "series.dtd">\n\n')
+    #     for elem in strlist:
+    #         if '>' not in elem:
+    #             f.write(elem),
+    #         else:
+    #             elem = elem+'\n'
+    #             f.write(elem)
+    #             if '/' in elem:
+    #                 f.write('\n')        
+    #     print('DONE')
+    #     print('\tSeries output to: '+str(outpath+self.name+'.ser'))
 	# Write sections too
 	if sections == True:
 		for sec in series.sections:
 			writeSections(sec, directory)
-	return

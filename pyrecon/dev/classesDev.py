@@ -5,7 +5,7 @@ from shapely.geometry import Polygon, LineString, box, LinearRing
 from skimage import transform as tf
 from collections import OrderedDict
 
-def openSeries(path): #===
+def openSeries(path):
     '''Returns a Series object with associated Sections from the directory.'''
     # Path argument is to a .ser file
     if '.ser' in path:
@@ -318,7 +318,6 @@ class Section:
 
 class Series: #===
     def __init__(self, *args, **kwargs):
-        self.name = None
         self.index = None
         self.viewport = None
         self.units = None
@@ -406,6 +405,7 @@ class Series: #===
         self.ctrlIncrement = None
         self.shiftIncrement = None
         #Non-attributes
+        self.name = None
         self.contours = None
         self.zcontours = None
         self.sections = None
@@ -468,6 +468,10 @@ class Series: #===
                 if self.sections == None:
                     self.sections = []
                 self.sections.append(arg)
+# ACCESSORS
+	def getx(self, input): #===
+		return self.__dict__[str(input)]
+
 
 class Transform:
     def __init__(self, *args, **kwargs):
