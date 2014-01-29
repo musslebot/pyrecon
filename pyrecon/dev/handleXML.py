@@ -1,5 +1,4 @@
-from lxml import etree as ET
-import os
+from lxml import etree as ET # lxml parsing library Element Tree module
 
 # MAIN XML PROCESS DRIVER
 def process(path): #===
@@ -10,7 +9,7 @@ def process(path): #===
 		return processSectionFile(tree)
 	elif root.tag == 'Series': # Process Series
 		return processSeriesFile(tree)
-		
+
 # Process Files
 def processSeriesFile(tree):
 	root = tree.getroot()

@@ -7,11 +7,16 @@ from collections import OrderedDict
 
 def openSeries(directory):
     '''Returns a Series object with associated Sections from the directory.'''
-    #check if directory
-    #if so, create series from .ser file
+    files = [f for f in listdir(directory) if isfile(join(path,f))]
+    series = None
+    sections = None
+
+    for f in files:
+        if '.ser' in f:
+           series = Series(directory+f)
+
     #now, create sections and append to series
     # return series
-
 
 class Contour:
     def __init__(self, *args, **kwargs):
@@ -411,6 +416,7 @@ class Series: #===
             # String argument
             if type(arg) == type(''): # Possible path to XML?
                 self.update(*xml.process(arg))
+                self.name = arg.split('/')[len(arg.split('/'))-1].replace('.ser','')
             # Dictionary
             elif type(arg) == type({}):
                 for key in arg:
