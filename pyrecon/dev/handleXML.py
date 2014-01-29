@@ -230,3 +230,18 @@ def makeZContourObject(attributes):
 	from pyrecon.dev.classesDev import ZContour
 	zcontourObject = ZContour(attributes)
 	return zcontourObject
+
+# Write objects to XML
+writeSection(section, directory): #===
+	'''Writes <section> to an XML file in directory'''
+	return
+
+writeSeries(series, directory, sections=False): #===
+	'''Writes <series> to an XML file in directory'''
+	# Write series file
+
+	# Write sections too
+	if sections == True:
+		for sec in series.sections:
+			writeSections(sec, directory)
+	return

@@ -230,6 +230,7 @@ class Image:
 
 class Section:
     def __init__(self, *args, **kwargs):
+        self.name = None # Series name + index
         self.index = None
         self.thickness = None
         self.alignLocked = None
@@ -283,6 +284,7 @@ class Section:
             # String argument
             elif type(arg) == type(''): # Possible path to XML?
                 self.update(*xml.process(arg))
+                self.name = arg.split('/')[-1]
             
             # Contour argument
             elif arg.__class__.__name__ == 'Contour':
