@@ -232,11 +232,11 @@ def makeZContourObject(attributes):
 	return zcontourObject
 
 # Write objects to XML
-writeSection(section, directory): #===
+def writeSection(section, directory): #===
 	'''Writes <section> to an XML file in directory'''
 	return
 
-writeSeries(series, directory, sections=False): #===
+def writeSeries(series, directory, sections=False): #===
 	'''Writes <series> to an XML file in directory'''
 	# Write series file
 
