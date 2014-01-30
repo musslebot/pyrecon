@@ -11,6 +11,7 @@ setup(
       url='https://github.com/wtrdrnkr/pyrecon',
       packages=[
                 'pyrecon',
+                'pyrecon.classes',
                 'pyrecon.tools',
                 'pyrecon.toolsgui',
                 'pyrecon.dev'

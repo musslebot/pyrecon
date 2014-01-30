@@ -9,11 +9,17 @@ PyRECONSTRUCT.egg-info/dependency_links.txt
 PyRECONSTRUCT.egg-info/requires.txt
 PyRECONSTRUCT.egg-info/top_level.txt
 pyrecon/__init__.py
+pyrecon/classes/Contour.py
+pyrecon/classes/Image.py
+pyrecon/classes/Section.py
+pyrecon/classes/Series.py
+pyrecon/classes/Transform.py
+pyrecon/classes/ZContour.py
+pyrecon/classes/__init__.py
 pyrecon/dev/__init__.py
 pyrecon/dev/bethBellMerge.py
 pyrecon/dev/classesDev.py
 pyrecon/dev/excelToolDev.py
-pyrecon/dev/handleXML.py
 pyrecon/dev/mergeToolDev.py
 pyrecon/dev/mergeToolGit.py
 pyrecon/tools/__init__.py
@@ -21,6 +27,8 @@ pyrecon/tools/classes.py
 pyrecon/tools/curationTool.py
 pyrecon/tools/excelTool.py
 pyrecon/tools/findCalFactor.py
+pyrecon/tools/handleXML.py
+pyrecon/tools/main.py
 pyrecon/tools/mergeTool.py
 pyrecon/tools/reScale.py
 pyrecon/toolsgui/__init__.py

@@ -1,3 +1,4 @@
+from pyrecon.classes import Contour, Image, Section, Series, Transform, ZContour
 from lxml import etree as ET # lxml parsing library Element Tree module
 
 # MAIN XML PROCESS DRIVER
@@ -215,19 +216,15 @@ def zContourAttributes(node):
 
 # Create objects (prevents import loop)
 def makeContourObject(attributes, transformObject):
-	from pyrecon.dev.classesDev import Contour
 	contourObject = Contour(attributes, transformObject)
 	return contourObject
 def makeImageObject(attributes, transformObject):
-	from pyrecon.dev.classesDev import Image
 	imageObject = Image(attributes, transformObject)
 	return imageObject
 def makeTransformObject(attributes):
-	from pyrecon.dev.classesDev import Transform
 	transformObject = Transform(attributes)
 	return transformObject
 def makeZContourObject(attributes):
-	from pyrecon.dev.classesDev import ZContour
 	zcontourObject = ZContour(attributes)
 	return zcontourObject
 

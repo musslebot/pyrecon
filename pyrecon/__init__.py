@@ -1,4 +1,6 @@
 __all__ = [
-           'tools',
-           'toolsgui'
+	'classes',
+	'dev',
+	'tools',
+	'toolsgui'
            ]
