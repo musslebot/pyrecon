@@ -12,9 +12,9 @@ class Contour:
         self.fill = None
         self.points = None
         #Non-attributes
-        self.image = None #===
+        self.image = None
         self.transform = None
-        self.shape = None #===
+        self.shape = None
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
         # 1) ARGS

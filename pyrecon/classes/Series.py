@@ -152,5 +152,3 @@ class Series: #===
                     self.sections = []
                 self.sections.append(arg)
 # ACCESSORS
-	def get(self, input): #===
-		return self.__dict__[str(input)]
