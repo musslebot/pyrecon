@@ -211,7 +211,7 @@ def zContourAttributes(node):
 	attributes['border'] = tuple(float(x) for x in node.get('border').split(' '))
 	attributes['fill'] = tuple(float(x) for x in node.get('fill').split(' '))
 	attributes['mode'] = int(node.get('mode'))
-	attributes['points'] = [tuple(float(x) for x in x.split(' ') if x != '') for x in [x.strip() for x in node.get('points').split(',')] if len(tuple(float(x) for x in x.split(' ') if x != '')) == 3]
+	attributes['points'] = [(float(x.split(' ')[0]), float(x.split(' ')[1]), int(x.split(' ')[2])) for x in [x.strip() for x in node.get('points').split(',')] if len(tuple(float(x) for x in x.split(' ') if x != '')) == 3]
 	return attributes
 
 # Create objects (prevents import loop)

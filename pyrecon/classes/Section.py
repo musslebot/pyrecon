@@ -1,4 +1,4 @@
-import pyrecon.tools.handleXML as xml
+
 
 class Section:
     def __init__(self, *args, **kwargs):
@@ -55,6 +55,7 @@ class Section:
             
             # String argument
             elif type(arg) == type(''): # Possible path to XML?
+                import pyrecon.tools.handleXML as xml
                 self.update(*xml.process(arg))
                 self.name = arg.split('/')[-1]
             

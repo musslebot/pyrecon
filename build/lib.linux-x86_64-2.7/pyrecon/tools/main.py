@@ -1,6 +1,6 @@
 '''Main, overarching functions.'''
-
 from pyrecon.classes import Series, Section
+import os, re
 
 def openSeries(path):
     '''Returns a Series object with associated Sections from the same directory.'''

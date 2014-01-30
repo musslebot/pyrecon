@@ -18,7 +18,6 @@ pyrecon/classes/ZContour.py
 pyrecon/classes/__init__.py
 pyrecon/dev/__init__.py
 pyrecon/dev/bethBellMerge.py
-pyrecon/dev/classesDev.py
 pyrecon/dev/excelToolDev.py
 pyrecon/dev/mergeToolDev.py
 pyrecon/dev/mergeToolGit.py

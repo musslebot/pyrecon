@@ -1,8 +1,6 @@
-__all__ = [
-	'Contour',
-	'Image',
-	'Section',
-	'Series',
-	'Transform',
-	'ZContour'
-]
+from Contour import *
+from Image import *
+from Section import *
+from Series import *
+from Transform import *
+from ZContour import *
