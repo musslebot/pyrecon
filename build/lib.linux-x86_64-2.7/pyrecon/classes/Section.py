@@ -1,5 +1,4 @@
-
-
+# handleXML is imported in .update()
 class Section:
     def __init__(self, *args, **kwargs):
         self.name = None # Series name + index
@@ -55,7 +54,7 @@ class Section:
             
             # String argument
             elif type(arg) == type(''): # Possible path to XML?
-                import pyrecon.tools.handleXML as xml
+                import pyrecon.handleXML as xml
                 self.update(*xml.process(arg))
                 self.name = arg.split('/')[-1]
             

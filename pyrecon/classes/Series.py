@@ -1,3 +1,4 @@
+# handleXML is imported in .update()
 class Series: #===
     def __init__(self, *args, **kwargs):
         self.index = None
@@ -110,7 +111,7 @@ class Series: #===
         for arg in args:
             # String argument
             if type(arg) == type(''): # Possible path to XML?
-                import pyrecon.tools.handleXML as xml
+                import pyrecon.handleXML as xml
                 self.update(*xml.process(arg))
                 self.name = arg.split('/')[len(arg.split('/'))-1].replace('.ser','')
             # Dictionary

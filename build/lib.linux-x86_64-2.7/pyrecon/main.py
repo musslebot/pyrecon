@@ -1,5 +1,5 @@
 '''Main, overarching functions.'''
-from pyrecon.classes import Series, Section
+from pyrecon.classes import Section, Series
 import os, re
 
 def openSeries(path):
