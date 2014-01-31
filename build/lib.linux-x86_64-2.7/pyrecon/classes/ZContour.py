@@ -1,4 +1,4 @@
-class ZContour: #===
+class ZContour:
     def __init__(self, *args, **kwargs):
         self.name = None
         self.closed = None

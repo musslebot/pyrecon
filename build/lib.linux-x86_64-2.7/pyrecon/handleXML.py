@@ -3,7 +3,7 @@ from lxml import etree as ET # lxml parsing library Element Tree module
 import os, re
 
 # MAIN XML PROCESS DRIVER
-def process(path): #===
+def process(path):
 	'''Process XML file defined by path'''
 	tree = ET.parse(path)
 	root = tree.getroot()
@@ -262,6 +262,94 @@ def objectToElement(object):
 			)
 		return element
 	def seriesToElement(series):
+		element = ET.Element('Series',
+			index=str(series.index),
+			viewport=' '.join([str(val) for val in series.viewport]),
+			units=str(series.units),
+			autoSaveSeries=str(series.autoSaveSeries).lower(),
+			autoSaveSection=str(series.autoSaveSection).lower(),
+			warnSaveSection=str(series.warnSaveSection).lower(),
+			beepDeleting=str(series.beepDeleting).lower(),
+			beepPaging=str(series.beepPaging).lower(),
+			hideTraces=str(series.hideTraces).lower(),
+			unhideTraces=str(series.unhideTraces).lower(),
+			hideDomains=str(series.hideDomains).lower(),
+			unhideDomains=str(series.unhideDomains).lower(),
+			useAbsolutePaths=str(series.useAbsolutePaths).lower(),
+			defaultThickness=str(series.defaultThickness),
+			zMidSection=str(series.zMidSection).lower(),
+			thumbWidth=str(series.thumbWidth),
+			thumbHeight=str(series.thumbHeight),
+			fitThumbSections=str(series.fitThumbSections).lower(),
+			firstThumbSection=str(series.firstThumbSection),
+			lastThumbSection=str(series.lastThumbSection),
+			skipSections=str(series.skipSections),
+			displayThumbContours=str(series.displayThumbContours).lower(),
+			useFlipbookStyle=str(series.useFlipbookStyle).lower(),
+			flipRate=str(series.flipRate),
+			useProxies=str(series.useProxies).lower(),
+			widthUseProxies=str(series.widthUseProxies),
+			heightUseProxies=str(series.heightUseProxies),
+			scaleProxies=str(series.scaleProxies),
+			significantDigits=str(series.significantDigits),
+			defaultBorder=' '.join([str(val) for val in series.defaultBorder]),
+			defaultFill=' '.join([str(val) for val in series.defaultFill]),
+			defaultMode=str(series.defaultMode),
+			defaultName=str(series.defaultName),
+			defaultComment=str(series.defaultComment),
+			listSectionThickness=str(series.listSectionThickness).lower(),
+			listDomainSource=str(series.listDomainSource).lower(),
+			listDomainPixelsize=str(series.listDomainPixelsize).lower(),
+			listDomainLength=str(series.listDomainLength).lower(),
+			listDomainArea=str(series.listDomainArea).lower(),
+			listDomainMidpoint=str(series.listDomainMidpoint).lower(),
+			listTraceComment=str(series.listTraceComment).lower(),
+			listTraceLength=str(series.listTraceLength).lower(),
+			listTraceArea=str(series.listTraceArea).lower(),
+			listTraceCentroid=str(series.listTraceCentroid).lower(),
+			listTraceExtent=str(series.listTraceExtent).lower(),
+			listTraceZ=str(series.listTraceZ).lower(),
+			listTraceThickness=str(series.listTraceThickness).lower(),
+			listObjectRange=str(series.listObjectRange).lower(),
+			listObjectCount=str(series.listObjectCount).lower(),
+			listObjectSurfarea=str(series.listObjectSurfarea).lower(),
+			listObjectFlatarea=str(series.listObjectFlatarea).lower(),
+			listObjectVolume=str(series.listObjectVolume).lower(),
+			listZTraceNote=str(series.listZTraceNote).lower(),
+			listZTraceRange=str(series.listZTraceRange).lower(),
+			listZTraceLength=str(series.listZTraceLength).lower(),
+			borderColors=','.join([str(val[0])+' '+str(val[1])+' '+str(val[2]) for val in series.borderColors])+',',
+			fillColors=','.join([str(val[0])+' '+str(val[1])+' '+str(val[2]) for val in series.fillColors])+',',
+			offset3D=' '.join([str(val) for val in series.offset3D]),
+			type3Dobject=str(series.type3Dobject),
+			first3Dsection=str(series.first3Dsection),
+			last3Dsection=str(series.last3Dsection),
+			max3Dconnection=str(series.max3Dconnection),
+			upper3Dfaces=str(series.upper3Dfaces).lower(),
+			lower3Dfaces=str(series.lower3Dfaces).lower(),
+			faceNormals=str(series.faceNormals).lower(),
+			vertexNormals=str(series.vertexNormals).lower(),
+			facets3D=str(series.facets3D),
+			dim3D=' '.join([str(val) for val in series.dim3D]),
+			gridType=str(series.gridType),
+			gridSize=' '.join([str(val) for val in series.gridSize]),
+			gridDistance=' '.join([str(val) for val in series.gridDistance]),
+			gridNumber=' '.join([str(val) for val in series.gridNumber]),
+			hueStopWhen=str(series.hueStopWhen),
+			hueStopValue=str(series.hueStopValue),
+			satStopWhen=str(series.satStopWhen),
+			satStopValue=str(series.satStopValue),
+			brightStopWhen=str(series.brightStopWhen),
+			brightStopValue=str(series.brightStopValue),
+			tracesStopWhen=str(series.tracesStopWhen).lower(),
+			areaStopPercent=str(series.areaStopPercent),
+			areaStopSize=str(series.areaStopSize),
+			ContourMaskWidth=str(series.ContourMaskWidth),
+			smoothingLength=str(series.smoothingLength),
+			mvmtIncrement=' '.join([str(val) for val in series.mvmtIncrement]),
+			ctrlIncrement=' '.join([str(val) for val in series.ctrlIncrement]),
+			shiftIncrement=' '.join([str(val) for val in series.shiftIncrement])
+			)
 		return element
 	def transformToElement(transform):
 		element = ET.Element("Transform",
@@ -271,6 +359,14 @@ def objectToElement(object):
 			)
 		return element
 	def zcontourToElement(zcontour):
+		element = ET.Element('ZContour',
+			name=str(zcontour.name),
+			closed=str(zcontour.closed).lower(),
+			border=' '.join([str(val) for val in zcontour.border]),
+			fill=' '.join([str(val) for val in zcontour.fill]),
+			mode=str(zcontour.mode),
+			points=', '.join([str(pt[0])+' '+str(pt[1])+' '+str(pt[2]) for pt in zcontour.points])+','
+			)
 		return element
 	if object.__class__.__name__ == 'Contour':
 		return contourToElement(object)
@@ -284,8 +380,7 @@ def objectToElement(object):
 		return transformToElement(object)
 	elif object.__class__.__name__ == 'ZContour':
 		return zcontourToElement(object)
-
-def writeSection(section, directory): #=== attributes being change to true
+def writeSection(section, directory):
 	'''Writes <section> to an XML file in directory'''
 	if str(directory[-1]) != '/':
 		directory += '/'
@@ -314,80 +409,34 @@ def writeSection(section, directory): #=== attributes being change to true
 	# Make tree and write
 	elemtree = ET.ElementTree(root)
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
-
-def writeSeries(series, directory, sections=False): #===
+def writeSeries(series, directory, sections=False):
 	'''Writes <series> to an XML file in directory'''
 	# Pre-writing checks
-	# Make sure directory is correctly input
+		# Make sure directory is correctly input
 	if directory[-1] != '/':
 		directory += '/'
-    # Check if directory exists, make if does not exist
-	if not os.path.exists(outpath):
-		os.makedirs(outpath)
-	seriesoutpath = directory+series.name+'.ser'
-    # Raise error if this file already exists to prevent overwrite
-	if os.path.exists(seriesoutpath):
-		raise IOError('\nFilename %s already exists.\nCancelled write to avoid overwrite'%seriesoutpath)
-        
-    #Build series root element
-	attributes = series.__dict__ # take away name, contours, zcontours, sections
+    	# Check if directory exists, make if does not exist
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+	outpath = directory+series.name+'.ser'
+    	# Raise error if this file already exists to prevent overwrite
+	if os.path.exists(outpath):
+		raise IOError('\nFilename %s already exists.\nQuiting write command to avoid overwrite'%outpath)
 
+    # Build series root element
+	root = objectToElement( series ) 
 
-    # #=== The following are copy/paste from old function
-    # 	attributes, contours = self.output()
-    #     root = ET.Element(self.tag, attdict)
-    #     #Build contour elements and append to root
-    #     for contour in contours:
-    #         root.append( ET.Element(contour.tag,contour.output()) )
-    
-    #     strlist = ET.tostringlist(root)
-    #     #==========================================================================
-    #     # Needs to be in order: hideTraces/unhideTraces/hideDomains/unhideDomains
-    #         # Fix order:
-    #     strlist = strlist[0].split(' ') # Separate single string into multiple strings for each elem
-    #     count = 0
-    #     for elem in strlist:
-    #         if 'hideTraces' in elem and 'unhideTraces' not in elem:
-    #             strlist.insert(1, strlist.pop(count))
-    #         count += 1
-    #     count = 0
-    #     for elem in strlist:
-    #         if 'unhideTraces' in elem:
-    #             strlist.insert(2, strlist.pop(count))
-    #         count += 1
-    #     count = 0
-    #     for elem in strlist:
-    #         if 'hideDomains' in elem and 'unhideDomains' not in elem:
-    #             strlist.insert(3, strlist.pop(count))
-    #         count += 1
-    #     count = 0
-    #     for elem in strlist:
-    #         if 'unhideDomains' in elem:
-    #             strlist.insert(4, strlist.pop(count))
-    #         count += 1
-    #     #==========================================================================
-    #         # Recombine into list of single str
-    #     tempstr = ''
-    #     for elem in strlist:
-    #         tempstr += elem + ' '
-    #     strlist = []
-    #     strlist.append( tempstr.rstrip(' ') ) # Removes last blank space
-    
-    #     # Write to .ser file
-    #     f = open(seriesoutpath, 'w')
-    #     f.write('<?xml version="1.0"?>\n')
-    #     f.write('<!DOCTYPE Section SYSTEM "series.dtd">\n\n')
-    #     for elem in strlist:
-    #         if '>' not in elem:
-    #             f.write(elem),
-    #         else:
-    #             elem = elem+'\n'
-    #             f.write(elem)
-    #             if '/' in elem:
-    #                 f.write('\n')        
-    #     print('DONE')
-    #     print('\tSeries output to: '+str(outpath+self.name+'.ser'))
-	# Write sections too
+	# Add Contours/ZContours to root
+	for contour in series.contours:
+		root.append( objectToElement(contour) )
+	for zcontour in series.zcontours:
+		root.append( objectToElement(zcontour) )
+
+	# Make tree and write
+	elemtree = ET.ElementTree(root)
+	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
+
+	# Write all sections if <sections> == True
 	if sections == True:
-		for sec in series.sections:
-			writeSections(sec, directory)
+		for section in series.sections:
+			writeSection(section, directory)
