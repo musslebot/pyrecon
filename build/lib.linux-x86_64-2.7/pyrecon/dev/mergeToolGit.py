@@ -1,5 +1,5 @@
-import pyrecon.tools.classes
-import pyrecon.toolsgui.mergeTool
+import pyrecon.classes
+import pyrecon.mergeTool
 import argparse
 
 print

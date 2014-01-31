@@ -1,6 +1,7 @@
 '''Merge two series together'''
 import sys, os, re
-from pyrecon.tools.classes import loadSeries, Series, Section
+from pyrecon.main import openSeries
+from pyrecon.classes import Series, Section
 from lxml import etree as ET
  
 if len(sys.argv) >= 3:

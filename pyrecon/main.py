@@ -25,3 +25,15 @@ def openSeries(path):
 
     series.sections = sorted(series.sections, key=lambda Section: Section.index)
     return series
+
+def merge(path1, path2, outputDirectory): #===
+    return
+
+def curate(path): #===
+    return
+
+def excel(path): #===
+    return
+
+def calibrate(path): #===
+    return

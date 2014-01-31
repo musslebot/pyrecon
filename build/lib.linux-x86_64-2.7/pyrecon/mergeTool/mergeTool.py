@@ -1,7 +1,7 @@
 '''Merge two series together'''
 import sys, os, re
+import pyrecon.classes
 from pyrecon.main import openSeries
-from pyrecon.classes import Series, Section
 from lxml import etree as ET
  
 if len(sys.argv) >= 3:
@@ -367,92 +367,5 @@ def mergeSectionContours(sA,sB, handler=secContHandler):
     
     return mergedConts
     
-class mergeObject: #=== incomplete
-    '''Abstract class to easily change functions for reconstructmergetool.py'''
-    def __init__(self):
-        
-        # META STUFF
-        self.name = 'newSeries'
-        self.outputPath = os.getcwd()+'/'+str(self.name)+'/'
-        
-        # SERIES MERGE FUNCTIONS
-        self.handleSerAtts = serAttHandler
-        self.handleSerConts = serContHandler
-        self.handleSerZConts = serZContHandler
-        
-        # SECTION MERGE FUNCTIONS
-        self.handleSecAtts = secAttHandler
-        self.handleSecImgs = secImgHandler
-        self.handleSecConts = secContHandler
-
-# Fxns
-    def merge(self, path_to_series1, path_to_series2):
-        '''Merges two series together based on mergeObjects' attributes'''
-        s1 = loadSeries(path_to_series1)
-        s2 = loadSeries(path_to_series2)
-
-        mergedSeries = mergeSeries( s1, s2, name = self.name, \
-                                mergeSerAttfxn = self.handleSerAtts, \
-                                mergeSerContfxn = self.handleSerConts, \
-                                mergeSerZContfxn = self.handleSerZConts  )
-        
-        mergedSeries.sections = mergeAllSections( s1, s2, self.name, \
-                                              secAttfxn = self.handleSecAtts, \
-                                              secImgfxn = self.handleSecImgs, \
-                                              secContfxn = self.handleSecConts)
-        mergedSeries.writeseries( self.outputPath )
-        mergedSeries.writesections( self.outputPath )
-        
-# Setters
-    def setName(self, string):
-        self.name = str(string)
-        self.outputPath = os.getcwd()+'/'+str(self.name)+'/'
-        print('Merged series name changed to: '+self.name)
-        print
-        
-    def setOutpath(self, string):
-        self.outputPath = str(string)
-        print('New output path set: '+self.outputPath)
-        print
-        
-    def setSerAttfxn(self, fxn):
-        self.handleSerAtts = fxn
-        print('New series attribute handler set')
-        print
-        
-    def setSerContfxn(self, fxn):
-        self.handleSerConts = fxn
-        print('New series contour handler set')
-        
-    def setSerZContfxn(self, fxn):
-        self.handleSerZConts = fxn
-        print('New series zcontour handler set')
-        
-    def setSecAttfxn(self, fxn):
-        self.handleSecAtts = fxn
-        print('New section attribute handler set')
-        print
-        
-    def setSecImgfxn(self, fxn):
-        self.handleSecImgs = fxn
-        print('New section image handler set')
-        print
-        
-    def setSecContfxn(self, fxn):
-        self.handleSecConts = fxn
-        print('New section contour handler set')
-        print
-    def current(self):
-        print('CURRENT MERGEOBJECT SETTINGS:')
-        print('Name: '+str(self.name))
-        print('Outpath: '+str(self.outputPath))
-        print
-        print('Series Attribute Handler: '+str(self.handleSerAtts))
-        print('Series Contour Handler: '+str(self.handleSerConts))
-        print('Series ZContour Handler: '+str(self.handleSerZConts))
-        print
-        print('Section Attribute Handler: '+str(self.handleSecAtts))
-        print('Section Image Handler: '+str(self.handleSecImgs))
-        print('Section Contour Handler: '+str(self.handleSecConts))
 main()
 

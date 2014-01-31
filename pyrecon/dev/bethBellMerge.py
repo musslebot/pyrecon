@@ -1,4 +1,4 @@
-from pyrecon.tools.mergeTool import *
+from pyrecon.mergeTool import *
 def bethBellMerge(path_FPNCT_BB, path_FPNCT_JNB): #===
     # First load FPNCT_BB and delete everything except those in saveList
     saveList = [re.compile('[d][0-9]{0,2}vftz[0-9]{0,2}[a-z]?$', re.I), # d##vftz##_

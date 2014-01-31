@@ -70,9 +70,9 @@ def contourAttributes(node):
 		attributes = {}
 		attributes['name'] = str(node.get('name'))
 		attributes['comment'] = str(node.get('comment'))
-		attributes['hidden'] = bool(node.get('hidden').capitalize()) == 'True'
-		attributes['closed'] = bool(node.get('closed').capitalize()) == 'True'
-		attributes['simplified'] = bool(node.get('simplified').capitalize()) == 'True'
+		attributes['hidden'] = node.get('hidden').capitalize() == 'True'
+		attributes['closed'] = node.get('closed').capitalize() == 'True'
+		attributes['simplified'] = node.get('simplified').capitalize() == 'True'
 		attributes['mode'] = int(node.get('mode'))
 		attributes['border'] = tuple(float(x) for x in node.get('border').strip().split(' '))
 		attributes['fill'] = tuple(float(x) for x in node.get('fill').strip().split(' '))
@@ -81,7 +81,7 @@ def contourAttributes(node):
 		try:
 			attributes = {}
 			attributes['name'] = str(node.get('name'))
-			attributes['closed'] = bool(node.get('closed').capitalize()) == 'True'
+			attributes['closed'] = node.get('closed').capitalize() == 'True'
 			attributes['mode'] = int(node.get('mode'))
 			attributes['border'] = tuple(float(x) for x in node.get('border').strip().split(' '))
 			attributes['fill'] = tuple(float(x) for x in node.get('fill').strip().split(' '))
@@ -95,43 +95,43 @@ def imageAttributes(node):
 	attributes['mag'] = float(node.get('mag'))
 	attributes['contrast'] = float(node.get('contrast'))
 	attributes['brightness'] = float(node.get('brightness'))
-	attributes['red'] = bool(node.get('red').capitalize()) == 'True'
-	attributes['green'] = bool(node.get('green').capitalize()) == 'True'
-	attributes['blue'] = bool(node.get('blue').capitalize()) == 'True'
+	attributes['red'] = node.get('red').capitalize() == 'True'
+	attributes['green'] = node.get('green').capitalize() == 'True'
+	attributes['blue'] = node.get('blue').capitalize() == 'True'
 	return attributes
 def sectionAttributes(node):
 	attributes = {}
 	attributes['index']=int(node.get('index'))
 	attributes['thickness']=float(node.get('thickness'))
-	attributes['alignLocked']=bool(node.get('alignLocked').upper()) == 'True'
+	attributes['alignLocked']=node.get('alignLocked').upper() == 'True'
 	return attributes
 def seriesAttributes(node):
 	attributes = {}
 	attributes['index'] = int(node.get('index'))
 	attributes['viewport'] = tuple(float(x) for x in node.get('viewport').split(' '))
 	attributes['units'] = str(node.get('units'))
-	attributes['autoSaveSeries'] = bool(node.get('autoSaveSeries').capitalize()) == 'True'
-	attributes['autoSaveSection'] = bool(node.get('autoSaveSection').capitalize()) == 'True'
-	attributes['warnSaveSection'] = bool(node.get('warnSaveSection').capitalize()) == 'True'
-	attributes['beepDeleting'] = bool(node.get('beepDeleting').capitalize()) == 'True'
-	attributes['beepPaging'] = bool(node.get('beepPaging').capitalize()) == 'True'
-	attributes['hideTraces'] = bool(node.get('hideTraces').capitalize()) == 'True'
-	attributes['unhideTraces'] = bool(node.get('unhideTraces').capitalize()) == 'True'
-	attributes['hideDomains'] = bool(node.get('hideDomains').capitalize()) == 'True'
-	attributes['unhideDomains'] = bool(node.get('hideDomains').capitalize()) == 'True'
-	attributes['useAbsolutePaths'] = bool(node.get('useAbsolutePaths').capitalize()) == 'True'
+	attributes['autoSaveSeries'] = node.get('autoSaveSeries').capitalize() == 'True'
+	attributes['autoSaveSection'] = node.get('autoSaveSection').capitalize() == 'True'
+	attributes['warnSaveSection'] = node.get('warnSaveSection').capitalize() == 'True'
+	attributes['beepDeleting'] = node.get('beepDeleting').capitalize() == 'True'
+	attributes['beepPaging'] = node.get('beepPaging').capitalize() == 'True'
+	attributes['hideTraces'] = node.get('hideTraces').capitalize() == 'True'
+	attributes['unhideTraces'] = node.get('unhideTraces').capitalize() == 'True'
+	attributes['hideDomains'] = node.get('hideDomains').capitalize() == 'True'
+	attributes['unhideDomains'] = node.get('hideDomains').capitalize() == 'True'
+	attributes['useAbsolutePaths'] = node.get('useAbsolutePaths').capitalize() == 'True'
 	attributes['defaultThickness'] = float(node.get('defaultThickness'))
-	attributes['zMidSection'] = bool(node.get('zMidSection').capitalize()) == 'True'
+	attributes['zMidSection'] = node.get('zMidSection').capitalize() == 'True'
 	attributes['thumbWidth'] = int(node.get('thumbWidth'))
 	attributes['thumbHeight'] = int(node.get('thumbHeight'))
-	attributes['fitThumbSections'] = bool(node.get('fitThumbSections').capitalize()) == 'True'
+	attributes['fitThumbSections'] = node.get('fitThumbSections').capitalize() == 'True'
 	attributes['firstThumbSection'] = int(node.get('firstThumbSection'))
 	attributes['lastThumbSection'] = int(node.get('lastThumbSection'))
 	attributes['skipSections'] = int(node.get('skipSections'))
-	attributes['displayThumbContours'] = bool(node.get('displayThumbContours').capitalize()) == 'True'
-	attributes['useFlipbookStyle'] = bool(node.get('useFlipbookStyle').capitalize())  == 'True'
+	attributes['displayThumbContours'] = node.get('displayThumbContours').capitalize() == 'True'
+	attributes['useFlipbookStyle'] = node.get('useFlipbookStyle').capitalize()  == 'True'
 	attributes['flipRate'] = int(node.get('flipRate'))
-	attributes['useProxies'] = bool(node.get('useProxies').capitalize()) == 'True'
+	attributes['useProxies'] = node.get('useProxies').capitalize() == 'True'
 	attributes['widthUseProxies'] = int(node.get('widthUseProxies'))
 	attributes['heightUseProxies'] = int(node.get('heightUseProxies'))
 	attributes['scaleProxies'] = float(node.get('scaleProxies'))
@@ -141,27 +141,27 @@ def seriesAttributes(node):
 	attributes['defaultMode'] = int(node.get('defaultMode'))
 	attributes['defaultName'] = str(node.get('defaultName'))
 	attributes['defaultComment'] = str(node.get('defaultComment'))
-	attributes['listSectionThickness'] = bool(node.get('listSectionThickness').capitalize()) == 'True'
-	attributes['listDomainSource'] = bool(node.get('listDomainSource').capitalize()) == 'True'
-	attributes['listDomainPixelsize'] = bool(node.get('listDomainPixelsize').capitalize()) == 'True'
-	attributes['listDomainLength'] = bool(node.get('listDomainLength').capitalize()) == 'True'
-	attributes['listDomainArea'] = bool(node.get('listDomainArea').capitalize()) == 'True'
-	attributes['listDomainMidpoint'] = bool(node.get('listDomainMidpoint').capitalize()) == 'True'
-	attributes['listTraceComment'] = bool(node.get('listTraceComment').capitalize()) == 'True'
-	attributes['listTraceLength'] = bool(node.get('listTraceLength').capitalize())  == 'True'
-	attributes['listTraceArea'] = bool(node.get('listTraceArea').capitalize()) == 'True'
-	attributes['listTraceCentroid'] = bool(node.get('listTraceCentroid').capitalize()) == 'True'
-	attributes['listTraceExtent'] = bool(node.get('listTraceExtent').capitalize()) == 'True'
-	attributes['listTraceZ'] = bool(node.get('listTraceZ').capitalize()) == 'True'
-	attributes['listTraceThickness'] = bool(node.get('listTraceThickness').capitalize()) == 'True'
-	attributes['listObjectRange'] = bool(node.get('listObjectRange').capitalize()) == 'True'
-	attributes['listObjectCount'] = bool(node.get('listObjectCount').capitalize()) == 'True'
-	attributes['listObjectSurfarea'] = bool(node.get('listObjectSurfarea').capitalize()) == 'True'
-	attributes['listObjectFlatarea'] = bool(node.get('listObjectFlatarea').capitalize()) == 'True'
-	attributes['listObjectVolume'] = bool(node.get('listObjectVolume').capitalize()) == 'True'
-	attributes['listZTraceNote'] = bool(node.get('listZTraceNote').capitalize()) == 'True'
-	attributes['listZTraceRange'] = bool(node.get('listZTraceRange').capitalize()) == 'True'
-	attributes['listZTraceLength'] = bool(node.get('listZTraceLength').capitalize()) == 'True'
+	attributes['listSectionThickness'] = node.get('listSectionThickness').capitalize() == 'True'
+	attributes['listDomainSource'] = node.get('listDomainSource').capitalize() == 'True'
+	attributes['listDomainPixelsize'] = node.get('listDomainPixelsize').capitalize() == 'True'
+	attributes['listDomainLength'] = node.get('listDomainLength').capitalize() == 'True'
+	attributes['listDomainArea'] = node.get('listDomainArea').capitalize() == 'True'
+	attributes['listDomainMidpoint'] = node.get('listDomainMidpoint').capitalize() == 'True'
+	attributes['listTraceComment'] = node.get('listTraceComment').capitalize() == 'True'
+	attributes['listTraceLength'] = node.get('listTraceLength').capitalize()  == 'True'
+	attributes['listTraceArea'] = node.get('listTraceArea').capitalize() == 'True'
+	attributes['listTraceCentroid'] = node.get('listTraceCentroid').capitalize() == 'True'
+	attributes['listTraceExtent'] = node.get('listTraceExtent').capitalize() == 'True'
+	attributes['listTraceZ'] = node.get('listTraceZ').capitalize() == 'True'
+	attributes['listTraceThickness'] = node.get('listTraceThickness').capitalize() == 'True'
+	attributes['listObjectRange'] = node.get('listObjectRange').capitalize() == 'True'
+	attributes['listObjectCount'] = node.get('listObjectCount').capitalize() == 'True'
+	attributes['listObjectSurfarea'] = node.get('listObjectSurfarea').capitalize() == 'True'
+	attributes['listObjectFlatarea'] = node.get('listObjectFlatarea').capitalize() == 'True'
+	attributes['listObjectVolume'] = node.get('listObjectVolume').capitalize() == 'True'
+	attributes['listZTraceNote'] = node.get('listZTraceNote').capitalize() == 'True'
+	attributes['listZTraceRange'] = node.get('listZTraceRange').capitalize() == 'True'
+	attributes['listZTraceLength'] = node.get('listZTraceLength').capitalize() == 'True'
 	attributes['borderColors'] = [tuple(float(x) for x in x.split(' ') if x != '') for x in [x.strip() for x in node.get('borderColors').split(',')] if len(tuple(float(x) for x in x.split(' ') if x != '')) == 3]
 	attributes['fillColors'] = [tuple(float(x) for x in x.split(' ') if x != '') for x in [x.strip() for x in node.get('fillColors').split(',')] if len(tuple(float(x) for x in x.split(' ') if x != '')) == 3]
 	attributes['offset3D'] = tuple(float(x) for x in node.get('offset3D').split(' '))
@@ -169,10 +169,10 @@ def seriesAttributes(node):
 	attributes['first3Dsection'] = int(node.get('first3Dsection'))
 	attributes['last3Dsection'] = int(node.get('last3Dsection'))
 	attributes['max3Dconnection'] = int(node.get('max3Dconnection'))
-	attributes['upper3Dfaces'] = bool(node.get('upper3Dfaces').capitalize()) == 'True'
-	attributes['lower3Dfaces'] = bool(node.get('lower3Dfaces').capitalize()) == 'True'
-	attributes['faceNormals'] =bool(node.get('faceNormals').capitalize()) == 'True'
-	attributes['vertexNormals'] = bool(node.get('vertexNormals').capitalize()) == 'True'
+	attributes['upper3Dfaces'] = node.get('upper3Dfaces').capitalize() == 'True'
+	attributes['lower3Dfaces'] = node.get('lower3Dfaces').capitalize() == 'True'
+	attributes['faceNormals'] = node.get('faceNormals').capitalize() == 'True'
+	attributes['vertexNormals'] = node.get('vertexNormals').capitalize() == 'True'
 	attributes['facets3D'] = int(node.get('facets3D'))
 	attributes['dim3D'] = tuple(float(x) for x in node.get('dim3D').split())
 	attributes['gridType'] = int(node.get('gridType'))
@@ -185,7 +185,7 @@ def seriesAttributes(node):
 	attributes['satStopValue'] = int(node.get('satStopValue'))
 	attributes['brightStopWhen'] = int(node.get('brightStopWhen'))
 	attributes['brightStopValue'] = int(node.get('brightStopValue'))
-	attributes['tracesStopWhen'] = bool(node.get('tracesStopWhen').capitalize())
+	attributes['tracesStopWhen'] = node.get('tracesStopWhen').capitalize()
 	attributes['areaStopPercent'] = int(node.get('areaStopPercent'))
 	attributes['areaStopSize'] = int(node.get('areaStopSize'))
 	attributes['ContourMaskWidth'] = int(node.get('ContourMaskWidth'))
@@ -208,7 +208,7 @@ def transformAttributes(node):
 def zContourAttributes(node):
 	attributes = {}
 	attributes['name'] = str(node.get('name'))
-	attributes['closed'] = bool(node.get('closed').capitalize()) == 'True'
+	attributes['closed'] = node.get('closed').capitalize() == 'True'
 	attributes['border'] = tuple(float(x) for x in node.get('border').split(' '))
 	attributes['fill'] = tuple(float(x) for x in node.get('fill').split(' '))
 	attributes['mode'] = int(node.get('mode'))

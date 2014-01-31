@@ -1,5 +1,5 @@
 from PySide import QtCore, QtGui
-from pyrecon.tools import classes
+from pyrecon.classes import *
 import sys, os, re
 # THIS IS A DEVELOPMENT FILE AND SHOULD NOT BE EXPECTED TO WORK
 # Current issues:
