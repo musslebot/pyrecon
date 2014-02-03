@@ -33,5 +33,7 @@ pyrecon/excelTool/__init__.py
 pyrecon/excelTool/excelTool.py
 pyrecon/excelTool/excelToolG.py
 pyrecon/mergeTool/__init__.py
+pyrecon/mergeTool/handlers.py
+pyrecon/mergeTool/handlersGUI.py
 pyrecon/mergeTool/mergeTool.py
-pyrecon/mergeTool/mergeToolG.py
+pyrecon/mergeTool/sectionMerge.py

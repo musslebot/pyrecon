@@ -20,6 +20,6 @@ def main(series1, series2, directory):
 	print series2
 	print directory
 
-def mergeType(input1, input2):
-	'''Returns type of file to be merged.'''
-	return
+class mergeObject:
+	def __init__(self, *args, **kwargs):
+

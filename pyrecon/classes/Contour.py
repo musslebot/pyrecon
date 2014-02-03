@@ -52,7 +52,7 @@ class Contour:
         '''Allows use of != between multiple contours.'''
         return (self.__dict__ != other.__dict__)
 # mergeTool functions
-    def popshape(self): #===
+    def popShape(self):
         '''Adds polygon object (shapely) to self._shape'''
         # Closed trace
         if self.closed == True:

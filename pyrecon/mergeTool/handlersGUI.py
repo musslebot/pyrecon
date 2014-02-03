@@ -1,0 +1,1 @@
+'''Graphical handler functions for mergeTool conflicts'''

@@ -77,6 +77,9 @@ class Section:
                         self.contours.append(item)
                     elif item.__class__.__name__ == 'Image':
                         self.image = item
+    def popShapes(self):
+        for contour in self.contours:
+            contour.popShape()
 # ACCESSORS
     def __len__(self):
         '''Return number of contours in Section object'''
