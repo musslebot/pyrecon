@@ -1,5 +1,8 @@
-# handleXML is imported in .update()
-class Series: #===
+import os, re
+from Section import Section as Section
+# handleXML is imported in Series.update()
+
+class Series:
     def __init__(self, *args, **kwargs):
         self.index = None
         self.viewport = None
@@ -89,31 +92,40 @@ class Series: #===
         self.shiftIncrement = None
         #Non-attributes
         self.name = None
+        self.path = None
         self.contours = None
         self.zcontours = None
         self.sections = None
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
         # 1) ARGS
-        for arg in args:
-            try:
-                self.update(arg)
-            except:
-                print('Could not process Series arg: '+str(arg))
+        try:
+            self.update(*args)
+        except:
+            print('Could not process Series arg: '+str(args))
         # 2) KWARGS
-        for kwarg in kwargs:
-            try:
-                self.update(kwarg)
-            except:
-                print('Could not process Series kwarg: '+str(kwarg))
+        try:
+            self.update(**kwargs)
+        except:
+            print('Could not process Series kwarg: '+str(kwargs))
 # MUTATORS
-    def update(self, *args): #=== Kwargs eventually
+    def update(self, *args, **kwargs):
         for arg in args:
             # String argument
             if type(arg) == type(''): # Possible path to XML?
                 import pyrecon.handleXML as xml
-                self.update(*xml.process(arg))
-                self.name = arg.split('/')[len(arg.split('/'))-1].replace('.ser','')
+                try: # path to .ser file
+                    self.update(*xml.process(arg))
+                    self.path = arg
+                    self.name = arg.split('/')[len(arg.split('/'))-1].replace('.ser','')
+                except: # directory instead of path to .ser file
+                    path = arg
+                    if path[-1] != '/':
+                        path += '/'
+                    path = path+str([f for f in os.listdir(path) if '.ser' in f].pop())
+                    self.update(*xml.process(path))
+                    self.path = path
+                    self.name = path.split('/')[len(path.split('/'))-1].replace('.ser','')
             # Dictionary
             elif type(arg) == type({}):
                 for key in arg:
@@ -152,4 +164,23 @@ class Series: #===
                 if self.sections == None:
                     self.sections = []
                 self.sections.append(arg)
+        for kwarg in kwargs:
+            # Load sections
+            if 'sections' in kwargs:
+                if kwargs['sections'] == True:
+                    print('Attempting to load sections...'),
+                    ser = os.path.basename(self.path)
+                    serfixer = re.compile(re.escape('.ser'), re.IGNORECASE)
+                    sername = serfixer.sub('', ser)
+                    # look for files with 'seriesname'+'.'+'number'
+                    p = re.compile('^'+sername+'[.][0-9]*$')
+                    sectionlist = [f for f in os.listdir(self.path.replace(ser,'')) if p.match(f)]
+                    # create and append Sections for each section file
+                    path = self.path.replace(os.path.basename(self.path),'')
+                    for sec in sectionlist:
+                        section = Section(path+sec)
+                        self.update(section)
+                    # sort sections by index
+                    self.sections = sorted(self.sections, key=lambda Section: Section.index)
+                    print(' SUCCESS!')
 # ACCESSORS

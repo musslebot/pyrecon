@@ -19,3 +19,7 @@ def main(series1, series2, directory):
 	print series1
 	print series2
 	print directory
+
+def mergeType(input1, input2):
+	'''Returns type of file to be merged.'''
+	return
