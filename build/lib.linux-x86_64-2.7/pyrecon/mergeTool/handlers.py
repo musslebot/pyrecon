@@ -1,6 +1,34 @@
+'''Terminal(Non-GUI) handler functions for mergeTool conflicts'''
+# SECTION
+# - Contours
 def sectionContours(uniqueA, compOvlp, confOvlp, uniqueB):
-	return
+	'''Returns list of contours to be added to merged series'''
+	outputContours = []
 
+	# Unique: Add unique contours to output
+	outputContours.extend(uniqueA)
+	outputContours.extend(uniqueB)
+
+	# Completely overlapping: Add a single copy of compOvlp pair to output
+	for pair in compOvlp:
+  		outputContours.append(pair[0])
+
+	# Conflicting: Handle conflicting overlaps
+	for pair in confOvlp:
+  		print('Conflicting contour overlap')
+  		print(pair[0].__dict__) #===
+ 		print(pair[1].__dict__) #=== 
+		sel = raw_input('Please enter 1, 2, or both to select what to output: ')
+		if sel == '1':
+	  		outputContours.append(pair[0])
+		elif sel == '2':
+			outputContours.append(pair[1])
+		else:
+		  	outputContours.append(pair[0])
+		  	outputContours.append(pair[1])
+	return outputContours
+
+# - Image
 def sectionImages(imageA, imageB):
 	padding = 20
 	print('Section image conflicts:')
@@ -28,3 +56,4 @@ def sectionImages(imageA, imageB):
 			return imageA
 		elif resp == 2:
 			return imageB
+	return

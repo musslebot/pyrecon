@@ -6,11 +6,17 @@ def main(section1, section2, graphical=False):
 	# Check for type issues
 	if section1.__class__.__name__ != section2.__class__.__name__:
 		print('Invalid file type for section1 and/or section2: Must be a pyrecon.classes.Section object.')
-	# Image
-	mergeImages(section1, section2)
-	
-	# Contours
-
+		return
+	elif section1.index != section2.index:
+		print('Section indices must match in order to use the mergeTool!')
+		return
+	# GUI or not GUI?
+	if graphical == True:
+		mergedImage = mergeImages(section1, section2, handler=handlersGUI.sectionImages) # Image
+		mergedContours = mergeContours(section1, section2, handler=handlersGUI.sectionContours) # Contours
+	else:
+		mergedImage = mergeImages(section1, section2) # Image
+		mergedContours = mergeContours(section1, section2) # Contours
 	return mergedSection
 
 # Image

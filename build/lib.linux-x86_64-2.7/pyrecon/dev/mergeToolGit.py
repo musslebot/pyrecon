@@ -1,23 +1,36 @@
-import pyrecon.classes
-import pyrecon.mergeTool
-import argparse
+from pyrecon import handleXML as xml
+from pyrecon.classes import Section, Series
+from pyrecon.mergeTool import handlersGUI
 
 print
-print("USING PYRECONSTRUCTS MERGETOOL")
+print("Using PyRECONSTRUCT mergeTool")
 
 def main(ancestor, current, other):
-	print("Ancestor path: "+ancestor)
-	print("Current branch path: "+current)
-	print("Other branch path: "+other)
+	print("Ancestor path: "+ancestor) #===
+	print("Current branch path: "+current) #===
+	print("Other branch path: "+other) #===
 	
 	print
-	
-	file1 = open(current)
-	file2 = open(other)
-	for line in file1.readlines():
-		if "section.dtd" in line:
-			print loadSeries()
-			print loadSeries()
+	try:
+		reconType = Section
+		item1 = reconType( *xml.process(current) )
+		item2 = reconType( *xml.process(other) )
+		print('Section files identified...') #===
+	except:
+		try:
+			reconType = Series
+			item1 = reconType( *xml.process(current) )
+			item2 = reconType( *xml.process(other) )
+			print('Series files identified...') #===
+		except:
+			print('Unable to determine file type...')
+
+
+
+
+
+
+
 
 # ARGPARSE & CALL TO MAIN() 
 # if __name__ == '__main__':

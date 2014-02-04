@@ -1,4 +1,5 @@
 from shapely.geometry import Polygon, LineString, box, LinearRing
+import math
 
 class Contour:
     def __init__(self, *args, **kwargs):
@@ -57,8 +58,8 @@ class Contour:
         # Closed trace
         if self.closed == True:
             # If image contour, multiply pts by mag before inverting transform
-            if self.image != None:
-                mag = self.img.mag
+            if self.image.__class__.__name__ == 'Image':
+                mag = self.image.mag
                 xvals = [pt[0]*mag for pt in self.points]
                 yvals = [pt[1]*mag for pt in self.points]
                 pts = zip(xvals,yvals)
@@ -69,7 +70,7 @@ class Contour:
             self.shape = Polygon( self.transform.worldpts(pts) )
         # Open trace
         elif self.closed == False and len(self.points)>1:
-            self.shape = LineString( self.transform.worldpts(self.attributes['points']) )
+            self.shape = LineString( self.transform.worldpts(self.points) )
         else:
             print('\nInvalid shape characteristics: '+self.name)
             print('Quit for debug')
@@ -97,8 +98,8 @@ class Contour:
             return 0
         # Closed contours
         if self.closed:
-            AoU = self._shape.union( other._shape ).area
-            AoI = self._shape.intersection( other._shape ).area
+            AoU = self.shape.union( other.shape ).area
+            AoI = self.shape.intersection( other.shape ).area
             if AoI == 0:
                 return 0
             elif AoU/AoI > threshold:
