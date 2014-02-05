@@ -2,6 +2,7 @@
 from PySide import QtCore, QtGui
 import sys
 
+
 app = QtGui.QApplication(sys.argv)
 sys.exit( app.exec_() ) 
 
@@ -9,9 +10,11 @@ sys.exit( app.exec_() )
 # - Image
 def sectionImages(imageA, imageB):
 	a = sectionImageResolver(imageA, imageB)
-	return
+	threading.Timer(60,a).start()
+	return a.image
 # - Contours
-def sectionContours(uniqueA, compOvlp, confOvlp, uniqueB):
+def sectionContours(uniqueA, compOvlp, confOvlp, uniqueB): #===
+	a = sectionContoursResolver(uniqueA, compOvlp, confOvlp, uniqueB)
 	return
 
 class sectionImageResolver(QtGui.QFrame):
@@ -24,6 +27,7 @@ class sectionImageResolver(QtGui.QFrame):
         self.loadObjects()
         self.loadFunctions(image1,image2)
         self.loadLayout()
+        self.image = None
         self.show()
     def loadObjects(self):
         self.img1label = QtGui.QLabel(self)
@@ -39,12 +43,12 @@ class sectionImageResolver(QtGui.QFrame):
         self.img1label.setAlignment(QtCore.Qt.AlignHCenter)
         self.img2label.setText('Section B\'s Image\n'+'-'*17)
         self.img2label.setAlignment(QtCore.Qt.AlignHCenter)
-#         self.img1detail.setText('\n'.join([(str(item)+':\t'+str(image1.__dict__[item])) for item in image1.__dict__ if item != 'transform']))
-#         self.img2detail.setText('\n'.join([(str(item)+':\t'+str(image2.__dict__[item])) for item in image2.__dict__ if item != 'transform']))
-        self.img1detail.setText('placeholder') #===
-        self.img2detail.settext('placeholder') #===
+        self.img1detail.setText('\n'.join([(str(item)+':\t'+str(image1.__dict__[item])) for item in image1.__dict__ if item != 'transform']))
+        self.img2detail.setText('\n'.join([(str(item)+':\t'+str(image2.__dict__[item])) for item in image2.__dict__ if item != 'transform']))
         self.pick1.setText('Choose this image')
         self.pick2.setText('Choose this image')
+        self.pick1.clicked.connect( self.ret1 ) #===
+        self.pick2.clicked.connect( self.ret2 ) #===
     def loadLayout(self):
         hbox = QtGui.QHBoxLayout()
         # Left image
@@ -61,3 +65,11 @@ class sectionImageResolver(QtGui.QFrame):
         hbox.addSpacing(50)
         hbox.addLayout(vbox2)
         self.setLayout(hbox)
+    def ret1(self): #===
+        self.image = self.img1
+        print self.image #===
+        self.close()
+    def ret2(self): #===
+        self.image = self.img2
+        print self.image #===
+        self.close()

@@ -2,63 +2,64 @@
 from PySide import QtCore, QtGui
 import sys
 
+
+app = QtGui.QApplication(sys.argv)
+sys.exit( app.exec_() ) 
+
 # SECTIONS
 # - Image
 def sectionImages(imageA, imageB):
-	# app = QtGui.QApplication(sys.argv)
 	a = sectionImageResolver(imageA, imageB)
-	# sys.exit( app.exec_() ) 
+	return
 # - Contours
-def sectionContours(uniqueA, compOvlp, confOvlp, uniqueB):
+def sectionContours(uniqueA, compOvlp, confOvlp, uniqueB): #===
+	a = sectionContoursResolver(uniqueA, compOvlp, confOvlp, uniqueB)
 	return
 
 class sectionImageResolver(QtGui.QFrame):
-	def __init__(self, image1, image2):
-		QtGui.QFrame.__init__(self)
-		self.loadObjects()
-		self.loadFunctions(image1, image2)
-		self.loadLayout()
-		self.show()
-
-	def loadObjects(self):
-		self.image1src = QtGui.QLabel(self) # Image src label
-		self.image2src = QtGui.QLabel(self) # "
-		self.image1det = QtGui.QLabel(self) # Image details
-		self.image2det = QtGui.QLabel(self) # "
-		self.pickButton1 = QtGui.QPushButton(self)
-		self.pickButton2 = QtGui.QPushButton(self)
-	
-	def loadFunctions(self, image1, image2):
-		self.image1src.setText( image1.src )
-		self.image2src.setText( image2.src )
-		pic1 = QtGui.QPixmap()
-		pic1.load("/home/michaelm/Documents/Test Series/BBCHZ/"+str(image1.src))
-		pic2 = QtGui.QPixmap()
-		pic2.load("/home/michaelm/Documents/Test Series/BBCHZ/"+str(image2.src))
-		self.image1det.setPixmap( pic1 )
-		self.image2det.setPixmap( pic2 )
-		self.pickButton1.setText( 'Pick 1' )
-		self.pickButton2.setText( 'Pick 2' )
-	
-	def loadLayout(self):
-		self.setGeometry(0,0,600,600)
-		self.setWindowTitle('Section Image Resolver')
-		self.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Plain)
-		self.setLineWidth(2)
-		self.setMidLineWidth(3)
-		# Image 1
-		vbox1 = QtGui.QVBoxLayout()
-		vbox1.addWidget(self.image1src)
-		vbox1.addWidget(self.image1det)
-		vbox1.addWidget(self.pickButton1)
-		# Image 2
-		vbox2 = QtGui.QVBoxLayout()
-		vbox2.addWidget(self.image2src)
-		vbox2.addWidget(self.image2det)
-		vbox2.addWidget(self.pickButton2)
-		# Combine
-		hbox = QtGui.QHBoxLayout()
-		hbox.addLayout(vbox1)
-		hbox.addLayout(vbox2)
-		self.setLayout(hbox)
-
+    def __init__(self, image1, image2):
+        QtGui.QFrame.__init__(self)
+        self.setWindowTitle('PyRECONSTRUCT Section Image Resolver')
+        self.setFrameStyle(QtGui.QFrame.Box|QtGui.QFrame.Plain)
+        self.setLineWidth(2)
+        self.setMidLineWidth(3)
+        self.loadObjects()
+        self.loadFunctions(image1,image2)
+        self.loadLayout()
+        self.show()
+    def loadObjects(self):
+        self.img1label = QtGui.QLabel(self)
+        self.img2label = QtGui.QLabel(self)
+        self.img1detail = QtGui.QLabel(self)
+        self.img2detail = QtGui.QLabel(self)
+        self.pick1 = QtGui.QPushButton(self)
+        self.pick2 = QtGui.QPushButton(self)
+    def loadFunctions(self, image1, image2):
+        self.img1 = image1
+        self.img2 = image2
+        self.img1label.setText('Section A\'s Image\n'+'-'*17)
+        self.img1label.setAlignment(QtCore.Qt.AlignHCenter)
+        self.img2label.setText('Section B\'s Image\n'+'-'*17)
+        self.img2label.setAlignment(QtCore.Qt.AlignHCenter)
+#         self.img1detail.setText('\n'.join([(str(item)+':\t'+str(image1.__dict__[item])) for item in image1.__dict__ if item != 'transform']))
+#         self.img2detail.setText('\n'.join([(str(item)+':\t'+str(image2.__dict__[item])) for item in image2.__dict__ if item != 'transform']))
+        self.img1detail.setText('placeholder') #===
+        self.img2detail.settext('placeholder') #===
+        self.pick1.setText('Choose this image')
+        self.pick2.setText('Choose this image')
+    def loadLayout(self):
+        hbox = QtGui.QHBoxLayout()
+        # Left image
+        vbox1 = QtGui.QVBoxLayout()
+        vbox1.addWidget(self.img1label)
+        vbox1.addWidget(self.img1detail)
+        vbox1.addWidget(self.pick1)
+        # Right image
+        vbox2 = QtGui.QVBoxLayout()
+        vbox2.addWidget(self.img2label)
+        vbox2.addWidget(self.img2detail)
+        vbox2.addWidget(self.pick2)
+        hbox.addLayout(vbox1)
+        hbox.addSpacing(50)
+        hbox.addLayout(vbox2)
+        self.setLayout(hbox)
