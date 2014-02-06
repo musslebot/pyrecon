@@ -2,28 +2,23 @@
 from PySide import QtCore, QtGui
 import sys
 
-
-app = QtGui.QApplication(sys.argv)
-sys.exit( app.exec_() ) 
-
 # SECTIONS
 # - Image
-def sectionImages(imageA, imageB):
-	a = sectionImageResolver(imageA, imageB)
-	threading.Timer(60,a).start()
-	return a.image
-# - Contours
-def sectionContours(uniqueA, compOvlp, confOvlp, uniqueB): #===
-	a = sectionContoursResolver(uniqueA, compOvlp, confOvlp, uniqueB)
-	return
 
-class sectionImageResolver(QtGui.QFrame):
+class contourThread(QtCore.QThread):
+	def __init__(self, section1, section2):
+		QtCore.QThread.__init__(self)
+		self.contResolution = contourFrame(section1, section2)
+
+class imageThread(QtCore.QThread):
+	def __init__(self, image1, image2):
+		QtCore.QThread.__init__(self)
+		self.imgResolution = imageFrame(image1, image2)
+		self.image = self.imgResolution.image
+		
+class imageFrame(QtGui.QFrame):
     def __init__(self, image1, image2):
         QtGui.QFrame.__init__(self)
-        self.setWindowTitle('PyRECONSTRUCT Section Image Resolver')
-        self.setFrameStyle(QtGui.QFrame.Box|QtGui.QFrame.Plain)
-        self.setLineWidth(2)
-        self.setMidLineWidth(3)
         self.loadObjects()
         self.loadFunctions(image1,image2)
         self.loadLayout()
@@ -50,6 +45,10 @@ class sectionImageResolver(QtGui.QFrame):
         self.pick1.clicked.connect( self.ret1 ) #===
         self.pick2.clicked.connect( self.ret2 ) #===
     def loadLayout(self):
+    	self.setWindowTitle('PyRECONSTRUCT Section Image Resolver')
+        self.setFrameStyle(QtGui.QFrame.Box|QtGui.QFrame.Plain)
+        self.setLineWidth(2)
+        self.setMidLineWidth(3)
         hbox = QtGui.QHBoxLayout()
         # Left image
         vbox1 = QtGui.QVBoxLayout()
@@ -67,9 +66,11 @@ class sectionImageResolver(QtGui.QFrame):
         self.setLayout(hbox)
     def ret1(self): #===
         self.image = self.img1
-        print self.image #===
+        print 'image1: '+str(self.image)
         self.close()
+        return self.image #===
     def ret2(self): #===
         self.image = self.img2
-        print self.image #===
+        print 'image2: '+str(self.image) #===
         self.close()
+        return self.image
