@@ -59,6 +59,50 @@ class sectionImages(QWidget):
 class sectionContours(QWidget): #===
     def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB):
         QWidget.__init__(self)
+        self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
+        # input
+        self.uniqueA = uniqueA
+        self.uniqueB = uniqueB
+        self.compOvlp = compOvlp
+        self.confOvlp = confOvlp
+        # output
+        self.output = []
+        # Load UI
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.show()
+    def loadObjects(self):
+        # List contours in their appropriate listWidgets
+        self.inUniqueA = QListWidget(self)
+        self.inUniqueB = QListWidget(self)
+        self.inOvlp = QListWidget(self)
+        self.outUniqueA = QListWidget(self)
+        self.outUniqueB = QListWidget(self)
+        self.outOvlp = QListWidget(self)
+    def loadFunctions(self): #===
+        for item in self.uniqueA:
+            print item
+
+
+    def loadLayout(self):
+        container = QVBoxLayout()
+        inputBox = QHBoxLayout()
+        inputBox.addWidget(self.inUniqueA)
+        inputBox.addWidget(self.inOvlp)
+        inputBox.addWidget(self.inUniqueB)
+        toolBox = QHBoxLayout()
+        outputBox = QHBoxLayout()
+        outputBox.addWidget(self.outUniqueA)
+        outputBox.addWidget(self.outOvlp)
+        outputBox.addWidget(self.outUniqueB)
+        
+        container.addLayout(inputBox)
+        container.addLayout(toolBox)
+        container.addLayout(outputBox)
+
+        self.setLayout(container)
+
 # - Attributes
 class sectionAttributes(QWidget): #===
     def __init__(self, dictA, dictB):
