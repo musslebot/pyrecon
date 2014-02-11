@@ -1,7 +1,7 @@
 '''Driver for merging two section objects (as per section XML file).'''
 from pyrecon.classes import *
-import pyrecon.mergeTool.handlers as handlers
-import pyrecon.mergeTool.handlersGUI as handlersGUI
+import pyrecon.mergeTool.conflictResolution as handlers
+import pyrecon.mergeTool.conflictResolutionGUI as handlersGUI
 
 def main(section1, section2, graphical=False):
 	# Check for type/index issues

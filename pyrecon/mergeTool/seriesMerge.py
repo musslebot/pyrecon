@@ -1,4 +1,7 @@
 '''Driver for merging two series objects (as per .ser XML file). Does not take into account differences in the sections associated with this series -- refer to sectionMerge.py for merging sections.'''
+from pyrecon.classes import *
+import pyrecon.mergeTool.conflictResolution as handlers
+import pyrecon.mergeTool.conflictResolutionGUI as handlersGUI
 
 def main(series1, series2, graphical=False):
 	# Check for type issues
@@ -20,18 +23,23 @@ def main(series1, series2, graphical=False):
 		print('seriesMerge: Graphical handlers will be used.')
 		# mergedContours = mergeContours(series1, series2, handler=handlersGUI.sectionImages)
 		# mergedZContours = mergeZContours(series1, series2, handler=handlersGUI.sectionContours)
-		# mergedAttributes = mergeAttributes(section1, section2, handler=handlersGUI.sectionAttributes)
+		# mergedAttributes = mergeAttributes(series1, series2, handler=handlersGUI.sectionAttributes)
 	else: # Terminal
 		print('seriesMerge: No graphical handlers.')
-		# mergedContours = mergeContours(section1, section2)
-		# mergedZContours = mergeZContours(section1, section2)
-		# mergedAttributes = mergeAttributes(section1, section2)
+		mergedContours = mergeContours(series1, section2)
+		# mergedZContours = mergeZContours(series1, series2)
+		# mergedAttributes = mergeAttributes(series1, series2)
 
-def mergeContours(): #===
+def mergeContours(series1, series2, handler=handlers.seriesContours): #===
+	# Make copies of contours
+	contsA = [cont for cont in series1.contours]
+	contsB = [cont for cont in series2.contours]
+
+	# Series contours reflect RECONSTRUCT palette options, return A for now #=== 
+	return contsA
+
+def mergeZContours(series1, series2, handler=handlers.seriesZContours): #===
 	return
 
-def mergeZContours(): #===
-	return
-
-def mergeAttributes(): #===
+def mergeAttributes(series1, series2, handler=handlers.seriesAttributes): #===
 	return
