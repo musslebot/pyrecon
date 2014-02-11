@@ -77,3 +77,13 @@ def sectionAttributes(dictA, dictB):
 					print('Invalid entry, try again.')
 	return outputAttributes
 
+# SERIES #===
+# - Contours
+def seriesContours(contsA, contsB): #===
+	return
+# - ZContours
+def seriesZContours(zcontsA, zcontsB): #===
+	return
+# - Attributes
+def seriesAttributes(dictA, dictB): #===
+	return
