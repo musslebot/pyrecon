@@ -55,7 +55,16 @@ class sectionImages(QWidget):
 
     def ret2(self): #===
         self.image = self.img2
-
-class sectionContours(QWidget):
+# - Contours
+class sectionContours(QWidget): #===
     def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB):
         QWidget.__init__(self)
+# - Attributes
+class sectionAttributes(QWidget): #===
+    def __init__(self, dictA, dictB):
+        QWidget.__init__(self)
+
+# SERIES #===
+# - Contours
+# - ZContours
+# - Attributes
