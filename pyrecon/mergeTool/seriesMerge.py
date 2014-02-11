@@ -31,12 +31,8 @@ def main(series1, series2, graphical=False):
 		# mergedAttributes = mergeAttributes(series1, series2)
 
 def mergeContours(series1, series2, handler=handlers.seriesContours): #===
-	# Make copies of contours
-	contsA = [cont for cont in series1.contours]
-	contsB = [cont for cont in series2.contours]
-
-	# Series contours reflect RECONSTRUCT palette options, return A for now #=== 
-	return contsA
+	#=== Series contours reflect RECONSTRUCT palette options, return A for now
+	return series1.contours
 
 def mergeZContours(series1, series2, handler=handlers.seriesZContours): #===
 	return
