@@ -17,12 +17,12 @@ def main(series1, series2, graphical=False):
 
 	# GUI or not GUI?
 	if graphical == True: # GUI
-		print('Graphical handlers will be used.')
+		print('seriesMerge: Graphical handlers will be used.')
 		# mergedContours = mergeContours(series1, series2, handler=handlersGUI.sectionImages)
 		# mergedZContours = mergeZContours(series1, series2, handler=handlersGUI.sectionContours)
 		# mergedAttributes = mergeAttributes(section1, section2, handler=handlersGUI.sectionAttributes)
 	else: # Terminal
-		print('No graphical handlers.')
+		print('seriesMerge: No graphical handlers.')
 		# mergedContours = mergeContours(section1, section2)
 		# mergedZContours = mergeZContours(section1, section2)
 		# mergedAttributes = mergeAttributes(section1, section2)
