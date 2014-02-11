@@ -1,1 +1,0 @@
-from pyrecon.mergeTool import mergeTool as merge
