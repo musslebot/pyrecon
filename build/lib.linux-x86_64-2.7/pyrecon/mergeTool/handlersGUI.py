@@ -35,9 +35,6 @@ class sectionImages(QWidget):
         self.pick2.clicked.connect( self.ret2 ) #===
     def loadLayout(self):
     	self.setWindowTitle('PyRECONSTRUCT Section Image Resolver')
-        # self.setFrameStyle(QFrame.Box|QFrame.Plain)
-        # self.setLineWidth(2)
-        # self.setMidLineWidth(3)
         hbox = QHBoxLayout()
         # Left image
         vbox1 = QVBoxLayout()
