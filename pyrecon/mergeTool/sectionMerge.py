@@ -1,12 +1,12 @@
-'''Receives 2 sections and attempts to merge them into one section. Conflicts are handled by <handler>.'''
+'''Driver for merging two section objects (as per section XML file).'''
 from pyrecon.classes import *
 import pyrecon.mergeTool.handlers as handlers
 import pyrecon.mergeTool.handlersGUI as handlersGUI
 
 def main(section1, section2, graphical=False):
-	# Check for type issues
-	if section1.__class__.__name__ != section2.__class__.__name__:
-		print('Invalid file type for section1 and/or section2: Must be a pyrecon.classes.Section object.')
+	# Check for type/index issues
+	if section1.__class__.__name__ != 'Section' or section2.__class__.__name__ != 'Section':
+		print('Incorrect data types for section1 and/or section2:\n\tMust both be a pyrecon.classes.Section object.')
 		return
 	elif section1.index != section2.index:
 		print('Section indices must match in order to use the mergeTool!')
@@ -81,7 +81,6 @@ def checkOverlappingContours(contsA, contsB, threshold=(1+2**(-17)), sameName=Tr
 	for cont in ovlpsA:
 		if cont in contsA:
 			contsA.remove(cont)
-	
 	for cont in ovlpsB:
 		if cont in contsB:
 			contsB.remove(cont)
@@ -117,7 +116,7 @@ def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName
 
 	return compOvlps, confOvlps
 
-# Attributes #===
+# Attributes
 def mergeAttributes(sectionA, sectionB, handler=handlers.sectionAttributes):
 	# Evaluate equivalency between attributes
 	nameEq = (sectionA.name == sectionB.name)
