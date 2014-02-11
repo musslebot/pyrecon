@@ -14,7 +14,6 @@ setup(
                 'pyrecon.calibrationTool',
                 'pyrecon.classes',
                 'pyrecon.curationTool',
-                'pyrecon.dev',
                 'pyrecon.excelTool',
                 'pyrecon.mergeTool'
                 ],

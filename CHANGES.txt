@@ -18,7 +18,7 @@ Version 2.0.0
 *New project structure:
 	- overarching code (handleXML.py and main.py) in main pyrecon folder
 	- each tool has its own folder (calibrationTool, curationTool, excelTool, mergeTool)
-	- projects in development go in ./dev/
+	- projects in development go in ./.dev/
 	- classes have individual files in ./classes/
 
 *pyRECONSTRUCT is now compatible with GitHub: see README.txt for more details
