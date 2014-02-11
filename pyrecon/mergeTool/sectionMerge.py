@@ -13,10 +13,12 @@ def main(section1, section2, graphical=False):
 		return
 	# GUI or not GUI?
 	if graphical == True: # GUI
+		print('sectionMerge: Graphical handlers will be used.')
 		mergedImage = mergeImages(section1, section2, handler=handlersGUI.sectionImages)
 		mergedContours = mergeContours(section1, section2, handler=handlersGUI.sectionContours)
 		# mergedAttributes = mergeAttributes(section1, section2, handler=handlersGUI.sectionAttributes)
 	else: # Terminal
+		print('sectionMerge: No graphical handlers.')
 		mergedImage = mergeImages(section1, section2)
 		mergedContours = mergeContours(section1, section2)
 		mergedAttributes = mergeAttributes(section1, section2)
