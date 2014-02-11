@@ -27,7 +27,7 @@ pyrecon/dev/__init__.py
 pyrecon/dev/bethBellMerge.py
 pyrecon/dev/classes.py
 pyrecon/dev/excelToolDev.py
-pyrecon/dev/mergeToolGit.py
+pyrecon/dev/mergeGit.py
 pyrecon/excelTool/__init__.py
 pyrecon/excelTool/excelTool.py
 pyrecon/excelTool/excelToolG.py
