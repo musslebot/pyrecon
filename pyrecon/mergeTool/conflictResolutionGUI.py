@@ -80,7 +80,7 @@ class sectionContours(QWidget): #===
 		self.outUniqueA = QListWidget(self)
 		self.outUniqueB = QListWidget(self)
 		self.outOvlp = QListWidget(self)
-		self.doneBut = QPushButton(self)
+		self.doneBut = QPushButton(self) #===
 		self.moveSelectedA = QPushButton(self)
 		self.moveSelectedO = QPushButton(self)
 		self.moveSelectedB = QPushButton(self)
@@ -89,14 +89,14 @@ class sectionContours(QWidget): #===
 		self.loadTable(self.inUniqueA, self.uniqueA)
 		self.loadTable(self.inUniqueB, self.uniqueB)
 		self.loadTable(self.inOvlp, self.compOvlp+self.confOvlp)
-		self.doneBut.setText('Merge')
+		self.doneBut.setText('Merge') #===
+		self.doneBut.clicked.connect( self.done )
 		self.moveSelectedA.setText('Move Selected')
 		self.moveSelectedO.setText('Move Selected')
 		self.moveSelectedB.setText('Move Selected')
 		self.moveSelectedA.clicked.connect( self.moveItems )
 		self.moveSelectedO.clicked.connect( self.moveItems )
 		self.moveSelectedB.clicked.connect( self.moveItems )
-
 	def loadLayout(self):
 		container = QVBoxLayout()
 		columnContainer = QHBoxLayout()
@@ -133,11 +133,11 @@ class sectionContours(QWidget): #===
 		container.addLayout(columnContainer)
 		container.addWidget(self.doneBut)
 		self.setLayout(container)
-	
 	class newTableItem(QListWidgetItem):
 		def __init__(self, contour):
 			QListWidgetItem.__init__(self)
 			if type(contour) == type([]):
+				self.contour = None
 				self.contour1 = contour[0]
 				self.contour2 = contour[1]
 				self.setText(self.contour1.name)
@@ -163,6 +163,7 @@ class sectionContours(QWidget): #===
 				print('loadTable: Invalid input')
 			table.addItem(listItem)
 		table.setSelectionMode(QAbstractItemView.ExtendedSelection)
+		table.itemDoubleClicked.connect(self.doubleClicked)
 	def moveItems(self):
 		# Move items in what table(s)?
 		if self.sender() == self.moveSelectedA:
@@ -183,7 +184,45 @@ class sectionContours(QWidget): #===
 			inTable.addItem( outTable.takeItem(outTable.row(item)) )
 		inTable.clearSelection()
 		outTable.clearSelection()
-		
+	def done(self):
+		# Check ovlp table for conflicts (red)
+		numItems = self.outOvlp.count()
+		for i in range(numItems):
+			item = self.outOvlp.item(i)
+			if item.background() == QColor('red'):
+				msg = QMessageBox(self)
+				msg.setText('Conflict not resolved. Abort merge...')
+				msg.exec_()
+				return
+
+		# Gather items from tables
+		oA = [] # Unique A
+		for i in range(self.outUniqueA.count()):
+			oA.append(self.outUniqueA.item(i))
+		oO = [] # Overlap
+		for i in range(self.outOvlp.count()):
+			oO.append(self.outOvlp.item(i))
+		oB = [] # Unique B
+		for i in range(self.outUniqueB.count()):
+			oB.append(self.outUniqueB.item(i))
+
+		print str( oA+oO+oB ) #===
+
+	def doubleClicked(self, item): #===
+		print item
+		if item.background() == QColor('red'):
+			a = resolveOvlp(item)
+			a.show()
+class resolveOvlp(QFrame): #=== Not showing?
+	def __init__(self, item):
+		QFrame.__init__(self)
+		print('creating res')
+		print(item.contour1.name)
+		print(item.contour2.name)
+		layout = QHBoxLayout()
+		layout.addWidget(QLabel(item.contour1.name))
+		layout.addWidget(QLabel(item.contour2.name))
+		self.setLayout(layout)
 # - Attributes
 class sectionAttributes(QWidget): #===
 	def __init__(self, dictA, dictB):
