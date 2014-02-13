@@ -13,22 +13,30 @@ def main(section1, section2, graphical=False):
 		print('Section indices must match in order to use the mergeTool!')
 		return
 	# GUI or not GUI?
-	if graphical == True: # GUI
-		app = QApplication([])
-		print('sectionMerge: Graphical handlers will be used.')
-		mergedImage = mergeImages(section1, section2, handler=handlersGUI.sectionImages)
-		mergedContours = mergeContours(section1, section2, handler=handlersGUI.sectionContours)
-		# mergedAttributes = mergeAttributes(section1, section2, handler=handlersGUI.sectionAttributes)
-		sys.exit( app.exec_() )
+	if graphical: # GUI
+		graphicalMerge(section1, section2)
+
 	else: # Terminal
-		print('sectionMerge: No graphical handlers.')
 		mergedImage = mergeImages(section1, section2)
 		mergedContours = mergeContours(section1, section2)
 		mergedAttributes = mergeAttributes(section1, section2)
+		# Combine merged properties into a section object
+		mergedSection = Section(mergedImage, mergedContours, mergedAttributes)
+		return mergedSection
 
+def graphicalMerge(section1, section2):
+	from PySide.QtGui import QApplication
+	
+	app = QApplication([]) #===
+	mergedImage = mergeImages(section1, section2, handler=handlersGUI.sectionImages)
+	mergedContours = mergeContours(section1, section2, handler=handlersGUI.sectionContours)
+	# mergedAttributes = mergeAttributes(section1, section2, handler=handlersGUI.sectionAttributes)
+	app.exec_()
+	
 	# Combine merged properties into a section object
 	mergedSection = Section(mergedImage, mergedContours, mergedAttributes)
 	return mergedSection
+
 
 # Image
 def mergeImages(sectionA, sectionB, handler=handlers.sectionImages):
