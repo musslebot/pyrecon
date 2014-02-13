@@ -28,8 +28,8 @@ The functions/tools already in place can be used to develop solutions to a wide 
     * libxslt-dev
     * cmake
     * libshiboken-dev
-2) Install PySide
-3) Install PyRECONSTRUCT by running 'python setup.py install' from the parent folder
+* Install PySide
+* Install PyRECONSTRUCT by running 'python setup.py install' from the parent folder
 
 *Windows* (strongly discouraged)
 ---
