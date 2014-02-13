@@ -12,6 +12,10 @@ and excelTool for pushing object data into an excel workbook (.xlsx).
 ---------------------------------------------------------------------------
 INSTALLATION (Linux and Windows)
 ---------------------------------------------------------------------------
+
+
+
+
 # Linux :D
 -------------
 PyRECONSTRUCT can be installed in multiple ways:
