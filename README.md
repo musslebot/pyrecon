@@ -1,22 +1,16 @@
-===========
-PyRECONSTRUCT
-===========
-Date Created: 3/7/2013
-Authors: Michael Musslewhite, Larry Lindsey
+# PyRECONSTRUCT
+Date Created: 3/7/2013<br>
+Authors: Michael Musslewhite, Larry Lindsey<br>
 
 PyRECONSTRUCT provides easy access to XML files associated with the program RECONSTRUCT.
 This package should also be used to develop scripts/programs for various tasks that use
 these XML files. Included examples are mergeTool for merging multiple RECONSTRUCT series
 and excelTool for pushing object data into an excel workbook (.xlsx).
 
----------------------------------------------------------------------------
-INSTALLATION (Linux and Windows)
----------------------------------------------------------------------------
 
+## INSTALLATION (Linux and Windows)
 
-
-
-# Linux :D
+*Linux* :D
 -------------
 PyRECONSTRUCT can be installed in multiple ways:
 	
@@ -42,7 +36,7 @@ These dependencies are required to run on most linux systems:
 	cmake
 	libshiboken-dev
 
-# Windows :(
+*Windows* :(
 -------------
 PyRECONSTRUCT for Windows has only been tested using the following method:
 1. Download and install Python2.7:
