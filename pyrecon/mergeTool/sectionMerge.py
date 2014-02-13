@@ -27,11 +27,14 @@ def main(section1, section2, graphical=False):
 def graphicalMerge(section1, section2):
 	from PySide.QtGui import QApplication
 	
-	app = QApplication([]) #===
-	mergedImage = mergeImages(section1, section2, handler=handlersGUI.sectionImages)
-	mergedContours = mergeContours(section1, section2, handler=handlersGUI.sectionContours)
-	# mergedAttributes = mergeAttributes(section1, section2, handler=handlersGUI.sectionAttributes)
-	app.exec_()
+	app = QApplication([]) # Start GUI application
+	mergedImage = mergeImages(section1, section2,
+		handler=handlersGUI.sectionImages)
+	mergedContours = mergeContours(section1, section2,
+		handler=handlersGUI.sectionContours)
+	mergedAttributes = mergeAttributes(section1, section2,
+		handler=handlersGUI.sectionAttributes)
+	app.exec_() # Open windows and pause interpreter until closed
 	
 	# Combine merged properties into a section object
 	mergedSection = Section(mergedImage, mergedContours, mergedAttributes)
