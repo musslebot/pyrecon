@@ -1,7 +1,8 @@
 '''Driver for merging two section objects (as per section XML file).'''
 from pyrecon.classes import *
-import pyrecon.mergeTool.conflictResolution as handlers
-import pyrecon.mergeTool.conflictResolutionGUI as handlersGUI
+import conflictResolution as handlers
+import conflictResolutionGUI as handlersGUI
+import sys
 
 def main(section1, section2, graphical=False):
 	# Check for type/index issues
@@ -13,10 +14,12 @@ def main(section1, section2, graphical=False):
 		return
 	# GUI or not GUI?
 	if graphical == True: # GUI
+		app = QApplication([])
 		print('sectionMerge: Graphical handlers will be used.')
 		mergedImage = mergeImages(section1, section2, handler=handlersGUI.sectionImages)
 		mergedContours = mergeContours(section1, section2, handler=handlersGUI.sectionContours)
 		# mergedAttributes = mergeAttributes(section1, section2, handler=handlersGUI.sectionAttributes)
+		sys.exit( app.exec_() )
 	else: # Terminal
 		print('sectionMerge: No graphical handlers.')
 		mergedImage = mergeImages(section1, section2)

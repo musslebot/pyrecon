@@ -56,6 +56,16 @@ class sectionImages(QWidget):
 	def ret2(self): #===
 		self.image = self.img2
 # - Contours
+class resolveOvlp(QWidget): #=== Not showing?
+	def __init__(self, item):
+		QWidget.__init__(self)
+		print 'cont1: '+str(item.contour1.name)
+		print 'cont2: '+str(item.contour2.name)
+		layout = QHBoxLayout()
+		layout.addWidget(QLabel(item.contour1.name))
+		layout.addWidget(QLabel(item.contour2.name))
+		self.setLayout(layout)
+		# self.show()
 class sectionContours(QWidget): #===
 	class contourTableItem(QListWidgetItem):
 		'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
@@ -71,10 +81,9 @@ class sectionContours(QWidget): #===
 				self.contour = contour
 				self.setText(contour.name)
 		def clicked(self):
-			try:
-				print self.contour
-			except:
-				print self.contour1
+			a = resolveOvlp(self)
+			print('Resolve item')
+			a.show()
 	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB):
 		QWidget.__init__(self)
 		self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
@@ -207,22 +216,11 @@ class sectionContours(QWidget): #===
 			oB.append(self.outUniqueB.item(i))
 		print str( oA+oO+oB ) #===
 	def doubleClicked(self, item): #===
-		print item
 		if item.background() == QColor('red'):
-			a = resolveOvlp(item)
-			a.show()
-	
-	
-class resolveOvlp(QFrame): #=== Not showing?
-	def __init__(self, item):
-		QFrame.__init__(self)
-		print('creating res')
-		print(item.contour1.name)
-		print(item.contour2.name)
-		layout = QHBoxLayout()
-		layout.addWidget(QLabel(item.contour1.name))
-		layout.addWidget(QLabel(item.contour2.name))
-		self.setLayout(layout)
+			item.clicked()
+		else:
+			print 'Not red!'
+
 # - Attributes
 class sectionAttributes(QWidget): #===
 	def __init__(self, dictA, dictB):
