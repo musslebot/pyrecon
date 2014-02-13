@@ -13,25 +13,25 @@ This package also contains several tools for managing this data:
 The functions/tools already in place can be used to develop solutions to a wide range of problems associated with RECONSTRUCT data.
 
 # Install Instructions
-**Linux
+*Linux*
 ---
-1) Install the following dependencies:
-	python-dev
-	python-setuptools
-	libgeos-dev
-	libblas-dev
-	liblapack-dev
-	libfreetype6-dev
-	libpng-dev
-	gfortran
-	libxml2-dev
-	libxslt-dev
-	cmake
-	libshiboken-dev
+* Install the following dependencies:
+    * python-dev
+    * python-setuptools
+    * libgeos-dev
+    * libblas-dev
+    * liblapack-dev
+    * libfreetype6-dev
+    * libpng-dev
+    * gfortran
+    * libxml2-dev
+    * libxslt-dev
+    * cmake
+    * libshiboken-dev
 2) Install PySide
 3) Install PyRECONSTRUCT by running 'python setup.py install' from the parent folder
 
-**Windows (strongly discouraged)
+*Windows* (strongly discouraged)
 ---
 PyRECONSTRUCT for Windows has only been tested using the following method:
 1. Download and install Python2.7:
