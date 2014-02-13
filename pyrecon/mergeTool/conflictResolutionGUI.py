@@ -57,6 +57,24 @@ class sectionImages(QWidget):
 		self.image = self.img2
 # - Contours
 class sectionContours(QWidget): #===
+	class contourTableItem(QListWidgetItem):
+		'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
+		def __init__(self, contour):
+			QListWidgetItem.__init__(self)
+			if type(contour) == type([]):
+				self.contour = None
+				self.contour1 = contour[0]
+				self.contour2 = contour[1]
+				self.setText(self.contour1.name)
+				self.setStatusTip( str(self.contour1) )
+			else:
+				self.contour = contour
+				self.setText(contour.name)
+		def clicked(self):
+			try:
+				print self.contour
+			except:
+				print self.contour1
 	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB):
 		QWidget.__init__(self)
 		self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
@@ -133,30 +151,13 @@ class sectionContours(QWidget): #===
 		container.addLayout(columnContainer)
 		container.addWidget(self.doneBut)
 		self.setLayout(container)
-	class newTableItem(QListWidgetItem):
-		def __init__(self, contour):
-			QListWidgetItem.__init__(self)
-			if type(contour) == type([]):
-				self.contour = None
-				self.contour1 = contour[0]
-				self.contour2 = contour[1]
-				self.setText(self.contour1.name)
-				self.setStatusTip( str(self.contour1) )
-			else:
-				self.contour = contour
-				self.setText(contour.name)
-		def clicked(self):
-			try:
-				print self.contour
-			except:
-				print self.contour1
 	def loadTable(self, table, items):
 		'''Load <table> with <items>'''
 		for item in items:
 			if item.__class__.__name__ == 'Contour':
-				listItem = self.newTableItem(item)
+				listItem = self.contourTableItem(item)
 			elif type(item) == type([]): # ovlp items are a list of two contours
-				listItem = self.newTableItem(item)
+				listItem = self.contourTableItem(item)
 				if item in self.confOvlp: # Conflicting ovlping contour
 					listItem.setBackground(QColor('red'))
 			else:
@@ -194,7 +195,6 @@ class sectionContours(QWidget): #===
 				msg.setText('Conflict not resolved. Abort merge...')
 				msg.exec_()
 				return
-
 		# Gather items from tables
 		oA = [] # Unique A
 		for i in range(self.outUniqueA.count()):
@@ -205,14 +205,14 @@ class sectionContours(QWidget): #===
 		oB = [] # Unique B
 		for i in range(self.outUniqueB.count()):
 			oB.append(self.outUniqueB.item(i))
-
 		print str( oA+oO+oB ) #===
-
 	def doubleClicked(self, item): #===
 		print item
 		if item.background() == QColor('red'):
 			a = resolveOvlp(item)
 			a.show()
+	
+	
 class resolveOvlp(QFrame): #=== Not showing?
 	def __init__(self, item):
 		QFrame.__init__(self)
