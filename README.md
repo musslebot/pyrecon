@@ -1,27 +1,21 @@
-# PyRECONSTRUCT
+PyRECONSTRUCT
+=============
 Date Created: 3/7/2013<br>
 Authors: Michael Musslewhite, Larry Lindsey<br>
 
-## Overview
-PyRECONSTRUCT provides easy access to XML files associated with the program RECONSTRUCT.
-This package should also be used to develop scripts/programs for various tasks that use
-these XML files. Included examples are mergeTool for merging multiple RECONSTRUCT series
-and excelTool for pushing object data into an excel workbook (.xlsx).
+# Overview
+PyRECONSTRUCT provides easy access to data in XML files associated with the program [RECONSTRUCT](http://synapses.clm.utexas.edu/tools/reconstruct/reconstruct.stm).
+This package also contains several tools for managing this data:
+*mergeTool - merge series together with built-in conflict resolution
+*excelTool - output data into excel workbooks (.xlsx)
+*calibrationTool - rescale contours representing images in a section
+*curationTool - check for various properties of objects in a series
+The functions/tools already in place can be used to develop solutions to a wide range of problems associated with RECONSTRUCT data.
 
-
-## Install Instructions
-*Linux*
-PyRECONSTRUCT can be installed in multiple ways:
-	
-	[Preferred]: From parent folder:
-		python setup.py install
-	*this command must be run every time changes are made locally to any file in PyRECONSTRUCT
-	
-	[Optional]: Through PIP*:
-		pip install PyRECONSTRUCT
-	*this method commonly has problems. Prerequisite packages may not install correctly on their own and will interrupt the PyRECONSTRUCT installation
-
-These dependencies are required to run on most linux systems:
+# Install Instructions
+**Linux
+---
+1) Install the following dependencies:
 	python-dev
 	python-setuptools
 	libgeos-dev
@@ -34,8 +28,11 @@ These dependencies are required to run on most linux systems:
 	libxslt-dev
 	cmake
 	libshiboken-dev
+2) Install PySide
+3) Install PyRECONSTRUCT by running 'python setup.py install' from the parent folder
 
-*Windows*
+**Windows (strongly discouraged)
+---
 PyRECONSTRUCT for Windows has only been tested using the following method:
 1. Download and install Python2.7:
 	http://www.python.org/download/releases/2.7.5/
