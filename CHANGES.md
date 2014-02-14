@@ -1,6 +1,6 @@
 Visit the [GitHub repo](https://github.com/wtrdrnkr/pyrecon) for additional detail
 
-Version 2.0.0
+Version 2.0.0 (UPCOMING PATCH)
 ===
 *New project structure:
 	- overarching code (handleXML.py and main.py) in main pyrecon folder
