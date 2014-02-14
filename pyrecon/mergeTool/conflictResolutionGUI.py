@@ -56,7 +56,7 @@ class sectionImages(QWidget):
 		self.output = self.img2
 		self.close()
 # - Contours
-class resolveOvlp(QMessageBox): #=== Format properly
+class resolveOvlp(QMessageBox): #=== still needs to display actual contour picture
 	def __init__(self, item):
 		QMessageBox.__init__(self)
 		self.setWindowTitle('Contour Overlap Resolution')
