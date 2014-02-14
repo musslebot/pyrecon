@@ -1,7 +1,6 @@
 '''Graphical handler functions for mergeTool conflicts'''
 from PySide.QtCore import *
 from PySide.QtGui import *
-import sys
 
 # SECTIONS
 # - Image
@@ -11,7 +10,9 @@ class sectionImages(QWidget):
 		self.loadObjects()
 		self.loadFunctions(image1,image2)
 		self.loadLayout()
-		self.image = None
+		self.img1 = image1
+		self.img2 = image2
+		self.output = None
 		self.show()
 	def loadObjects(self):
 		self.img1label = QLabel(self)
@@ -21,8 +22,6 @@ class sectionImages(QWidget):
 		self.pick1 = QPushButton(self)
 		self.pick2 = QPushButton(self)
 	def loadFunctions(self, image1, image2):
-		self.img1 = image1
-		self.img2 = image2
 		self.img1label.setText('Section A\'s Image\n'+'-'*17)
 		self.img1label.setAlignment(Qt.AlignHCenter)
 		self.img2label.setText('Section B\'s Image\n'+'-'*17)
@@ -50,40 +49,66 @@ class sectionImages(QWidget):
 		hbox.addSpacing(50)
 		hbox.addLayout(vbox2)
 		self.setLayout(hbox)
-	def ret1(self): #===
-		self.image = self.img1
-
-	def ret2(self): #===
-		self.image = self.img2
+	def ret1(self):
+		self.output = self.img1
+		self.close()
+	def ret2(self):
+		self.output = self.img2
+		self.close()
 # - Contours
-class resolveOvlp(QWidget): #=== Not showing?
+class resolveOvlp(QMessageBox): #=== Format properly
 	def __init__(self, item):
-		QWidget.__init__(self)
-		print 'cont1: '+str(item.contour1.name)
-		print 'cont2: '+str(item.contour2.name)
-		layout = QHBoxLayout()
-		layout.addWidget(QLabel(item.contour1.name))
-		layout.addWidget(QLabel(item.contour2.name))
-		self.setLayout(layout)
-		# self.show()
-class sectionContours(QWidget): #===
-	class contourTableItem(QListWidgetItem):
-		'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
-		def __init__(self, contour):
-			QListWidgetItem.__init__(self)
-			if type(contour) == type([]):
-				self.contour = None
-				self.contour1 = contour[0]
-				self.contour2 = contour[1]
-				self.setText(self.contour1.name)
-				self.setStatusTip( str(self.contour1) )
-			else:
-				self.contour = contour
-				self.setText(contour.name)
-		def clicked(self):
-			a = resolveOvlp(self)
-			print('Resolve item')
-			a.show()
+		QMessageBox.__init__(self)
+		self.setWindowTitle('Contour Overlap Resolution')
+		self.item = item
+		self.loadObjects()
+		self.loadText()
+		self.exec_()
+	def loadObjects(self):
+		# Buttons to choose contours
+		self.cont1But = self.addButton("Choose Contour 1", QMessageBox.ActionRole)
+		self.cont2But = self.addButton("Choose Contour 2", QMessageBox.ActionRole)
+	def loadText(self):
+		self.setText('Choose Contour 1 or 2.\n\nClick \'show details\' to see more info.')
+		details = ''
+		details += 'Name:\n\t{}\t{}\n'.format(self.item.contour1.name,self.item.contour2.name)
+		details += 'Comment:\n\t{}\t{}\n'.format(self.item.contour1.comment,self.item.contour2.comment)
+		details += 'Hidden:\n\t{}\t{}\n'.format(self.item.contour1.hidden,self.item.contour2.hidden)
+		details += 'Closed:\n\t{}\t{}\n'.format(self.item.contour1.closed,self.item.contour2.closed)
+		details += 'Simplified:\n\t{}\t{}\n'.format(self.item.contour1.simplified,self.item.contour2.simplified)
+		details += 'Mode:\n\t{}\t{}\n'.format(self.item.contour1.mode,self.item.contour2.mode)
+		details += 'Border:\n\t{}\t{}\n'.format(self.item.contour1.border,self.item.contour2.border)
+		details += 'Fill:\n\t{}\t{}\n'.format(self.item.contour1.fill,self.item.contour2.fill)
+		details += 'Points:\n\t'+'\n\t'.join([str(thing[0])+' vs '+str(thing[1]) for thing in zip(self.item.contour1.points,self.item.contour2.points)])
+		self.setDetailedText(details)
+
+class contourTableItem(QListWidgetItem):
+	'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
+	def __init__(self, contour):
+		QListWidgetItem.__init__(self)
+		if type(contour) == type([]):
+			self.contour = None
+			self.contour1 = contour[0]
+			self.contour2 = contour[1]
+			self.setText(self.contour1.name)
+		else:
+			self.contour = contour
+			self.setText(contour.name)
+	
+	def clicked(self):
+		item = self
+		msg = resolveOvlp(item)
+		if msg.clickedButton() == msg.cont1But:
+			print('Contour 1 chosen')
+			self.contour = self.contour1
+			self.setBackground(QColor('lightgreen'))
+
+		elif msg.clickedButton() == msg.cont2But:
+			print('Contour 2 chosen')
+			self.contour = self.contour2
+			self.setBackground(QColor('lightgreen'))
+
+class sectionContours(QWidget):
 	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB):
 		QWidget.__init__(self)
 		self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
@@ -93,7 +118,7 @@ class sectionContours(QWidget): #===
 		self.compOvlp = compOvlp
 		self.confOvlp = confOvlp
 		# output
-		self.output = []
+		self.output = None
 		# Load UI
 		self.loadObjects()
 		self.loadFunctions()
@@ -163,17 +188,19 @@ class sectionContours(QWidget): #===
 	def loadTable(self, table, items):
 		'''Load <table> with <items>'''
 		for item in items:
-			if item.__class__.__name__ == 'Contour':
-				listItem = self.contourTableItem(item)
-			elif type(item) == type([]): # ovlp items are a list of two contours
-				listItem = self.contourTableItem(item)
+			if item.__class__.__name__ == 'Contour' or type(item) == type([]):
+				# Item can be a contour or list of 2 contours, they are handled differently in contourTableItem class upon initialization
+				listItem = contourTableItem(item)
 				if item in self.confOvlp: # Conflicting ovlping contour
 					listItem.setBackground(QColor('red'))
-			else:
-				print('loadTable: Invalid input')
-			table.addItem(listItem)
-		table.setSelectionMode(QAbstractItemView.ExtendedSelection)
-		table.itemDoubleClicked.connect(self.doubleClicked)
+				elif item in self.compOvlp: # Completely ovlping contour
+					listItem.contour = listItem.contour1 # set chosen contour to cont1 since they're the same
+				table.addItem(listItem)
+		table.setSelectionMode(QAbstractItemView.ExtendedSelection) #=== not working?
+		table.itemDoubleClicked.connect(self.doubleClickCheck)
+	def doubleClickCheck(self, item):
+		if item.background() == QColor('red') or item.background() == QColor('lightgreen'):
+			item.clicked()	
 	def moveItems(self):
 		# Move items in what table(s)?
 		if self.sender() == self.moveSelectedA:
@@ -194,7 +221,7 @@ class sectionContours(QWidget): #===
 			inTable.addItem( outTable.takeItem(outTable.row(item)) )
 		inTable.clearSelection()
 		outTable.clearSelection()
-	def done(self): #===
+	def done(self):
 		# Check ovlp table for conflicts (red)
 		numItems = self.outOvlp.count()
 		for i in range(numItems):
@@ -208,25 +235,34 @@ class sectionContours(QWidget): #===
 		oA = [] # Unique A
 		for i in range(self.outUniqueA.count()):
 			oA.append(self.outUniqueA.item(i))
-		oO = [] # Overlap
+		oO = [] # Overlap #=== pick correct item
 		for i in range(self.outOvlp.count()):
 			oO.append(self.outOvlp.item(i))
 		oB = [] # Unique B
 		for i in range(self.outUniqueB.count()):
 			oB.append(self.outUniqueB.item(i))
-		print str( oA+oO+oB ) #===
-		#=== Check for domain1 <- contour that represents the section's image
-		#=== set self.output to resolved contours
-		#=== close window?
-	def doubleClicked(self, item): #===
-		if item.background() == QColor('red'):
-			item.clicked()
-		else:
-			print 'Not red!'
+		# Check for domain1 <- contour that represents the section's image
+		if ('domain1' not in [item.contour1.name for item in oO] and
+		'domain1' not in [item.contour.name for item in oA] and
+		'domain1' not in [item.contour.name for item in oB]):
+			msg = QMessageBox(self)
+			msg.setText('"domain1" was not found in any output column. The "domain1" contour essential for correctly mapping contours to their place on the image. Merge aborted.')
+			msg.exec_()
+			return
+		# set self.output to chosen contours
+		self.output = [item.contour for item in oA]+[item.contour for item in oO]+[item.contour for item in oB]
+		self.close()
+	
 # - Attributes
-class sectionAttributes(QWidget): #===
+class sectionAttributes(QWidget): #=== Section A's attributes are default as of now
 	def __init__(self, dictA, dictB):
 		QWidget.__init__(self)
+		self.output = {}
+		self.output['name'] = dictA['name']
+		self.output['index'] = dictA['index']
+		self.output['thickness'] = dictA['thickness']
+		self.output['alignLocked'] = dictA['alignLocked']
+
 
 # SERIES #===
 # - Contours
