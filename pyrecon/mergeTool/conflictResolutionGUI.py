@@ -81,7 +81,6 @@ class resolveOvlp(QMessageBox): #=== still needs to display actual contour pictu
 		details += 'Fill:\n\t{}\t{}\n'.format(self.item.contour1.fill,self.item.contour2.fill)
 		details += 'Points:\n\t'+'\n\t'.join([str(thing[0])+' vs '+str(thing[1]) for thing in zip(self.item.contour1.points,self.item.contour2.points)])
 		self.setDetailedText(details)
-
 class contourTableItem(QListWidgetItem):
 	'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
 	def __init__(self, contour):
@@ -107,7 +106,6 @@ class contourTableItem(QListWidgetItem):
 			print('Contour 2 chosen')
 			self.contour = self.contour2
 			self.setBackground(QColor('lightgreen'))
-
 class sectionContours(QWidget):
 	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB):
 		QWidget.__init__(self)
@@ -141,6 +139,9 @@ class sectionContours(QWidget):
 		self.loadTable(self.inUniqueA, self.uniqueA)
 		self.loadTable(self.inUniqueB, self.uniqueB)
 		self.loadTable(self.inOvlp, self.compOvlp+self.confOvlp)
+		for table in [self.inUniqueA, self.inUniqueB, self.inOvlp, self.outUniqueA, self.outUniqueB, self.outOvlp]:
+			table.setSelectionMode(QAbstractItemView.ExtendedSelection)
+			table.itemDoubleClicked.connect(self.doubleClickCheck)
 		self.doneBut.setText('Merge')
 		self.doneBut.clicked.connect( self.done )
 		self.moveSelectedA.setText('Move Selected')
@@ -196,8 +197,8 @@ class sectionContours(QWidget):
 				elif item in self.compOvlp: # Completely ovlping contour
 					listItem.contour = listItem.contour1 # set chosen contour to cont1 since they're the same
 				table.addItem(listItem)
-		table.setSelectionMode(QAbstractItemView.ExtendedSelection) #=== not working?
-		table.itemDoubleClicked.connect(self.doubleClickCheck)
+			else:
+				print 'Invalid item for contourListWidget'
 	def doubleClickCheck(self, item):
 		if item.background() == QColor('red') or item.background() == QColor('lightgreen'):
 			item.clicked()	
@@ -252,7 +253,6 @@ class sectionContours(QWidget):
 		# set self.output to chosen contours
 		self.output = [item.contour for item in oA]+[item.contour for item in oO]+[item.contour for item in oB]
 		self.close()
-	
 # - Attributes
 class sectionAttributes(QWidget): #=== Section A's attributes are default as of now
 	def __init__(self, dictA, dictB):
@@ -262,8 +262,6 @@ class sectionAttributes(QWidget): #=== Section A's attributes are default as of 
 		self.output['index'] = dictA['index']
 		self.output['thickness'] = dictA['thickness']
 		self.output['alignLocked'] = dictA['alignLocked']
-
-
 # SERIES #===
 # - Contours
 # - ZContours
