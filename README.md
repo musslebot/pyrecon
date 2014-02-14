@@ -31,8 +31,8 @@ The functions/tools already in place can be used to develop solutions to a wide 
     * `libxslt-dev`
     * `cmake`
     * `libshiboken-dev`
-* Install [PySide](http://qt-project.org/wiki/PySide) *(This can be quite tricky, but there are many tutorials online)*
-* Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from the parent folder
+* Install [PySide](http://qt-project.org/wiki/PySide)
+* Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from its parent folder
 
 ### Windows *(discouraged)*
 PyRECONSTRUCT for Windows has only been tested using the following method:
