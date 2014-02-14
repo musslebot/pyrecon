@@ -14,7 +14,7 @@ def main(section1, section2, graphical=False):
 		return
 	# GUI or not GUI?
 	if graphical: # GUI
-		graphicalMerge(section1, section2)
+		mergedSection = graphicalMerge(section1, section2)
 
 	else: # Terminal
 		mergedImage = mergeImages(section1, section2)
@@ -22,7 +22,8 @@ def main(section1, section2, graphical=False):
 		mergedAttributes = mergeAttributes(section1, section2)
 		# Combine merged properties into a section object
 		mergedSection = Section(mergedImage, mergedContours, mergedAttributes)
-		return mergedSection
+	
+	return mergedSection
 
 def graphicalMerge(section1, section2):
 	from PySide.QtGui import QApplication
@@ -34,10 +35,13 @@ def graphicalMerge(section1, section2):
 		handler=handlersGUI.sectionContours)
 	mergedAttributes = mergeAttributes(section1, section2,
 		handler=handlersGUI.sectionAttributes)
-	app.exec_() # Open windows and pause interpreter until closed
-	
+	app.exec_() # Open QWidgets and pause interpreter until closed
+
 	# Combine merged properties into a section object
-	mergedSection = Section(mergedImage, mergedContours, mergedAttributes)
+	mergedSection = Section(
+		mergedImage.output,
+		mergedContours.output,
+		mergedAttributes.output)
 	return mergedSection
 
 
