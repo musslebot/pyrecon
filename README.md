@@ -1,12 +1,13 @@
 [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT)
 =============
-Date Created: 3/7/2013<br>
 Authors: Michael Musslewhite, Larry Lindsey<br>
+Date Created: 3/7/2013<br>
+
 
 # Overview
 [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) provides easy access to data in XML files associated with the program [RECONSTRUCT](http://synapses.clm.utexas.edu/tools/reconstruct/reconstruct.stm).
 This package also contains several tools for managing this data:
-* mergeTool - merge series together with built-in conflict resolution
+* mergeTool - merge series together with built-in conflict resolution (graphical or non-graphical)
 * excelTool - output data into excel workbooks (.xlsx)
 * calibrationTool - rescale contours representing images in a section
 * curationTool - check for various properties of objects in a series
