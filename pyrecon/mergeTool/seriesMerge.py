@@ -36,11 +36,11 @@ def graphicalMerge(series1, series2): #=== HIGH PRIORITY
 	if app is None: # Create QApplication if doesn't exist
 		app = QApplication([])
 	newAttributes = mergeAttributes(series1, series2,
-		handler=handlersGUI.sectionAttributes)
+		handler=handlersGUI.seriesAttributes)
 	newContours = mergeContours(series1, series2,
-		handler=handlersGUI.sectionImages)
+		handler=handlersGUI.seriesContours)
 	newZContours = mergeZContours(series1, series2,
-		handler=handlersGUI.sectionContours)
+		handler=handlersGUI.seriesZContours)
 	app.exec_() # Open QWidgets and pause interpreter until closed
 	# Gather data from handlers
 	try: # GUI resolution used
