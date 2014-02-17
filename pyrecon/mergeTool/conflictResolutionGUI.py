@@ -264,18 +264,19 @@ class sectionContours(QWidget):
 		self.close()
 
 # SERIES
-# - Attributes #=== low priority
+# - Attributes #=== low priority, return A's for now
 class seriesAttributes(QWidget):
 	def __init__(self, dictA, dictB):
 		QWidget.__init__(self)
-		newSeries = pyrecon.classes.Series(dictA)
-		print ('serAtts: '+str(newSeries.__dict__)
-		return dictA
-# - Contours #=== low priority
+		self.output = {}
+		for key in dictA:
+			if key not in ['zcontours','contours', 'sections']: # ignore zcontours, contours, sections -- they have their own merge functions
+				self.output[key] = dictA[key]
+# - Contours #=== low priority, return A's for now
 class seriesContours(QWidget):
 	def __init__(self, contsA, contsB):
 		QWidget.__init__(self)
-		return
+		self.output = contsA #===
 # - ZContours #=== HIGH PRIORITY =========================
 class seriesZContours(QWidget):
 	def __init__(self, zcontsA, zcontsB):
