@@ -1,8 +1,8 @@
+'''Functions for reading from/writing to RECONSTRUCT XML files.'''
 from pyrecon.classes import Contour, Image, Section, Series, Transform, ZContour
 from lxml import etree as ET # lxml parsing library Element Tree module
 import os, re
-
-# MAIN XML PROCESS DRIVER
+# Process Files
 def process(path):
 	'''Process XML file defined by path'''
 	tree = ET.parse(path)
@@ -11,8 +11,6 @@ def process(path):
 		return processSectionFile(tree)
 	elif root.tag == 'Series': # Process Series
 		return processSeriesFile(tree)
-
-# Process Files
 def processSeriesFile(tree):
 	root = tree.getroot()
 	attributes = seriesAttributes(root)
@@ -33,9 +31,7 @@ def processSeriesFile(tree):
 def processSectionFile(tree):
 	'''Returns attribute dictionary, image object, and contour list associated with a Section's XML <tree>'''
 	root = tree.getroot()
-
 	attributes = sectionAttributes(root)
-
 	# Process images and contours
 	images = []
 	contours = None
@@ -50,20 +46,16 @@ def processSectionFile(tree):
 				if contours == None:
 					contours = []
 				contours.append(cont)
- 
 	# Get first image from images list
 	try:
 		image = images.pop()
 	except:
 		image = None
-
 	# Connect 'domain1' contour with section image
 	for contour in contours:
 		if contour.name == 'domain1':
 			contour.image = image
-
 	return attributes, image, contours
-
 # Process attributes from tree nodes
 def contourAttributes(node):
 	try: # Contours in Sections
@@ -214,7 +206,6 @@ def zContourAttributes(node):
 	attributes['mode'] = int(node.get('mode'))
 	attributes['points'] = [(float(x.split(' ')[0]), float(x.split(' ')[1]), int(x.split(' ')[2])) for x in [x.strip() for x in node.get('points').split(',')] if len(tuple(float(x) for x in x.split(' ') if x != '')) == 3]
 	return attributes
-
 # Write objects to XML
 def objectToElement(object):
 	'''Returns an ElementTree Element for <object> that is appropriate for writing to an XML file.'''
@@ -385,10 +376,8 @@ def writeSection(section, directory):
 	if str(directory[-1]) != '/':
 		directory += '/'
 	outpath = str(directory) + str(section.name)
-	
 	# Make root (Section attributes: index, thickness, alignLocked)
 	root = objectToElement(section)
-	
 	# Image: Transform, Image, Contour
 	image = objectToElement(section.image)
 	imageContour = objectToElement([cont for cont in section.contours if cont.name == 'domain1'].pop())
@@ -397,7 +386,6 @@ def writeSection(section, directory):
 	imageTransform.append(imageContour)
 	#Append image node to root
 	root.append(imageTransform)
-
 	# Contours and Transforms
 	for contour in section.contours:
 		if contour.name != 'domain1':
@@ -405,7 +393,6 @@ def writeSection(section, directory):
 			cont = objectToElement(contour)
 			contTransform.append(cont)
 			root.append(contTransform)
-
 	# Make tree and write
 	elemtree = ET.ElementTree(root)
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
@@ -422,20 +409,16 @@ def writeSeries(series, directory, sections=False):
     	# Raise error if this file already exists to prevent overwrite
 	if os.path.exists(outpath):
 		raise IOError('\nFilename %s already exists.\nQuiting write command to avoid overwrite'%outpath)
-
     # Build series root element
 	root = objectToElement( series ) 
-
 	# Add Contours/ZContours to root
 	for contour in series.contours:
 		root.append( objectToElement(contour) )
 	for zcontour in series.zcontours:
 		root.append( objectToElement(zcontour) )
-
 	# Make tree and write
 	elemtree = ET.ElementTree(root)
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
-
 	# Write all sections if <sections> == True
 	if sections == True:
 		for section in series.sections:
