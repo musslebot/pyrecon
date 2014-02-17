@@ -25,9 +25,9 @@ def main(series1, series2, graphical=False):
 		mergedSeries = nonGraphicalMerge(series1, series2)	
 	return mergedSeries
 def nonGraphicalMerge(series1, series2): #=== 
-	mergedContours = mergeContours(series1, section2)
-	# mergedZContours = mergeZContours(series1, series2)
-	# mergedAttributes = mergeAttributes(series1, series2)
+	mergedContours = mergeContours(series1, series2)
+	mergedZContours = mergeZContours(series1, series2)
+	mergedAttributes = mergeAttributes(series1, series2)
 	return Series(mergedContours, mergedZContours, mergedAttributes)
 def graphicalMerge(series1, series2): #=== HIGH PRIORITY
 	from PySide.QtGui import QApplication
@@ -59,12 +59,21 @@ def graphicalMerge(series1, series2): #=== HIGH PRIORITY
 	return Series(mergedContours, mergedZContours, mergedAttributes)
 # MERGE FUNCTIONS
 # - Contours
-def mergeContours(series1, series2, handler=handlers.seriesContours): #===
+def mergeContours(series1, series2, handler=handlers.seriesContours): #=== low priority
 	#=== Series contours reflect RECONSTRUCT palette options, return A for now
-	return series1.contours
+	return handler(series1.contours, series2.contours)
 # - ZContours
-def mergeZContours(series1, series2, handler=handlers.seriesZContours): #=== HIGH PRIORITY
-	return
+def mergeZContours(series1, series2, threshold=(1+2**(-17)), handler=handlers.seriesZContours): #=== HIGH PRIORITY
+	zConts1 = [cont for cont in series1.zcontours]
+	zConts2 = [cont for cont in series2.zcontours]
+	mergedZConts = []
+	for elem in zConts1:
+		for elem2 in zConts2:
+			if elem.name == elem2.name and elem.overlaps(elem2, threshold):
+				mergedZConts.append( elem ) 
+				zConts1.remove( elem )
+				zConts2.remove( elem2 )
+	return handler(zConts1, zConts2, mergedZConts)
 # - Attributes
-def mergeAttributes(series1, series2, handler=handlers.seriesAttributes): #===
-	return series1 #===
+def mergeAttributes(series1, series2, handler=handlers.seriesAttributes): #=== low priority
+	return handler(series1.__dict__, series2.__dict__) #=== 
