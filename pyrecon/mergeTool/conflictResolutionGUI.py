@@ -3,6 +3,15 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 # SECTIONS
+# - Attributes
+class sectionAttributes(QWidget): #=== Section A's attributes are default as of now
+	def __init__(self, dictA, dictB):
+		QWidget.__init__(self)
+		self.output = {}
+		self.output['name'] = dictA['name']
+		self.output['index'] = dictA['index']
+		self.output['thickness'] = dictA['thickness']
+		self.output['alignLocked'] = dictA['alignLocked']
 # - Image
 class sectionImages(QWidget):
 	def __init__(self, image1, image2):
@@ -253,16 +262,21 @@ class sectionContours(QWidget):
 		# set self.output to chosen contours
 		self.output = [item.contour for item in oA]+[item.contour for item in oO]+[item.contour for item in oB]
 		self.close()
-# - Attributes
-class sectionAttributes(QWidget): #=== Section A's attributes are default as of now
+
+# SERIES
+# - Attributes #=== low priority
+class seriesAttributes(QWidget):
 	def __init__(self, dictA, dictB):
 		QWidget.__init__(self)
-		self.output = {}
-		self.output['name'] = dictA['name']
-		self.output['index'] = dictA['index']
-		self.output['thickness'] = dictA['thickness']
-		self.output['alignLocked'] = dictA['alignLocked']
-# SERIES #===
-# - Contours
-# - ZContours
-# - Attributes
+		newSeries = pyrecon.classes.Series(dictA)
+		print ('serAtts: '+str(newSeries.__dict__)
+		return dictA
+# - Contours #=== low priority
+class seriesContours(QWidget):
+	def __init__(self, contsA, contsB):
+		QWidget.__init__(self)
+		return
+# - ZContours #=== HIGH PRIORITY =========================
+class seriesZContours(QWidget):
+	def __init__(self, zcontsA, zcontsB):
+		return
