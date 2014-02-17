@@ -277,7 +277,11 @@ class seriesContours(QWidget):
 	def __init__(self, contsA, contsB):
 		QWidget.__init__(self)
 		self.output = contsA #===
-# - ZContours #=== HIGH PRIORITY =========================
+# - ZContours #=== HIGH PRIORITY, add uniques to merged
 class seriesZContours(QWidget):
-	def __init__(self, zcontsA, zcontsB):
-		return
+	def __init__(self, zConts1, zConts2, mergedZConts):
+		QWidget.__init__(self)
+		# add leftover, unique zcontours to ser3zconts
+		mergedZConts.extend(zConts1)
+		mergedZConts.extend(zConts2)
+		self.output = mergedZConts
