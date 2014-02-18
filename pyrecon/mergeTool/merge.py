@@ -25,7 +25,7 @@ def main(series1, series2, directory, *args, **kwargs):
 		gui = True
 	# Copy series1 attributes, etc. for now #===
 	mergedSer = Series(series1.__dict__) #===
-	mergeSer.sections = [] #===
+	mergedSer.sections = [] #===
 	# Merge sections
 	allSections = zip(series1.sections, series2.sections)
 	for secPair in allSections:
