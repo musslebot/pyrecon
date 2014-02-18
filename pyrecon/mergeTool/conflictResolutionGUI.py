@@ -102,17 +102,13 @@ class contourTableItem(QListWidgetItem):
 		else:
 			self.contour = contour
 			self.setText(contour.name)
-	
 	def clicked(self):
 		item = self
 		msg = resolveOvlp(item)
 		if msg.clickedButton() == msg.cont1But:
-			print('Contour 1 chosen')
 			self.contour = self.contour1
 			self.setBackground(QColor('lightgreen'))
-
 		elif msg.clickedButton() == msg.cont2But:
-			print('Contour 2 chosen')
 			self.contour = self.contour2
 			self.setBackground(QColor('lightgreen'))
 class sectionContours(QWidget):
@@ -201,9 +197,9 @@ class sectionContours(QWidget):
 			if item.__class__.__name__ == 'Contour' or type(item) == type([]):
 				# Item can be a contour or list of 2 contours, they are handled differently in contourTableItem class upon initialization
 				listItem = contourTableItem(item)
-				if item in self.confOvlp: # Conflicting ovlping contour
+				if type(item) == type([]) and item in self.confOvlp: # Conflicting ovlping contour
 					listItem.setBackground(QColor('red'))
-				elif item in self.compOvlp: # Completely ovlping contour
+				elif type(item) == type([]) and item in self.compOvlp: # Completely ovlping contour
 					listItem.contour = listItem.contour1 # set chosen contour to cont1 since they're the same
 				table.addItem(listItem)
 			else:
