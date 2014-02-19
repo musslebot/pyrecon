@@ -275,11 +275,13 @@ class seriesAttributes(QWidget):
 		for key in dictA:
 			if key not in ['zcontours','contours', 'sections']: # ignore zcontours, contours, sections -- they have their own merge functions
 				self.output[key] = dictA[key]
+		self.show()
 # - Contours #=== low priority, return A's for now
 class seriesContours(QWidget):
 	def __init__(self, contsA, contsB):
 		QWidget.__init__(self)
 		self.output = contsA #===
+		self.show()
 # - ZContours #=== HIGH PRIORITY, add uniques to merged
 class seriesZContours(QWidget):
 	def __init__(self, zConts1, zConts2, mergedZConts):
@@ -288,3 +290,4 @@ class seriesZContours(QWidget):
 		mergedZConts.extend(zConts1)
 		mergedZConts.extend(zConts2)
 		self.output = mergedZConts
+		self.show()
