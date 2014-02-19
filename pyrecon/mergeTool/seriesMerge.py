@@ -29,7 +29,7 @@ def nonGraphicalMerge(series1, series2): #===
 	mergedZContours = mergeZContours(series1, series2)
 	mergedAttributes = mergeAttributes(series1, series2)
 	return Series(mergedContours, mergedZContours, mergedAttributes)
-def graphicalMerge(series1, series2): #=== HIGH PRIORITY
+def graphicalMerge(series1, series2):
 	from PySide.QtGui import QApplication
 	# Merge 
 	app = QApplication.instance()
@@ -58,8 +58,8 @@ def graphicalMerge(series1, series2): #=== HIGH PRIORITY
 	# Combine merged properties into a series object
 	return Series(mergedContours, mergedZContours, mergedAttributes)
 # MERGE FUNCTIONS
-# - Contours
-def mergeContours(series1, series2, handler=handlers.seriesContours): #=== low priority
+# - Contours #=== low priority
+def mergeContours(series1, series2, handler=handlers.seriesContours):
 	#=== Series contours reflect RECONSTRUCT palette options, return A for now
 	return handler(series1.contours, series2.contours)
 # - ZContours
@@ -74,6 +74,6 @@ def mergeZContours(series1, series2, threshold=(1+2**(-17)), handler=handlers.se
 				zConts1.remove( elem )
 				zConts2.remove( elem2 )
 	return handler(zConts1, zConts2, mergedZConts)
-# - Attributes
-def mergeAttributes(series1, series2, handler=handlers.seriesAttributes): #=== low priority
+# - Attributes #=== low priority?
+def mergeAttributes(series1, series2, handler=handlers.seriesAttributes):
 	return handler(series1.__dict__, series2.__dict__) #=== 
