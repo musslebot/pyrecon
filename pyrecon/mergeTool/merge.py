@@ -24,13 +24,10 @@ def main(series1, series2, directory, *args, **kwargs):
 	if 'graphical' in args or kwargs['graphical'] == True:
 		gui = True
 	# Copy series1 attributes, etc. for now #===
-	mergedSer = Series(series1.__dict__) #===
-	mergedSer.sections = [] #===
+	mergedSer = seriesMerge.main(series1, series2, graphical=gui)
 	# Merge sections
 	allSections = zip(series1.sections, series2.sections)
 	for secPair in allSections:
-		print secPair[0].name+' '+secPair[1].name
-		print str(secPair)
 		mergedSec = sectionMerge.main(*secPair, graphical=gui)
 		mergedSer.sections.append(mergedSec)
 	# Write <series> & <sections> to XML files in directory
