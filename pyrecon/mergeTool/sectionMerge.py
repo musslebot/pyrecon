@@ -78,7 +78,7 @@ def mergeContours(sectionA, sectionB, handler=handlers.sectionContours):
 	# Identify unique contours
 	uniqueA, uniqueB = contsA, contsB
 	# Handle conflicts
-	mergedConts = handler(uniqueA, compOvlp, confOvlp, uniqueB)
+	mergedConts = handler(uniqueA, compOvlp, confOvlp, uniqueB, sections=(sectionA,sectionB))
 	return mergedConts
 def checkOverlappingContours(contsA, contsB, threshold=(1+2**(-17)), sameName=True):
 	'''Returns lists of mutually overlapping contours.''' 

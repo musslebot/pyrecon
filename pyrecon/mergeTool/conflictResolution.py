@@ -29,7 +29,7 @@ def sectionImages(imageA, imageB):
 		elif str(resp).lower() == 'b':
 			return imageB
 # - Contours
-def sectionContours(uniqueA, compOvlp, confOvlp, uniqueB):
+def sectionContours(uniqueA, compOvlp, confOvlp, uniqueB, sections=None):
 	'''Returns list of contours to be added to merged series'''
 	outputContours = []
 
@@ -42,6 +42,8 @@ def sectionContours(uniqueA, compOvlp, confOvlp, uniqueB):
 		outputContours.append(pair[0])
 
 	# Conflicting: Handle conflicting overlaps
+	if sections != None:
+		print('Contour Conflicts between: '+str(sectionA.name)+' and '+str(sectionB.name))
 	for pair in confOvlp:
 		print('Conflicting contour overlap')
 		print(pair[0].__dict__) #===

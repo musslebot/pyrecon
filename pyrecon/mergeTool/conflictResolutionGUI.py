@@ -112,7 +112,7 @@ class contourTableItem(QListWidgetItem):
 			self.contour = self.contour2
 			self.setBackground(QColor('lightgreen'))
 class sectionContours(QWidget):
-	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB):
+	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None):
 		QWidget.__init__(self)
 		self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
 		# input
@@ -120,6 +120,9 @@ class sectionContours(QWidget):
 		self.uniqueB = uniqueB
 		self.compOvlp = compOvlp
 		self.confOvlp = confOvlp
+		if sections != None:
+			self.s1name = sections[0].name
+			self.s2name = sections[1].name
 		# output
 		self.output = None
 		# Load UI
@@ -157,6 +160,9 @@ class sectionContours(QWidget):
 		self.moveSelectedB.clicked.connect( self.moveItems )
 	def loadLayout(self):
 		container = QVBoxLayout()
+		secNameContainer = QHBoxLayout()
+		secNameContainer.setAlignment(Qt.AlignHCenter)
+		secNameContainer.addWidget(QLabel(str(self.s1name+' vs. '+self.s2name)))
 		columnContainer = QHBoxLayout()
 		
 		labelContainer = QVBoxLayout()
@@ -188,6 +194,7 @@ class sectionContours(QWidget):
 		uniqueBColumn.addWidget(self.outUniqueB)
 		columnContainer.addLayout(uniqueBColumn)
 
+		container.addLayout(secNameContainer)
 		container.addLayout(columnContainer)
 		container.addWidget(self.doneBut)
 		self.setLayout(container)
