@@ -35,10 +35,13 @@ if __name__ == '__main__':
 	parser.add_argument('input2', nargs=1, type=str, help='Path to the second series (or directory) or section file')
 	parser.add_argument('outpath', nargs=1, type=str, help='Path to the directory for writing the merged object\'s XML files')
 	parser.add_argument('graphical', nargs=1, type=bool, help='True/False for graphical version', default=False)
-	args = vars(parser.parse_args())
-	# Assign argparse things to their variables
-	input1 = openSeries( str(args['input1'][0]) )
-	input2 = openSeries( str(args['input2'][0]) )
-	directory = str(args['outpath'][0])
-	graphical = args['graphical'][0]
-	main(input1, input2, directory, graphical=graphical) #===
+	try:
+		args = vars(parser.parse_args())
+		# Assign argparse things to their variables
+		input1 = openSeries( str(args['input1'][0]) )
+		input2 = openSeries( str(args['input2'][0]) )
+		directory = str(args['outpath'][0])
+		graphical = args['graphical'][0]
+		main(input1, input2, directory, graphical=graphical) #===
+	except:
+		print('error loading. launching gui load tool')
