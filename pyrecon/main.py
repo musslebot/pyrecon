@@ -1,5 +1,7 @@
 '''Main, overarching functions.'''
 from pyrecon.classes import Section, Series
+from PySide.QtCore import *
+from PySide.QtGui import *
 import os, re
 
 def openSeries(path):
@@ -19,7 +21,6 @@ def merge(path1, path2, outputDirectory, *args, **kwargs): #===
 	# direct arguments to mergeTool.merge; arg handling is performed there
 	return 
 
-
 def curate(series, thresholdForDistantTraces): #===
 	return
 
@@ -28,3 +29,14 @@ def excel(series, outputDirectory): #===
 
 #def calibrate(path): #===
 #    return
+
+class graphicalLoader(QWidget):
+	def __init__(self):
+		QWidget.__init__(self)
+		self.loadObjects()
+		self.loadLayout()
+		self.show()
+	def loadObjects(self):
+		self.label1 = QLabel('Path to object1')
+		self.label2 = QLabel('Path to object2')
+
