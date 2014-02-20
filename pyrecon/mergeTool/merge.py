@@ -6,7 +6,9 @@ from pyrecon.mergeTool import sectionMerge, seriesMerge
 import pyrecon.handleXML as xml
 import argparse
 
-def main(series1, series2, directory, *args, **kwargs):
+def main(series1, series2, directory, *args, **kwargs): #===
+	#=== Are path1/2 series or sections?
+	#=== series+sections or just series?
 	# GUI handlers?
 	gui = False
 	if 'graphical' in args or kwargs['graphical'] == True:
@@ -22,16 +24,21 @@ def main(series1, series2, directory, *args, **kwargs):
 	# Write <series> & <sections> to XML files in directory
 	xml.writeSeries(mergeSer, directory, sections=True)
 
+def mergeSeries(): #=== 
+	return
+def mergeSections(): #===
+	return
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Merge two series together.')
-	parser.add_argument('input1', nargs=1, type=str, help='Path to the first series or directory')
-	parser.add_argument('input2', nargs=1, type=str, help='Path to the second series or directory')
-	parser.add_argument('outpath', nargs=1, type=str, help='Path to the directory for writing the merged series\' XML files')
+	parser.add_argument('input1', nargs=1, type=str, help='Path to the first series (or directory) or section file')
+	parser.add_argument('input2', nargs=1, type=str, help='Path to the second series (or directory) or section file')
+	parser.add_argument('outpath', nargs=1, type=str, help='Path to the directory for writing the merged object\'s XML files')
 	parser.add_argument('graphical', nargs=1, type=bool, help='True/False for graphical version', default=False)
 	args = vars(parser.parse_args())
 	# Assign argparse things to their variables
-	series1 = openSeries( str(args['input1'][0]) )
-	series2 = openSeries( str(args['input2'][0]) )
+	input1 = openSeries( str(args['input1'][0]) )
+	input2 = openSeries( str(args['input2'][0]) )
 	directory = str(args['outpath'][0])
 	graphical = args['graphical'][0]
-	main(series1, series2, directory, graphical=graphical) #===
+	main(input1, input2, directory, graphical=graphical) #===

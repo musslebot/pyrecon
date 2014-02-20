@@ -16,15 +16,8 @@ def openSeries(path):
 	return series
 
 def merge(path1, path2, outputDirectory, *args, **kwargs): #===
-	if path1.__class__.__name__ == 'Series':
-		# run seriesMerge
-			# Series only or series + sections?
-			# GUI or terminal?
-		return
-	elif path1.__class__.__name__ == 'Section':
-		# run sectionMerge
-			# GUI or terminal?
-		return
+	# direct arguments to mergeTool.merge; arg handling is performed there
+	return 
 
 
 def curate(series, thresholdForDistantTraces): #===
