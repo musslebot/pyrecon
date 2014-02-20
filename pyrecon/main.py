@@ -15,14 +15,23 @@ def openSeries(path):
 	series.update(sections=True) # find sections in directory
 	return series
 
-#def merge(path1, path2, outputDirectory): #===
-#    return
+def merge(path1, path2, outputDirectory, *args, **kwargs): #===
+	if path1.__class__.__name__ == 'Series':
+		# run seriesMerge
+			# Series only or series + sections?
+			# GUI or terminal?
+		return
+	elif path1.__class__.__name__ == 'Section':
+		# run sectionMerge
+			# GUI or terminal?
+		return
 
-#def curate(path): #===
-#    return
 
-#def excel(path): #===
-#    return
+def curate(series, thresholdForDistantTraces): #===
+	return
+
+def excel(series, outputDirectory): #===
+	return
 
 #def calibrate(path): #===
 #    return
