@@ -402,7 +402,7 @@ def writeSection(section, directory):
 	for transform in uniqueTransforms:
 		transformElement = objectToElement(transform)
 		for contour in section.contours:
-			if contour.transform == transform:
+			if contour.name != 'domain1' and contour.transform == transform:
 				cont = objectToElement(contour)
 				transformElement.append(cont)
 		root.append(transformElement)
