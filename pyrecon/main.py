@@ -1,8 +1,11 @@
 '''Main, overarching functions.'''
 from pyrecon.classes import Section, Series
-from PySide.QtCore import *
-from PySide.QtGui import *
 import os, re
+try:
+	from PySide.QtCore import *
+	from PySide.QtGui import *
+except:
+	print('Problem importing PySide. You will not be able to use GUI functions.')
 
 def openSeries(path):
 	'''Returns a Series object with associated Sections from the same directory.'''
@@ -30,13 +33,43 @@ def excel(series, outputDirectory): #===
 #def calibrate(path): #===
 #    return
 
-class graphicalLoader(QWidget):
+def start():
+	app = QApplication.instance()
+	if app is None: # Create QApplication if doesn't exist
+		app = QApplication([])
+	pickTool = toolLoader()
+	app.exec_()
+
+class toolLoader(QWidget):
 	def __init__(self):
 		QWidget.__init__(self)
 		self.loadObjects()
-		self.loadLayout()
+		self.loadFunctions()
+		self.loadLayouts()
 		self.show()
 	def loadObjects(self):
-		self.label1 = QLabel('Path to object1')
-		self.label2 = QLabel('Path to object2')
+		self.mergeBut = QPushButton('mergeTool')
+		self.excelBut = QPushButton('excelTool')
+		self.curateBut = QPushButton('curationTool')
+		self.calibBut = QPushButton('calibrationTool')
+	def loadFunctions(self):
+		self.mergeBut.clicked.connect( self.mergeGo )
+		self.excelBut.clicked.connect( self.excelGo )
+		self.curateBut.clicked.connect( self.curateGo )
+		self.calibBut.clicked.connect( self.calibGo )
+	def loadLayouts(self):
+		vbox = QVBoxLayout()
+		vbox.addWidget(self.mergeBut)
+		vbox.addWidget(self.excelBut)
+		vbox.addWidget(self.curateBut)
+		vbox.addWidget(self.calibBut)
+		self.setLayout(vbox)
+	def mergeGo(self): #===
+		print('mergeTool')
+	def excelGo(self): #===
+		print('excelTool')
+	def curateGo(self): #===
+		print('curationTool')
+	def calibGo(self): #===
+		print('calibrationTool')
 
