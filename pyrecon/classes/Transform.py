@@ -36,9 +36,9 @@ class Transform:
                 self._tform = arg
 # ACCESSORS
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        return self.dim == other.dim and self.xcoef == other.xcoef and self.ycoef == other.ycoef
     def __ne__(self, other):
-        return self.__dict__ != other.__dict__
+        return self.dim != other.dim or self.xcoef != other.xcoef or self.ycoef != other.ycoef
     def worldpts(self, points):
         '''Returns inverse points'''
         newpts = self._tform.inverse(np.asarray(points))
