@@ -378,7 +378,7 @@ def writeSection(section, directory):
 	outpath = str(directory) + str(section.name)
 	# Make root (Section attributes: index, thickness, alignLocked)
 	root = objectToElement(section)
-	# Image: Transform, Image, Contour
+	# Image: Has its own unique Transform, Image, Contour
 	image = objectToElement(section.image)
 	imageContour = objectToElement([cont for cont in section.contours if cont.name == 'domain1'].pop())
 	imageTransform = objectToElement([cont for cont in section.contours if cont.name == 'domain1'].pop().transform)
@@ -387,12 +387,27 @@ def writeSection(section, directory):
 	#Append image node to root
 	root.append(imageTransform)
 	# Contours and Transforms
+	# - Build list of unique Transform objects
+	uniqueTransforms = []
 	for contour in section.contours:
-		if contour.name != 'domain1':
-			contTransform = objectToElement(contour.transform)
-			cont = objectToElement(contour)
-			contTransform.append(cont)
-			root.append(contTransform)
+		if contour.name != 'domain1': # ignore image contour
+			unique = True
+			for tform in uniqueTransforms:
+				if tform == contour.transform:
+					unique = False
+					break
+			if unique:
+				uniqueTransforms.append(contour.transform)
+	# - Add contours to their equivalent Transform objects
+	for transform in uniqueTransforms:
+		transformElement = objectToElement(transform)
+		for contour in section.contours:
+			if contour.transform == transform:
+				cont = objectToElement(contour)
+				transformElement.append(cont)
+		root.append(transformElement)
+	
+
 	# Make tree and write
 	elemtree = ET.ElementTree(root)
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
