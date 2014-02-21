@@ -11,6 +11,4 @@
 #         * merge=pymerge
 
 # Make sure the following path to gitmerge is correct:
-path_to_gitmerge = ~/Documents/pyrecon/pyrecon/mergeTool/gitmerge.py
-
-python path_to_gitmerge $1 $2 $PWD
+python ~/Documents/pyrecon/pyrecon/mergeTool/gitmerge.py $1 $2 $PWD
