@@ -30,8 +30,8 @@ def curate(series, thresholdForDistantTraces): #===
 def excel(series, outputDirectory): #===
 	return
 
-#def calibrate(path): #===
-#    return
+def calibrate(path): #===
+	return
 
 def start():
 	app = QApplication.instance()
