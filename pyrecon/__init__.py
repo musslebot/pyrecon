@@ -13,7 +13,11 @@ import handleXML as xml
 
 # Import packages!
 import mergeTool
+print('mergeTool ready!')
 import excelTool
+print('excelTool ready!')
 import curationTool
+print('curationTool ready!')
 import calibrationTool
+print('calibrationTool ready!')
 
