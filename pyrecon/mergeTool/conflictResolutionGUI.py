@@ -162,7 +162,7 @@ class sectionContours(QWidget):
 		container = QVBoxLayout()
 		secNameContainer = QHBoxLayout()
 		secNameContainer.setAlignment(Qt.AlignHCenter)
-		secNameContainer.addWidget(QLabel(str(self.s1name+' vs. '+self.s2name)))
+		secNameContainer.addWidget(QLabel(str(self.s1name)+' vs. '+str(self.s2name)))
 		columnContainer = QHBoxLayout()
 		
 		labelContainer = QVBoxLayout()
@@ -272,6 +272,10 @@ class seriesAttributes(QWidget):
 	def __init__(self, dictA, dictB):
 		QWidget.__init__(self)
 		self.setWindowTitle('Series Attributes')
+		box = QVBoxLayout()
+		self.lab = QLabel('This is a placeholder until complete. Attributes from series1 are kept for now. x out of window') #===
+		box.addWidget(self.lab)
+		self.setLayout(box)
 		self.output = {}
 		for key in dictA:
 			if key not in ['zcontours','contours', 'sections']: # ignore zcontours, contours, sections -- they have their own merge functions
@@ -282,6 +286,10 @@ class seriesContours(QWidget):
 	def __init__(self, contsA, contsB):
 		QWidget.__init__(self)
 		self.setWindowTitle('Series Contours')
+		box = QVBoxLayout()
+		self.lab = QLabel('This is a placeholder until complete. Contours from series1 are kept for now. x out of window') #===
+		box.addWidget(self.lab)
+		self.setLayout(box)
 		self.output = contsA #===
 		self.show()
 # - ZContours #=== HIGH PRIORITY, add uniques to merged
@@ -289,6 +297,10 @@ class seriesZContours(QWidget):
 	def __init__(self, zConts1, zConts2, mergedZConts):
 		QWidget.__init__(self)
 		self.setWindowTitle('Series ZContours')
+		box = QVBoxLayout()
+		self.lab = QLabel('This is a placeholder until complete. ZContours from both series are kept for now. x out of window') #===
+		box.addWidget(self.lab)
+		self.setLayout(box)
 		# add leftover, unique zcontours to ser3zconts
 		mergedZConts.extend(zConts1)
 		mergedZConts.extend(zConts2)
