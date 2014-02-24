@@ -1,3 +1,4 @@
+import math
 class ZContour:
     def __init__(self, *args, **kwargs):
         self.name = None
