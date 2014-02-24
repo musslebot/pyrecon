@@ -3,13 +3,17 @@ from pyrecon.classes import Contour, Image, Section, Series, Transform, ZContour
 from lxml import etree as ET # lxml parsing library Element Tree module
 import os, re
 # Process Files
-def process(path):
+def process(path, obj=False):
 	'''Process XML file defined by path'''
 	tree = ET.parse(path)
 	root = tree.getroot()
 	if root.tag == 'Section': # Process Section
+		if obj:
+			return Section(*processSectionFile(tree))
 		return processSectionFile(tree)
 	elif root.tag == 'Series': # Process Series
+		if obj:
+			return Series(*processSeriesFile(tree))
 		return processSeriesFile(tree)
 def processSeriesFile(tree):
 	root = tree.getroot()
