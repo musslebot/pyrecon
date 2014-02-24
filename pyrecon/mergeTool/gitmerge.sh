@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # This file will take input from git's merge function and load the appropriate pyrecon mergeTool GUI handler.
 # Installation instructs:
 #     In order to replace Git's merge driver with pyrecon's mergeTool:
@@ -13,3 +14,5 @@
 # This passes paths to the series to merge ($1 and $2) and the directory in which they are located
 # Make sure the following path to gitmerge is correct:
 python ~/Documents/pyrecon/pyrecon/mergeTool/gitmerge.py $1 $2 $PWD
+exit 0 # This tells Git that the merge was a success and preps the commit
+# exit 1 # This tells Git that the merge was unsuccessful
