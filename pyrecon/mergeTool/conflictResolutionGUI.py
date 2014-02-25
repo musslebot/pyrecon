@@ -213,7 +213,7 @@ class sectionContours(QWidget):
 				print 'Invalid item for contourListWidget'
 	def doubleClickCheck(self, item):
 		if item.background() == QColor('red') or item.background() == QColor('lightgreen'):
-			item.clicked()	
+			item.clicked() # See contourTableItem class
 	def moveItems(self):
 		# Move items in what table(s)?
 		if self.sender() == self.moveSelectedA:
