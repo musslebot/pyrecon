@@ -1,13 +1,14 @@
 #!/bin/bash
-
 # This file will take input from git's merge function and load the appropriate pyrecon mergeTool GUI handler.
 # Installation instructs:
 #     In order to replace Git's merge driver with pyrecon's mergeTool:
+#
 #	  1) Add the following lines to your repository's .git/config file
 #         [merge "pymerge"]
 #             name = pyrecon mergetool driver
 #             driver = <PATH TO gitmerge.py> %O %A %B
 #             recursive = binary
+#
 #     2) Add the following line to your repository's .git/info/attributes file
 #         * merge=pymerge
 
