@@ -138,7 +138,7 @@ class sectionContours(QWidget):
 		self.outUniqueA = QListWidget(self)
 		self.outUniqueB = QListWidget(self)
 		self.outOvlp = QListWidget(self)
-		self.doneBut = QPushButton(self)
+		self.doneBut = QPushButton(self) # Merge button
 		self.moveSelectedA = QPushButton(self)
 		self.moveSelectedO = QPushButton(self)
 		self.moveSelectedB = QPushButton(self)
