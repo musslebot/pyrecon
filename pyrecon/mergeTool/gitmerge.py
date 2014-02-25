@@ -5,12 +5,14 @@ from pyrecon import mergeTool
 
 # Assign arguments to variables
 args = sys.argv
-aFile = args[1] # File in current branch
-bFile = args[2] # File in other branch
-directory = args[3] # Directory of current branch
+aFile = os.path.abspath(args[1]) # File in current branch
+bFile = os.path.abspath(args[2]) # File in other branch
 
+directory = os.path.dirname(aFile) # Directory of current branch
+print('dir: '+directory)
 # Name of series is name of folder
 serName = os.path.abspath(directory).split('/')[-1]
+print('serName: '+serName)
 
 # Load objects from files
 aObject = xml.process( aFile, obj=True ) # Series or Section object of file
@@ -27,14 +29,18 @@ if aObject.__class__.__name__ == 'Section':
 	aObject.name += ('.'+str(aObject.index)) # append index to name if section
 	bObject.name += ('.'+str(bObject.index)) # "
 	mergedFile = mergeTool.sectionMerge.main(aObject, bObject, graphical=True)
-	os.remove(str(directory+aObject.name))
-	xml.writeSection(mergedFile, directory)
+	print('Removing: '+str(directory)+str(aObject.name))
+	os.remove(str(directory)+str(aObject.name)) #=== issue with deleting old file
+	print('Removed...')
+	# xml.writeSection(mergedFile, directory)
 
 elif aObject.__class__.__name__ == 'Series':
 	mergedFile = mergeTool.seriesMerge.main(aObject, bObject, graphical=True)
-	os.remove(str(directory+aObject.name+'.ser'))
-	xml.writeSeries(mergedFile, directory)
-	
+	print('Removing: '+str(directory)+str(aObject.name+'.ser'))
+	os.remove(str(directory)+str(aObject.name+'.ser')) #=== issue with deleting old file
+	print('Removed...')
+	# xml.writeSeries(mergedFile, directory)
+
 
 
 

@@ -6,7 +6,7 @@
 #	  1) Add the following lines to your repository's .git/config file
 #         [merge "pymerge"]
 #             name = pyrecon mergetool driver
-#             driver = <PATH TO gitmerge.py> %O %A %B
+#             driver = <PATH TO gitmerge.py> %A %B %O #=== IS THIS CORRECT?
 #             recursive = binary
 #
 #     2) Add the following line to your repository's .git/info/attributes file
@@ -14,6 +14,6 @@
 
 # This passes paths to the series to merge ($1 and $2) and the directory in which they are located
 # Make sure the following path to gitmerge is correct:
-python ~/Documents/pyrecon/pyrecon/mergeTool/gitmerge.py $1 $2 $PWD
+python $HOME/Documents/pyrecon/pyrecon/mergeTool/gitmerge.py $1 $2 #=== IS THIS CORRECT?
 exit 0 # This tells Git that the merge was a success and preps the commit
 # exit 1 # This tells Git that the merge was unsuccessful
