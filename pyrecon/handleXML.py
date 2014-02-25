@@ -379,7 +379,7 @@ def writeSection(section, directory):
 	'''Writes <section> to an XML file in directory'''
 	if str(directory[-1]) != '/':
 		directory += '/'
-	outpath = str(directory) + str(section.name)
+	outpath = str(directory)+str(section.name)
 	# Make root (Section attributes: index, thickness, alignLocked)
 	root = objectToElement(section)
 	# Image: Has its own unique Transform, Image, Contour
@@ -410,8 +410,6 @@ def writeSection(section, directory):
 				cont = objectToElement(contour)
 				transformElement.append(cont)
 		root.append(transformElement)
-	
-
 	# Make tree and write
 	elemtree = ET.ElementTree(root)
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
