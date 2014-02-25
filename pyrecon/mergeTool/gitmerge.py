@@ -7,12 +7,10 @@ from pyrecon import mergeTool
 args = sys.argv
 aFile = os.path.abspath(args[1]) # File in current branch
 bFile = os.path.abspath(args[2]) # File in other branch
-
 directory = os.path.dirname(aFile) # Directory of current branch
-print('dir: '+directory)
-# Name of series is name of folder
+
+# Name of files is name of folder + either .ser or .<section.index>
 serName = os.path.abspath(directory).split('/')[-1]
-print('serName: '+serName)
 
 # Load objects from files
 aObject = xml.process( aFile, obj=True ) # Series or Section object of file
