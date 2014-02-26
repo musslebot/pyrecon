@@ -8,7 +8,7 @@ Version 2.0.0 (UPCOMING PATCH)
     * projects in development go in ./.dev/
     * classes have individual files in ./classes/
 
-* pyRECONSTRUCT is now compatible with GitHub: see README.md for installation instructions <br>
+* pyRECONSTRUCT is integrating with git: see README.md for installation instructions <br>
     * `git merge` now uses pyrecon.mergeTool to handle merges
 
 * Classes have been changed:.
