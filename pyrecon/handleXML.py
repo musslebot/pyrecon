@@ -99,7 +99,7 @@ def sectionAttributes(node):
 	attributes = {}
 	attributes['index']=int(node.get('index'))
 	attributes['thickness']=float(node.get('thickness'))
-	attributes['alignLocked']=node.get('alignLocked').upper() == 'True'
+	attributes['alignLocked']=node.get('alignLocked').capitalize() == 'True'
 	return attributes
 def seriesAttributes(node):
 	attributes = {}
@@ -375,11 +375,12 @@ def objectToElement(object):
 		return transformToElement(object)
 	elif object.__class__.__name__ == 'ZContour':
 		return zcontourToElement(object)
-def writeSection(section, directory):
+def writeSection(section, directory, outpath=None, overwrite=False):
 	'''Writes <section> to an XML file in directory'''
-	if str(directory[-1]) != '/':
-		directory += '/'
-	outpath = str(directory)+str(section.name)
+	if not outpath: # Will write to file with sections name
+		if str(directory[-1]) != '/':
+			directory += '/'
+		outpath = str(directory)+str(section.name)
 	# Make root (Section attributes: index, thickness, alignLocked)
 	root = objectToElement(section)
 	# Image: Has its own unique Transform, Image, Contour
@@ -413,7 +414,7 @@ def writeSection(section, directory):
 	# Make tree and write
 	elemtree = ET.ElementTree(root)
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
-def writeSeries(series, directory, sections=False):
+def writeSeries(series, directory, outpath=None, sections=False, overwrite=False):
 	'''Writes <series> to an XML file in directory'''
 	# Pre-writing checks
 		# Make sure directory is correctly input
@@ -422,9 +423,10 @@ def writeSeries(series, directory, sections=False):
     	# Check if directory exists, make if does not exist
 	if not os.path.exists(directory):
 		os.makedirs(directory)
-	outpath = directory+series.name+'.ser'
+	if not outpath:
+		outpath = directory+series.name+'.ser'
     	# Raise error if this file already exists to prevent overwrite
-	if os.path.exists(outpath):
+	if not overwrite and os.path.exists(outpath):
 		raise IOError('\nFilename %s already exists.\nQuiting write command to avoid overwrite'%outpath)
     # Build series root element
 	root = objectToElement( series ) 
