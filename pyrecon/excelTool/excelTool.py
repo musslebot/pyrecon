@@ -14,7 +14,7 @@ def main(path_to_series, save_path):
     if '.xlsx' not in save_path:
         save_path += path_to_series.replace('.ser','').split('/')[-1]
         save_path += '.xlsx'
-    series = loadSeries(path_to_series)
+    series = loadSeries(path_to_series) #===
     wkbk = Workbook(series=series)
     wkbk.getDendrites()
     wkbk.getProtrusions()
@@ -28,7 +28,7 @@ class Workbook(openpyxl.Workbook):
         openpyxl.Workbook.__init__(self)
         
         self.series = series # Series object for this workbook
-        self.objects = series.getObjectLists() # Names of objects in this series
+        self.objects = series.getObjectLists() # Names of objects in this series #===
         self.filterType = ['c'] # Ignore these rTypes
     def listProtrusionChildren(self): #===
         childList = []

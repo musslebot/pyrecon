@@ -12,9 +12,9 @@ def findCalFactor(path_to_series):
     # create list of all image transforms in a series
     imgtforms = []
     for section in ser.sections:
-        imgtform = section.imgs[0].transform
+        imgtform = section.image.transform
         if imgtform.isAffine():
-            imgtform.tag = 'Transform for '+section.imgs[0].name+' in section '+section.name # Change tag to include the section it belongs to
+            imgtform.tag = 'Transform for '+section.image.name+' in section '+section.name # Change tag to include the section it belongs to
             # Convert to Affine Transform and append
             a = imgtform.xcoef
             b = imgtform.ycoef

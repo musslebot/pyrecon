@@ -4,7 +4,7 @@ from pyrecon.classes import *
 import argparse
 
 def main(seriesPath, threshold):
-	series = loadSeries(seriesPath)
+	series = loadSeries(seriesPath) #===
 	print('======================')
 	print('curationTool on %s')%series.name
 	print('======================')
@@ -17,7 +17,7 @@ def findDuplicateTraces(series):
 	print('--------------------------')
 	print('Locating duplicate traces:')
 	print('--------------------------')
-	duplicateDict = series.locateDuplicates()
+	duplicateDict = series.locateDuplicates() #===
 	for sec in sorted(duplicateDict):
 		print('Section index: '+str(sec))
 		for name in list(set([cont.name for cont in duplicateDict[sec]])):
@@ -29,7 +29,7 @@ def findDistantTraces(series, threshold):
 	print('-------------------------------------------------')
 	print('Locating distant traces (treshold: +/-%d sections):')%threshold
 	print('-------------------------------------------------')
-	distantDict = series.locateDistantTraces(threshold)
+	distantDict = series.locateDistantTraces(threshold) #===
 	for sec in sorted(distantDict):
 		print('Section index: '+str(sec))
 		for name in distantDict[sec]:
@@ -41,7 +41,7 @@ def findReverseTraces(series):
 	print('------------------------')
 	print('Locating reverse traces:')
 	print('------------------------')
-	reverseDict = series.locateReverseTraces()
+	reverseDict = series.locateReverseTraces() #===
 	for sec in sorted(reverseDict):
 		print('Section index: '+str(sec))
 		for cont in reverseDict[sec]:
