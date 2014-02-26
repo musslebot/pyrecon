@@ -51,4 +51,16 @@ PyRECONSTRUCT for Windows has only been tested using the following method:
 * ...Should work now?
 	*email me if there are problems (address located in setup.py)!*
 
+### PyRECONSTRUCT + Git Installation
+* 1) Add the following lines to your Series' repository's `.git/config` file, replacing PATH_TO_gitmerge.py appropriately:
+<pre>
+[merge "pymerge"]
+        name = pyrecon mergetool driver
+        driver = PATH_TO_gitmerge.py %A %B
+</pre>
+
+* 2) Add the following line to your Series' repository's `.git/info/attributes` file:
+<pre>
+`* merge=pymerge`
+
 
