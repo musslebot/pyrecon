@@ -5,8 +5,9 @@ from pyrecon import mergeTool
 
 # Assign arguments to variables
 args = sys.argv
-aFile = os.path.abspath(args[1]) # File in current branch
+aFile = os.path.abspath(args[1]) # File in current branch / MERGE OVERWRITES THIS
 bFile = os.path.abspath(args[2]) # File in other branch
+
 directory = os.path.dirname(aFile) # Directory of current branch
 
 # Name of files is name of folder + either .ser or .<section.index>
@@ -24,20 +25,19 @@ if directory[-1] != '/':
 
 # Run appropriate mergeTool functions and write merged file
 if aObject.__class__.__name__ == 'Section':
-	aObject.name += ('.'+str(aObject.index)) # append index to name if section
-	bObject.name += ('.'+str(bObject.index)) # "
+	# Append index to name
+	aObject.name += ('.'+str(aObject.index))
+	bObject.name += ('.'+str(bObject.index))
+	# Handle merge
 	mergedFile = mergeTool.sectionMerge.main(aObject, bObject, graphical=True)
-	print('Removing: '+str(directory)+str(aObject.name))
-	os.remove(str(directory)+str(aObject.name)) #=== issue with deleting old file
-	print('Removed...')
-	# xml.writeSection(mergedFile, directory)
+	# Overwrite aFile with new section
+	xml.writeSection(mergedFile, directory, outpath=aFile, overwrite=True)
 
 elif aObject.__class__.__name__ == 'Series':
+	# Handle merge
 	mergedFile = mergeTool.seriesMerge.main(aObject, bObject, graphical=True)
-	print('Removing: '+str(directory)+str(aObject.name+'.ser'))
-	os.remove(str(directory)+str(aObject.name+'.ser')) #=== issue with deleting old file
-	print('Removed...')
-	# xml.writeSeries(mergedFile, directory)
+	# Overwrite aFile with new series
+	xml.writeSeries(mergedFile, directory, outpath=aFile, overwrite=True)
 
 
 
