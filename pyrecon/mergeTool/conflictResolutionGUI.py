@@ -65,71 +65,78 @@ class sectionImages(QWidget):
 		self.output = self.img2
 		self.close()
 # - Contours
-class resolveOvlp(QMessageBox): #=== still needs to display actual contour picture
-	def __init__(self, item):
-		QMessageBox.__init__(self)
-		self.setWindowTitle('Contour Overlap Resolution')
-		self.item = item
-		self.loadObjects()
-		self.loadText()
-		self.exec_()
-	def loadObjects(self):
-		# Buttons to choose contours
-		self.cont1But = self.addButton("Choose Contour 1", QMessageBox.ActionRole)
-		self.cont2But = self.addButton("Choose Contour 2", QMessageBox.ActionRole)
-	def loadText(self):
-		self.setText('Choose Contour 1 or 2.\n\nClick \'show details\' to see more info.')
-		details = ''
-		details += 'Name:\n\t{}\t{}\n'.format(self.item.contour1.name,self.item.contour2.name)
-		details += 'Comment:\n\t{}\t{}\n'.format(self.item.contour1.comment,self.item.contour2.comment)
-		details += 'Hidden:\n\t{}\t{}\n'.format(self.item.contour1.hidden,self.item.contour2.hidden)
-		details += 'Closed:\n\t{}\t{}\n'.format(self.item.contour1.closed,self.item.contour2.closed)
-		details += 'Simplified:\n\t{}\t{}\n'.format(self.item.contour1.simplified,self.item.contour2.simplified)
-		details += 'Mode:\n\t{}\t{}\n'.format(self.item.contour1.mode,self.item.contour2.mode)
-		details += 'Border:\n\t{}\t{}\n'.format(self.item.contour1.border,self.item.contour2.border)
-		details += 'Fill:\n\t{}\t{}\n'.format(self.item.contour1.fill,self.item.contour2.fill)
-		details += 'Points:\n\t'+'\n\t'.join([str(thing[0])+' vs '+str(thing[1]) for thing in zip(self.item.contour1.points,self.item.contour2.points)])
-		self.setDetailedText(details)
+class resolveOvlp(QDialog): #=== still needs to display actual contour picture
+    def __init__(self, item):
+        QDialog.__init__(self)
+        self.setWindowTitle('Contour Overlap Resolution')
+        self.item = item
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.exec_()
+    def loadObjects(self):
+        # Buttons to choose contours
+        self.cont1But = QPushButton('Choose Contour 1')
+        self.cont2But = QPushButton('Choose Contour 2')
+        # QLabel for QPixmap
+        self.image = QPixmap()
+    def loadFunctions(self):
+        self.cont1But.clicked.connect( self.finish )
+        self.cont2But.clicked.connect( self.finish )
+    def loadLayout(self):
+        container = QVBoxLayout()
+        butBox = QHBoxLayout()
+        butBox.addWidget(self.cont1But)
+        butBox.addWidget(self.cont2But)
+        container.addLayout(butBox)
+        self.setLayout(container)
+    def finish(self): # Return int associated with selected contour
+        if self.sender() == self.cont1But:
+            self.done(1)
+        elif self.sender() == self.cont2But:
+            self.done(2)
 class contourTableItem(QListWidgetItem):
-	'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
-	def __init__(self, contour):
-		QListWidgetItem.__init__(self)
-		if type(contour) == type([]):
-			self.contour = None
-			self.contour1 = contour[0]
-			self.contour2 = contour[1]
-			self.setText(self.contour1.name)
-		else:
-			self.contour = contour
-			self.setText(contour.name)
-	def clicked(self):
-		item = self
-		msg = resolveOvlp(item)
-		if msg.clickedButton() == msg.cont1But:
-			self.contour = self.contour1
-			self.setBackground(QColor('lightgreen'))
-		elif msg.clickedButton() == msg.cont2But:
-			self.contour = self.contour2
-			self.setBackground(QColor('lightgreen'))
+    '''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
+    def __init__(self, contour):
+        QListWidgetItem.__init__(self)
+        if type(contour) == type([]):
+            self.contour = None
+            self.contour1 = contour[0]
+            self.contour2 = contour[1]
+            self.setText(self.contour1.name)
+        else:
+            self.contour = contour
+            self.setText(contour.name)
+    def clicked(self):
+        item = self
+        msg = resolveOvlp(item)
+        resolution = msg.result() # msg returns an int referring to the selected contour
+        if resolution == 1:
+            self.contour = self.contour1
+            self.setBackground(QColor('lightgreen'))
+        elif resolution == 2:
+            self.contour = self.contour2
+            self.setBackground(QColor('lightgreen'))
 class sectionContours(QWidget):
-	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None):
-		QWidget.__init__(self)
-		self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
-		# input
-		self.uniqueA = uniqueA
-		self.uniqueB = uniqueB
-		self.compOvlp = compOvlp
-		self.confOvlp = confOvlp
-		if sections != None:
-			self.s1name = sections[0].name
-			self.s2name = sections[1].name
-		# output
-		self.output = None
-		# Load UI
-		self.loadObjects()
-		self.loadFunctions()
-		self.loadLayout()
-		self.show()
+    def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None):
+        QWidget.__init__(self)
+        self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
+        # input
+        self.uniqueA = uniqueA
+        self.uniqueB = uniqueB
+        self.compOvlp = compOvlp
+        self.confOvlp = confOvlp
+        if sections != None:
+            self.sections = sections
+            self.s1name = sections[0].name
+            self.s2name = sections[1].name
+        # output
+        self.output = None
+        # Load UI
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.show()
 	def loadObjects(self):
 		# List contours in their appropriate listWidgets
 		self.inUniqueA = QListWidget(self)
