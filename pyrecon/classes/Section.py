@@ -1,4 +1,5 @@
 # handleXML is imported in .update()
+import os
 class Section:
 	def __init__(self, *args, **kwargs):
 		self.name = None # Series name + index
@@ -8,6 +9,7 @@ class Section:
 		#Non-attributes
 		self.image = None
 		self.contours = None
+		self._path = None
 		self.processArguments(args, kwargs)
 	def processArguments(self, args, kwargs):
 		'''Populates data from the *args and **kwargs arguments via self.update.'''
@@ -55,6 +57,9 @@ class Section:
 				import pyrecon.handleXML as xml
 				self.update(*xml.process(arg))
 				self.name = arg.split('/')[-1]
+				self._path = os.path.dirname(arg)
+				if self._path[-1] != '/':
+					self._path += '/'
 			# Contour argument
 			elif arg.__class__.__name__ == 'Contour':
 				if self.contours == None:
@@ -72,6 +77,8 @@ class Section:
 						self.contours.append(item)
 					elif item.__class__.__name__ == 'Image':
 						self.image = item
+		if self.image.__class__.__name__ == 'Image':
+			self.image._path = self._path
 	def popShapes(self):
 		for contour in self.contours:
 			contour.popShape()
