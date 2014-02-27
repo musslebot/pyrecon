@@ -9,6 +9,7 @@ class Image:
         self.blue = None
         #Non-attributes
         self.transform = None
+        self._path = None
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
         # 1) ARGS
