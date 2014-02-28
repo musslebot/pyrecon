@@ -78,16 +78,26 @@ class resolveOvlp(QDialog): #=== still needs to display actual contour picture
 		# Buttons to choose contours
 		self.cont1But = QPushButton('Choose Contour 1')
 		self.cont2But = QPushButton('Choose Contour 2')
-		# QLabel for QPixmap
-		self.image = QPixmap()
+		self.image1Container = QLabel() #===
+		self.image2Container = QLabel() #===
+		self.pixmap1 = QPixmap() #===
+		self.pixmap2 = QPixmap() #===
 	def loadFunctions(self):
 		self.cont1But.clicked.connect( self.finish )
 		self.cont2But.clicked.connect( self.finish )
+		self.imageContainer.setPixmap( self.pixmap ) #===
 	def loadLayout(self):
 		container = QVBoxLayout()
+		
+		imageContainer = QHBoxLayout() #===
+		imageContainer.addWidget(self.image1Container)
+		imageContainer.addWidget(self.image2Container)
+
 		butBox = QHBoxLayout()
 		butBox.addWidget(self.cont1But)
 		butBox.addWidget(self.cont2But)
+
+		container.addLayout(imageContainer) #===
 		container.addLayout(butBox)
 		self.setLayout(container)
 	def finish(self): # Return int associated with selected contour
@@ -97,12 +107,15 @@ class resolveOvlp(QDialog): #=== still needs to display actual contour picture
 			self.done(2)
 class contourTableItem(QListWidgetItem):
 	'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
-	def __init__(self, contour):
+	def __init__(self, contour, images):
 		QListWidgetItem.__init__(self)
 		if type(contour) == type([]):
 			self.contour = None
 			self.contour1 = contour[0]
 			self.contour2 = contour[1]
+			if type(images) == type([]): #===
+				self.image1 = image[0]
+				self.image2 = image[1]
 			self.setText(self.contour1.name)
 		else:
 			self.contour = contour
@@ -210,11 +223,12 @@ class sectionContours(QWidget):
 		for item in items:
 			if item.__class__.__name__ == 'Contour' or type(item) == type([]):
 				# Item can be a contour or list of 2 contours, they are handled differently in contourTableItem class upon initialization
-				listItem = contourTableItem(item)
-				if type(item) == type([]) and item in self.confOvlp: # Conflicting ovlping contour
-					listItem.setBackground(QColor('red'))
-				elif type(item) == type([]) and item in self.compOvlp: # Completely ovlping contour
-					listItem.contour = listItem.contour1 # set chosen contour to cont1 since they're the same
+				listItem = contourTableItem(item, self.sections[0].image)
+				if type(item) == type([]):
+					if item in self.confOvlp: # Conflicting ovlping contour
+						listItem.setBackground(QColor('red'))
+					elif item in self.compOvlp: # Completely ovlping contour
+						listItem.contour = listItem.contour1 # set chosen contour to cont1 since they're the same
 				table.addItem(listItem)
 			else:
 				print 'Invalid item for contourListWidget'
