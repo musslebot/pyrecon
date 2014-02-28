@@ -24,7 +24,7 @@ def main(series1, series2, graphical=False):
 	else: # Terminal
 		mergedSeries = nonGraphicalMerge(series1, series2)	
 	return mergedSeries
-def nonGraphicalMerge(series1, series2): #=== 
+def nonGraphicalMerge(series1, series2): #=== medium priority
 	mergedContours = mergeContours(series1, series2)
 	mergedZContours = mergeZContours(series1, series2)
 	mergedAttributes = mergeAttributes(series1, series2)
