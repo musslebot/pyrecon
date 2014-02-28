@@ -43,6 +43,10 @@ class Transform:
         '''Returns inverse points'''
         newpts = self._tform.inverse(np.asarray(points))
         return list(map(tuple,newpts))
+    def imagepts(self, points, mag):
+        '''Returns points in pixel space'''
+        newpts = self._tform.inverse(np.asarray(points)/mag)
+        return list(map(tuple,newpts))
     def isAffine(self):
         '''Returns true if the transform is affine i.e. if a[3,4,5] and b[3,4,5] are 0'''
         xcheck = self.xcoef[3:6]
