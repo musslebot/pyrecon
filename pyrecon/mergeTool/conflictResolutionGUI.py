@@ -28,6 +28,8 @@ class sectionImages(QWidget):
 	def loadObjects(self):
 		self.img1label = QLabel(self)
 		self.img2label = QLabel(self)
+		self.pix1 = QLabel(self)
+		self.pix2 = QLabel(self)
 		self.img1detail = QLabel(self)
 		self.img2detail = QLabel(self)
 		self.pick1 = QPushButton(self)
@@ -39,6 +41,10 @@ class sectionImages(QWidget):
 		self.img2label.setAlignment(Qt.AlignHCenter)
 		self.img1detail.setText('\n'.join([(str(item)+':\t'+str(image1.__dict__[item])) for item in image1.__dict__ if item != 'transform']))
 		self.img2detail.setText('\n'.join([(str(item)+':\t'+str(image2.__dict__[item])) for item in image2.__dict__ if item != 'transform']))
+		pixmap1 = QPixmap(image1._path+image1.src)
+		pixmap2 = QPixmap(image2._path+image2.src)
+		self.pix1.setPixmap( pixmap1.scaledToWidth(500) )
+		self.pix2.setPixmap( pixmap2.scaledToWidth(500) )
 		self.pick1.setText('Choose this image')
 		self.pick2.setText('Choose this image')
 		self.pick1.clicked.connect( self.ret1 ) #===
@@ -49,11 +55,13 @@ class sectionImages(QWidget):
 		# Left image
 		vbox1 = QVBoxLayout()
 		vbox1.addWidget(self.img1label)
+		vbox1.addWidget(self.pix1)
 		vbox1.addWidget(self.img1detail)
 		vbox1.addWidget(self.pick1)
 		# Right image
 		vbox2 = QVBoxLayout()
 		vbox2.addWidget(self.img2label)
+		vbox2.addWidget(self.pix2)
 		vbox2.addWidget(self.img2detail)
 		vbox2.addWidget(self.pick2)
 		hbox.addLayout(vbox1)
@@ -81,7 +89,7 @@ class resolveOvlp(QDialog):
 		self.cont1But = QPushButton('Choose Contour 1')
 		self.cont2But = QPushButton('Choose Contour 2')
 		# Labels to hold pixmap
-		self.pix1 = None #=== self, image, contour, pen=Qt.red
+		self.pix1 = None
 		self.pix2 = None
 	def loadFunctions(self):
 		self.cont1But.clicked.connect( self.finish )
@@ -91,7 +99,7 @@ class resolveOvlp(QDialog):
 	def loadLayout(self):
 		container = QVBoxLayout()
 		
-		imageContainer = QHBoxLayout() #===
+		imageContainer = QHBoxLayout()
 		imageContainer.addWidget(self.pix1)
 		imageContainer.addWidget(self.pix2)
 
@@ -99,7 +107,7 @@ class resolveOvlp(QDialog):
 		butBox.addWidget(self.cont1But)
 		butBox.addWidget(self.cont2But)
 
-		container.addLayout(imageContainer) #===
+		container.addLayout(imageContainer)
 		container.addLayout(butBox)
 
 		self.setLayout(container)
