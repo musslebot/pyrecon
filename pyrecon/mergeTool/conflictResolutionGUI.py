@@ -87,7 +87,7 @@ class resolveOvlp(QDialog):
 		self.cont1But.clicked.connect( self.finish )
 		self.cont2But.clicked.connect( self.finish )
 		self.pix1 = contourPixmap(self.item.image1, self.item.contour1)
-		self.pix2 = contourPixmap(self.item.image2, self.item.contour2, pen=Qt.green)
+		self.pix2 = contourPixmap(self.item.image2, self.item.contour2, pen=Qt.cyan)
 	def loadLayout(self):
 		container = QVBoxLayout()
 		
@@ -357,10 +357,10 @@ class contourPixmap(QLabel):
 	def crop(self):
 		'''Crops image.'''
 		# Determine crop region
-		x = self.contour.shape.bounds[0]
-		y = self.contour.shape.bounds[1]
-		width = self.contour.shape.bounds[2]-x
-		height = self.contour.shape.bounds[3]-y
+		x = self.contour.shape.bounds[0]-100
+		y = self.contour.shape.bounds[1]-100
+		width = self.contour.shape.bounds[2]-x+100
+		height = self.contour.shape.bounds[3]-y+100
 		# Crop image to defined rectangle
 		self.pixmap = self.pixmap.copy(x,y,width,height)
 		# Adjust points to crop region
