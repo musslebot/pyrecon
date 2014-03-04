@@ -1,6 +1,8 @@
 '''Graphical handler functions for mergeTool conflicts'''
 from PySide.QtCore import *
 from PySide.QtGui import *
+import numpy as np
+from pyrecon.classes import Contour
 
 # SECTIONS
 # - Attributes
@@ -65,7 +67,7 @@ class sectionImages(QWidget):
 		self.output = self.img2
 		self.close()
 # - Contours
-class resolveOvlp(QDialog): #=== still needs to display actual contour picture
+class resolveOvlp(QDialog):
 	def __init__(self, item):
 		QDialog.__init__(self)
 		self.setWindowTitle('Contour Overlap Resolution')
@@ -79,28 +81,19 @@ class resolveOvlp(QDialog): #=== still needs to display actual contour picture
 		self.cont1But = QPushButton('Choose Contour 1')
 		self.cont2But = QPushButton('Choose Contour 2')
 		# Labels to hold pixmap
-		self.image1Container = QLabel() #===
-		self.image2Container = QLabel() #===
-		# Pixmaps that hold image
-		self.pixmap1 = QPixmap() #===
-		self.pixmap2 = QPixmap() #===
+		self.pix1 = None #=== self, image, contour, pen=Qt.red
+		self.pix2 = None
 	def loadFunctions(self):
 		self.cont1But.clicked.connect( self.finish )
 		self.cont2But.clicked.connect( self.finish )
-		self.pixmap1.load(self.item.image1._path + self.item.image1.src) #===
-		self.pixmap2.load(self.item.image2._path + self.item.image2.src) #===
-		# crop images #===
-		self.pixmap1 = self.pixmap1.copy(1000,1000,200,200)
-		self.pixmap2 = self.pixmap2.copy(1000,1000,200,200)
-		# draw contours on pixmap
-		self.image1Container.setPixmap( self.pixmap1 ) #===
-		self.image2Container.setPixmap( self.pixmap2 ) #===
+		self.pix1 = contourPixmap(self.item.image1, self.item.contour1)
+		self.pix2 = contourPixmap(self.item.image2, self.item.contour2, pen=Qt.green)
 	def loadLayout(self):
 		container = QVBoxLayout()
 		
 		imageContainer = QHBoxLayout() #===
-		imageContainer.addWidget(self.image1Container)
-		imageContainer.addWidget(self.image2Container)
+		imageContainer.addWidget(self.pix1)
+		imageContainer.addWidget(self.pix2)
 
 		butBox = QHBoxLayout()
 		butBox.addWidget(self.cont1But)
@@ -337,3 +330,59 @@ class seriesZContours(QWidget):
 		mergedZConts.extend(zConts2)
 		self.output = mergedZConts
 		self.show()
+
+class contourPixmap(QLabel):
+	'''QLabel that contains a contour drawn on its region in an image'''
+	def __init__(self, image, contour, pen=Qt.red):
+		QLabel.__init__(self)
+		self.image = image
+		self.pixmap = QPixmap( image._path+image.src ) # Create pixmap from image info
+		self.contour = Contour( contour.__dict__ ) # Create copy of contour
+		self.transformToPixmap()
+		self.crop()
+		self.scale()
+		self.drawOnPixmap(pen)
+		self.setPixmap(self.pixmap)
+		self.show()
+	def transformToPixmap(self):
+		'''Transforms points from RECONSTRUCT'S coordsys to PySide's coordSys'''
+		self.contour.convertToPixCoords(self.image.mag) # Convert biological points to pixel points
+		flipVector = np.array( [1,-1] ) # Flip about x axis
+		translationVector = np.array( [0,self.pixmap.size().height()] )
+		# Apply flip and translation to get points in PySide's image space
+		transformedPoints = list(map(tuple,translationVector+(np.array(list(self.contour.shape.exterior.coords))*flipVector)))
+		# Update self.contour's information to match transformation
+		self.contour.points = transformedPoints
+		self.contour.popShape()
+	def crop(self):
+		'''Crops image.'''
+		# Determine crop region
+		x = self.contour.shape.bounds[0]
+		y = self.contour.shape.bounds[1]
+		width = self.contour.shape.bounds[2]-x
+		height = self.contour.shape.bounds[3]-y
+		# Crop image to defined rectangle
+		self.pixmap = self.pixmap.copy(x,y,width,height)
+		# Adjust points to crop region
+		cropVector = np.array( [x,y] )
+		croppedPoints = list(map(tuple, np.array(self.contour.points)-cropVector ))
+		self.contour.points = croppedPoints
+		self.contour.popShape()
+	def scale(self, scale=1/float(4)):
+		# Scale image
+		self.pixmap = self.pixmap.copy().scaled( self.pixmap.size().width()*scale, self.pixmap.size().height()*scale )
+		# Scale points
+		scaledPoints = list(map(tuple,np.array(self.contour.points)*scale))
+		self.contour.points = scaledPoints
+		self.contour.popShape()
+	def drawOnPixmap(self, pen):
+		# Create polygon to draw
+		polygon = QPolygon()
+		for point in self.contour.points:
+			polygon.append( QPoint(*point) )
+		# Draw polygon on pixmap
+		painter = QPainter()
+		painter.begin(self.pixmap)
+		painter.setPen(pen)
+		painter.drawConvexPolygon(polygon)
+		painter.end()
