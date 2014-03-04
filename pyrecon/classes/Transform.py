@@ -39,9 +39,9 @@ class Transform:
         return self.dim == other.dim and self.xcoef == other.xcoef and self.ycoef == other.ycoef
     def __ne__(self, other):
         return self.dim != other.dim or self.xcoef != other.xcoef or self.ycoef != other.ycoef
-    def worldpts(self, points):
+    def worldpts(self, points, mag=1): #===
         '''Returns inverse points'''
-        newpts = self._tform.inverse(np.asarray(points))
+        newpts = self._tform.inverse(np.asarray(points)*mag)
         return list(map(tuple,newpts))
     def imagepts(self, points, mag):
         '''Returns points in pixel space'''

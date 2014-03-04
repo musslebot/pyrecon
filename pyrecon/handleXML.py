@@ -73,6 +73,7 @@ def contourAttributes(node):
 		attributes['border'] = tuple(float(x) for x in node.get('border').strip().split(' '))
 		attributes['fill'] = tuple(float(x) for x in node.get('fill').strip().split(' '))
 		attributes['points'] = zip([float(x.replace(',','')) for x in node.get('points').split()][0::2], [float(x.replace(',','')) for x in node.get('points').split()][1::2])
+		attributes['coordSys'] = 'bio'
 	except: # Contours in Series
 		try:
 			attributes = {}
@@ -82,6 +83,7 @@ def contourAttributes(node):
 			attributes['border'] = tuple(float(x) for x in node.get('border').strip().split(' '))
 			attributes['fill'] = tuple(float(x) for x in node.get('fill').strip().split(' '))
 			attributes['points'] = zip([int(x.replace(',','')) for x in node.get('points').split()][0::2], [int(x.replace(',','')) for x in node.get('points').split()][1::2])
+			attributes['coordSys'] = 'bio'
 		except:
 			print('Problem retrieving contourAttributes')
 	return attributes

@@ -13,6 +13,7 @@ class Contour:
         self.fill = None
         self.points = None
         #Non-attributes
+        self.coordSys = None
         self.image = None
         self.transform = None
         self.shape = None
@@ -52,7 +53,21 @@ class Contour:
     def __ne__(self, other):
         '''Allows use of != between multiple contours.'''
         return (self.__dict__ != other.__dict__)
-# mergeTool functions
+# transform/shape operations
+    def convertToBioCoords(self, mag):
+        '''converts points to biological coordinate system and performs appropraite updates to shape.'''
+        if self.coordSys == 'bio':
+            return 'Already in biological coordinate system -- abort.'
+        self.points = self.transform.worldpts(self.points, mag)
+        self.coordSys = 'bio'
+        self.popShape()
+    def convertToPixCoords(self, mag):
+        '''Converts points to pixel coordinate system and performs appropraite updates to shape.'''
+        if self.coordSys == 'pix':
+            return 'Already in pixel coordinate system -- abort.'
+        self.points = self.transform.imagepts(self.points, mag)
+        self.coordSys = 'pix'
+        self.popShape()
     def popShape(self):
         '''Adds polygon object (shapely) to self._shape'''
         # Closed trace
@@ -67,10 +82,10 @@ class Contour:
                 if len(self.points) < 3:
                     return None
                 pts = self.points
-            self.shape = Polygon( self.transform.worldpts(pts) )
+            self.shape = Polygon( self.transform.worldpts(pts) ) #===
         # Open trace
         elif self.closed == False and len(self.points)>1:
-            self.shape = LineString( self.transform.worldpts(self.points) )
+            self.shape = LineString( self.transform.worldpts(self.points) ) #===
         else:
             print('\nInvalid shape characteristics: '+self.name)
             print('Quit for debug')
@@ -82,6 +97,7 @@ class Contour:
             return box(minx, miny, maxx, maxy)
         else:
             print('NoneType for shape: '+self.name)
+# mergeTool functions
     def overlaps(self, other, threshold=(1+2**(-17))):
         '''Return 0 if no overlap.
         For closed traces: return 1 if AoU/AoI < threshold, return AoU/AoI if not < threshold
