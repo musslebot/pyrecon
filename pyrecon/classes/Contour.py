@@ -103,8 +103,8 @@ class Contour:
         For closed traces: return 1 if AoU/AoI < threshold, return AoU/AoI if not < threshold
         For open traces: return 0 if # pts differs or distance between parallel pts > threshold
                          return 1 otherwise'''
-        if self.shape == None:self.popshape()
-        if other.shape == None:other.popshape()
+        if self.shape == None:self.popShape()
+        if other.shape == None:other.popShape()
         # Check bounding box
         if (not self.box().intersects(other.box()) and
             not self.box().touches(other.box()) ):
