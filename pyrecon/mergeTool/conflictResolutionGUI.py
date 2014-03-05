@@ -22,7 +22,7 @@ class sectionImages(QWidget):
 		self.loadFunctions(image1,image2)
 		self.loadLayout()
 		self.img1 = image1
-		self.img2 = image2
+		self.img2 = image2 
 		self.output = None
 		self.show()
 	def loadObjects(self):
@@ -45,6 +45,12 @@ class sectionImages(QWidget):
 		pixmap2 = QPixmap(image2._path+image2.src)
 		self.pix1.setPixmap( pixmap1.scaledToWidth(500) )
 		self.pix2.setPixmap( pixmap2.scaledToWidth(500) )
+		if pixmap1.isNull():
+			self.pix1.setText('Image not available.')
+			self.pix1.setAlignment(Qt.AlignHCenter)
+		if pixmap2.isNull():
+			self.pix2.setText('Image not available.')
+			self.pix2.setAlignment(Qt.AlignHCenter)
 		self.pick1.setText('Choose this image')
 		self.pick2.setText('Choose this image')
 		self.pick1.clicked.connect( self.ret1 ) #===
@@ -96,20 +102,25 @@ class resolveOvlp(QDialog):
 		self.cont2But.clicked.connect( self.finish )
 		self.pix1 = contourPixmap(self.item.image1, self.item.contour1)
 		self.pix2 = contourPixmap(self.item.image2, self.item.contour2, pen=Qt.cyan)
+		if self.pix1.pixmap.isNull(): # If image doesnt exist
+			self.pix1.setText('Image not available.\n'+str(self.item.contour1.name))
+			self.pix1.setAlignment(Qt.AlignHCenter)
+		if self.pix2.pixmap.isNull(): # If image doesnt exist
+			self.pix2.setText('Image not available.\n'+str(self.item.contour2.name))
+			self.pix2.setAlignment(Qt.AlignHCenter)
 	def loadLayout(self):
-		container = QVBoxLayout()
-		
+		container = QVBoxLayout() # Contains everything
+		# - Contains Images
 		imageContainer = QHBoxLayout()
 		imageContainer.addWidget(self.pix1)
 		imageContainer.addWidget(self.pix2)
-
+		# - Contains buttons
 		butBox = QHBoxLayout()
 		butBox.addWidget(self.cont1But)
 		butBox.addWidget(self.cont2But)
-
+		# Add other containers to container
 		container.addLayout(imageContainer)
 		container.addLayout(butBox)
-
 		self.setLayout(container)
 	def finish(self): # Return int associated with selected contour
 		if self.sender() == self.cont1But:
@@ -124,7 +135,7 @@ class contourTableItem(QListWidgetItem):
 			self.contour = None
 			self.contour1 = contour[0]
 			self.contour2 = contour[1]
-			if type(images) == type([]): #===
+			if type(images) == type([]):
 				self.image1 = images[0]
 				self.image2 = images[1]
 			self.setText(self.contour1.name)
@@ -351,7 +362,6 @@ class contourPixmap(QLabel):
 		self.scale()
 		self.drawOnPixmap(pen)
 		self.setPixmap(self.pixmap)
-		self.show()
 	def transformToPixmap(self):
 		'''Transforms points from RECONSTRUCT'S coordsys to PySide's coordSys'''
 		self.contour.convertToPixCoords(self.image.mag) # Convert biological points to pixel points
