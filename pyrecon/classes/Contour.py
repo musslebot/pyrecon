@@ -49,10 +49,26 @@ class Contour:
 # ACCESSORS
     def __eq__(self, other):
         '''Allows use of == between multiple contours.'''
-        return (self.__dict__ == other.__dict__)
+        comparisonDict1 = {}
+        for key in self.__dict__:
+            if key not in ['shape','comment','hidden']:
+                comparisonDict1[key] = self.__dict__[key]
+        comparisonDict2 = {}
+        for key in other.__dict__:
+            if key not in ['shape','comment','hidden']:
+                comparisonDict2[key] = other.__dict__[key]
+        return (comparisonDict1 == comparisonDict2)
     def __ne__(self, other):
         '''Allows use of != between multiple contours.'''
-        return (self.__dict__ != other.__dict__)
+        comparisonDict1 = {}
+        for key in self.__dict__:
+            if key not in ['shape','comment','hidden']:
+                comparisonDict1[key] = self.__dict__[key]
+        comparisonDict2 = {}
+        for key in other.__dict__:
+            if key not in ['shape','comment','hidden']:
+                comparisonDict2[key] = other.__dict__[key]
+        return (comparisonDict1 != comparisonDict2)
 # transform/shape operations
     def convertToBioCoords(self, mag):
         '''converts points to biological coordinate system and performs appropraite updates to shape.'''
