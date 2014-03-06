@@ -22,7 +22,7 @@ def main(series1, series2, directory, *args, **kwargs): #===
 		mergedSec = sectionMerge.main(*secPair, graphical=gui)
 		mergedSer.sections.append(mergedSec)
 	# Write <series> & <sections> to XML files in directory
-	xml.writeSeries(mergeSer, directory, sections=True)
+	xml.writeSeries(mergedSer, directory, sections=True)
 
 def mergeSeries(): #=== 
 	return
