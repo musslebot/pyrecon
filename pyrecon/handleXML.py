@@ -429,7 +429,10 @@ def writeSeries(series, directory, outpath=None, sections=False, overwrite=False
 		outpath = directory+series.name+'.ser'
     	# Raise error if this file already exists to prevent overwrite
 	if not overwrite and os.path.exists(outpath):
-		raise IOError('\nFilename %s already exists.\nQuiting write command to avoid overwrite'%outpath)
+		a = raw_input('Files already exist in ths directory: Do you want to overwrite them? (y/n) ')
+		overwrite = str(a).lower() in ['y','yes']
+		if not overwrite:
+			raise IOError('\nFilename %s already exists.\nQuiting write command to avoid overwrite'%outpath)
     # Build series root element
 	root = objectToElement( series ) 
 	# Add Contours/ZContours to root
@@ -443,4 +446,4 @@ def writeSeries(series, directory, outpath=None, sections=False, overwrite=False
 	# Write all sections if <sections> == True
 	if sections == True:
 		for section in series.sections:
-			writeSection(section, directory)
+			writeSection(section, directory, overwrite=overwrite)
