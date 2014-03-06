@@ -313,6 +313,8 @@ class sectionContours(QWidget):
 						listItem.setBackground(QColor('red'))
 					elif item in self.compOvlp: # Completely ovlping contour
 						listItem.contour = listItem.contour1 # set chosen contour to cont1 since they're the same
+						self.outOvlp.addItem(listItem)
+						continue
 				table.addItem(listItem)
 			else:
 				print 'Invalid item for contourListWidget'
