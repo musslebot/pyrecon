@@ -66,10 +66,52 @@ class toolLoader(QWidget):
 		self.setLayout(vbox)
 	def mergeGo(self): #===
 		print('mergeTool')
+		self.a = seriesLoader(title='Load Series 1')
+		self.b = seriesLoader(title='Load Series 2')
 	def excelGo(self): #===
 		print('excelTool')
 	def curateGo(self): #===
 		print('curationTool')
 	def calibGo(self): #===
 		print('calibrationTool')
+
+class seriesLoader(QWidget):
+	def __init__(self, title='Load Series'):
+		QWidget.__init__(self)
+		print('start serload')
+		self.setWindowTitle(title)
+		self.loadObjects()
+		self.loadFunctions()
+		self.loadLayouts()
+		self.show()
+	def loadObjects(self):
+		self.pathLine = QLineEdit(self) # Line to enter path to series
+		self.pathLine.setText('<Enter path to series file, or browse>')
+		self.browseButton = QPushButton(self) # button to browse for series
+		self.browseButton.setText('Browse')
+		self.closeButton = QPushButton(self)
+		self.closeButton.setText('Load and Close')
+	def loadFunctions(self):
+		self.browseButton.clicked.connect( self.browseFiles )
+		self.closeButton.clicked.connect( self.loadClose )
+	def loadLayouts(self):
+		vbox = QVBoxLayout()
+		
+		hbox = QHBoxLayout()
+		hbox.addWidget(self.pathLine)
+		hbox.addWidget(self.browseButton)
+		
+		vbox.addLayout(hbox)
+		vbox.addWidget(self.closeButton)
+		self.setLayout(vbox)
+
+	def browseFiles(self):
+		fileName = QFileDialog.getOpenFileName(self, "Load Series", "/home/", "Series File (*.ser)")
+		self.pathLine.setText( str(fileName[0]) )
+	def loadClose(self): #===
+		print 'closing'
+		print self.pathLine.text()
+		return openSeries( self.pathLine.text() )
+		self.close()
+
 
