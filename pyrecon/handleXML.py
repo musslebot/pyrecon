@@ -433,6 +433,7 @@ def writeSeries(series, directory, outpath=None, sections=False, overwrite=False
 		overwrite = str(a).lower() in ['y','yes']
 		if not overwrite:
 			raise IOError('\nFilename %s already exists.\nQuiting write command to avoid overwrite'%outpath)
+		print ('Overwrite enabled!')
     # Build series root element
 	root = objectToElement( series ) 
 	# Add Contours/ZContours to root
