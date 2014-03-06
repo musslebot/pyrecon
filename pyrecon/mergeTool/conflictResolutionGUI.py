@@ -386,7 +386,8 @@ class seriesAttributes(QWidget):
 		self.setWindowTitle('Series Attributes')
 		box = QVBoxLayout()
 		self.lab = QLabel('This is a placeholder until complete. Attributes from series1 are kept for now. x out of window') #===
-		self.closeBut = QPushButton(self, 'close')
+		self.closeBut = QPushButton(self)
+		self.closeBut.setText('Close and continue')
 		self.closeBut.clicked.connect( self.close )
 		box.addWidget(self.lab)
 		box.addWidget(self.closeBut)
@@ -403,7 +404,8 @@ class seriesContours(QWidget):
 		self.setWindowTitle('Series Contours')
 		box = QVBoxLayout()
 		self.lab = QLabel('This is a placeholder until complete. Contours from series1 are kept for now. x out of window') #===
-		self.closeBut = QPushButton(self, 'close')
+		self.closeBut = QPushButton(self)
+		self.closeBut.setText('Close and continue')
 		self.closeBut.clicked.connect( self.close )
 		box.addWidget(self.lab)
 		box.addWidget(self.closeBut)
@@ -417,7 +419,8 @@ class seriesZContours(QWidget):
 		self.setWindowTitle('Series ZContours')
 		box = QVBoxLayout()
 		self.lab = QLabel('This is a placeholder until complete. ZContours from both series are kept for now. x out of window') #===
-		self.closeBut = QPushButton(self, 'close')
+		self.closeBut = QPushButton(self )
+		self.closeBut.setText('Close and continue')
 		self.closeBut.clicked.connect( self.close )
 		box.addWidget(self.lab)
 		box.addWidget(self.closeBut)
