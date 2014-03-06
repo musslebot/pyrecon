@@ -124,7 +124,7 @@ class contourPixmap(QLabel):
 		scaledPoints = list(map(tuple,np.array(self.contour.points)*scale))
 		self.contour.points = scaledPoints
 		self.contour.popShape()
-	def drawOnPixmap(self, pen):
+	def drawOnPixmap(self, pen=Qt.red):
 		# Create polygon to draw
 		polygon = QPolygon()
 		for point in self.contour.points:
@@ -134,7 +134,6 @@ class contourPixmap(QLabel):
 		painter.begin(self.pixmap)
 		painter.setPen(pen)
 		painter.drawConvexPolygon(polygon)
-		painter.end()
 class resolveOvlp(QDialog):
 	def __init__(self, item):
 		QDialog.__init__(self)
