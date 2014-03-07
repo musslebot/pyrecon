@@ -176,9 +176,9 @@ class Contour:
         return series.getFlatArea(self.name)
     def isReverse(self):
         '''Returns true if contour is a reverse trace (negative area)'''
-        self.popshape()
+        self.popShape()
         if self.closed:
-            ring = LinearRing(self._shape.exterior.coords) # convert polygon to ring
+            ring = LinearRing(self.shape.exterior.coords) # convert polygon to ring
             return not ring.is_ccw # For some reason, the opposite is true (image vs biological coordinate system?)
         else:
             return False

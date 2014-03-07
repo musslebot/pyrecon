@@ -195,3 +195,93 @@ class Series:
                     c.transform.ycoef = [0,0,1,0,0,0]
                     c.transform.xcoef = [0,1,0,0,0,0]
                     c._tform = c.transform.tform()
+# curationTool functions
+    def locateReverseTraces(self):
+        reverseDict = {}
+        for section in self.sections:
+            revTraces = []
+            for contour in section.contours:
+                try:
+                    if contour.isReverse():
+                        revTraces.append(contour)
+                except:
+                        print('Invalid contour (%s on section %d) was ignored')%(contour.name, section.index)
+                        print('\t check coordinates in XML file')
+            if len(revTraces) != 0:
+                reverseDict[section.index] = revTraces
+        return reverseDict
+    def locateDistantTraces(self, threshold=7):
+        '''Returns a dictionary of indexes containing traces that exist after <threshold (def: 7)> sections of non-existence'''
+        # Build a list of lists for all the contours in each section
+        allSectionContours = []
+        for section in self.sections:
+            contours = list(set([cont.name for cont in section.contours]))
+            allSectionContours.append(contours)
+        # Go through list of contours and check for distances
+        index = int(self.sections[0].index) # correct starting index (can be 0 or 1)
+        distantTraces = {}
+        for sec in range(len(allSectionContours)):
+            traces = []
+            for contour in allSectionContours[sec]:
+                # Check above
+                if sec+threshold+1 <= len(self.sections):
+                    # Check and ignore if in section:section+threshold
+                    sectionToThresholdContours = [] 
+                    for contList in allSectionContours[sec+1:sec+threshold+1]:
+                        sectionToThresholdContours.extend(contList)
+                    if contour not in sectionToThresholdContours:
+                        # Check if contour is in section+threshold and up
+                        thresholdToEndContours = []
+                        for contList in allSectionContours[sec+threshold+1:]:
+                            thresholdToEndContours.extend(contList)
+                        if contour in thresholdToEndContours:
+                            traces.append(contour)
+                # Check below
+                if sec-threshold-1 >= 0:
+                    # Check and ignore if in section-threshold:section
+                    minusThresholdToSectionContours = []
+                    for contList in allSectionContours[sec-threshold:sec]:
+                        minusThresholdToSectionContours.extend(contList)
+                    if contour not in minusThresholdToSectionContours:
+                        # Check if contour is in section-threshold and down
+                        beginToMinusThresholdContours = []
+                        for contList in allSectionContours[:sec-threshold]:
+                            beginToMinusThresholdContours.extend(contList)
+                        if contour in beginToMinusThresholdContours:
+                            traces.append(contour)
+                # Add traces to distantTraces dictionary
+                if len(traces) != 0:
+                    distantTraces[index] = traces
+            index += 1
+        return distantTraces
+    def locateDuplicates(self):
+        '''Locates overlapping traces of the same name in a section. Returns a dictionary of section numbers with duplicates'''
+        # Build dictionary of sections w/ contours whose name appear more than once in that section
+        duplicateNames = {}
+        for section in self.sections:
+            duplicates = []
+            contourNames = [cont.name for cont in section.contours] # List of contour names
+            # Go through each contour, see if name appears in contourName > 1 time
+            for contour in section.contours:
+                if contourNames.count(contour.name) > 1:
+                    duplicates.append(contour)
+            if len(duplicates) != 0:
+                duplicateNames[section.index] = duplicates
+        
+        # Go through each list of >1 contour names and check if actually overlaps
+        duplicateDict = {}
+        for key in duplicateNames:
+            duplicates = []
+            for contour in duplicateNames[key]:
+                # Filter contours of same memory address so that overlap isn't tested on itself
+                copyContours = [cont for cont in duplicateNames[key] if id(cont) != id(contour) and cont.name == contour.name]
+                for cont in copyContours:
+                    try:
+                        if contour.overlaps(cont) == 1: # Perfect overlap (within threshold)
+                            duplicates.append(cont)
+                    except:
+                        print('Invalid contour (%s on section %d) was ignored')%(cont.name, key)
+                        print('\t check coordinates in XML file')
+            if len(duplicates) != 0:
+                duplicateDict[key] = duplicates
+        return duplicateDict
