@@ -43,8 +43,8 @@ class sectionImages(QWidget):
 		self.img2detail.setText('\n'.join([(str(item)+':\t'+str(image2.__dict__[item])) for item in image2.__dict__ if item != 'transform']))
 		pixmap1 = QPixmap(image1._path+image1.src)
 		pixmap2 = QPixmap(image2._path+image2.src)
-		self.pix1.setPixmap( pixmap1.scaledToWidth(500) )
-		self.pix2.setPixmap( pixmap2.scaledToWidth(500) )
+		self.pix1.setPixmap( pixmap1.scaled(500, 500, Qt.KeepAspectRatio) )
+		self.pix2.setPixmap( pixmap2.scaled(500, 500, Qt.KeepAspectRatio) )
 		if pixmap1.isNull():
 			self.pix1.setText('Image not available.')
 			self.pix1.setAlignment(Qt.AlignHCenter)
