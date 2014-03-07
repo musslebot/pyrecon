@@ -117,10 +117,14 @@ class contourPixmap(QLabel):
 		croppedPoints = list(map(tuple, np.array(self.contour.points)-cropVector ))
 		self.contour.points = croppedPoints
 		self.contour.popShape()
-	def scale(self, scale=1/float(4)): #=== implement dynamic scaling
+	def scale(self):
 		# Scale image
-		self.pixmap = self.pixmap.copy().scaled( self.pixmap.size().width()*scale, self.pixmap.size().height()*scale )
+		preCropSize = self.pixmap.size()
+		self.pixmap = self.pixmap.copy().scaled( 500, 500, Qt.KeepAspectRatio ) #=== is copy necessary?
 		# Scale points
+		wScale = self.pixmap.size().width()/float(preCropSize.width())
+		hScale = self.pixmap.size().height()/float(preCropSize.height())
+		scale = np.array([wScale,hScale])
 		scaledPoints = list(map(tuple,np.array(self.contour.points)*scale))
 		self.contour.points = scaledPoints
 		self.contour.popShape()
