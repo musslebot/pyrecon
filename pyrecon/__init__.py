@@ -12,12 +12,13 @@ from main import openSeries
 import handleXML as xml
 
 # Import packages!
+print('Initializing tools:')
 import mergeTool
-print('mergeTool ready!')
+print('\tmergeTool ready!')
 import excelTool
-print('excelTool ready!')
+print('\texcelTool ready!')
 import curationTool
-print('curationTool ready!')
+print('\tcurationTool ready!')
 import calibrationTool
-print('calibrationTool ready!')
+print('\tcalibrationTool ready!')
 
