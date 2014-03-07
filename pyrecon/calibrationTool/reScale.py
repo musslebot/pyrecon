@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from pyrecon.main import openSeries
 from pyrecon.classes import Transform
+from pyrecon import handleXML as xml
 import argparse
 
 parser = argparse.ArgumentParser(description='Rescales a <series> to a new <magnitude>')
@@ -18,31 +19,30 @@ if outpath[len(outpath)-1] != '/':
     
 def reScale(ser, newMag, outpath):
     ser = openSeries(ser)
-    ser.zeroIdentity() # Non-image contour transform -> unity transform #===
+    ser.zeroIdentity() # Non-image contour transform -> unity transform
     
     for section in ser.sections:# Set mag field and rescale
         # img objects exist in two locations per section:
-        # (1/2): Set newMag for section.imgs[0-x].mag
-        oldMag = section.imgs[0].mag #===
-        section.imgs[0].mag = float(newMag) #===
+        # (1/2): Set newMag for section.image.mag
+        oldMag = section.image.mag
+        section.image.mag = float(newMag)
         scale = newMag/oldMag
-        tformdImgT = scaleImgTForms(section.imgs[0].transform, scale) #===
-        section.imgs[0].transform = tformdImgT #===
+        tformdImgT = scaleImgTForms(section.image.transform, scale)
+        section.image.transform = tformdImgT
         for contour in section.contours:
             # (2/2): Set newMag for contour.img.mag
-            if contour.img != None: # if contour is an image contour... #===
-                contour.img = section.imgs[0] #copy section.imgs[0] to contour.img #===
-                contour.transform = section.imgs[0].transform # copy transform #===
+            if contour.image is not None: # if contour is an image contour...
+                contour.image = section.image #copy section.image to contour.image
+                contour.transform = section.image.transform # copy transform
             else: # if not an image contour...
             #...rescale all the points
                 pts = contour.points
                 newpts = []
-                for pt in pts:
+                for pt in pts: #=== this should be replaced with np.array computation
                     newpts.append( (pt[0]*scale, pt[1]*scale) )
                 contour.points = newpts
     # Write out series/sections
-    ser.writeseries(outpath) #===
-    ser.writesections(outpath) #===
+    xml.writeSeries(ser, outpath, sections=True)
 
 def scaleImgTForms(oldT, scale):
     newT = Transform()
@@ -72,7 +72,7 @@ def scaleImgTForms(oldT, scale):
         newT.xcoef = newxCoefs
         newT.ycoef = newyCoefs
     
-    newT.poptform()
+    newT.tform()
     return newT
 
 reScale(series, magnitude, outpath)

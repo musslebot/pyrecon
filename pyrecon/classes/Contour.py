@@ -14,7 +14,7 @@ class Contour:
         self.points = None
         #Non-attributes
         self.coordSys = None
-        self.image = None
+        self.image = None # Only used if 'domain1' contour
         self.transform = None
         self.shape = None
         self.processArguments(args, kwargs)

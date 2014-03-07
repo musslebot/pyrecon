@@ -2,23 +2,25 @@ import sys
 from pyrecon.main import openSeries
 from skimage import transform as tf
 import numpy as np
+# import argparse
 
 if len(sys.argv) > 1:
     path_to_series = str( sys.argv[1] )
+    # functions initiated at bottom of page
 
 def findCalFactor(path_to_series):
     '''Returns the scale factor that was applied to the transformation of a series'''
-    ser = loadSeries(path_to_series)
+    ser = openSeries(path_to_series)
     # create list of all image transforms in a series
     imgtforms = []
     for section in ser.sections:
         imgtform = section.image.transform
         if imgtform.isAffine():
-            imgtform.tag = 'Transform for '+section.image.name+' in section '+section.name # Change tag to include the section it belongs to
+            imgtform.tag = 'Transform for '+section.image.src+' in section '+section.name # Change tag to include the section it belongs to
             # Convert to Affine Transform and append
             a = imgtform.xcoef
             b = imgtform.ycoef
-            tmatrix = np.array( [a[1],a[2],a[0],b[1],b[2],b[0],0,0,1] ).reshape((3,3))
+            tmatrix = np.array( [a[1],a[2],a[0],b[1],b[2],b[0],0,0,1] ).reshape((3,3)) # 1x9 -> 3x3
             imgtform._tform = tf.AffineTransform(tmatrix)
             imgtforms.append(imgtform)   
     
