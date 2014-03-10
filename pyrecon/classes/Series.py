@@ -114,11 +114,11 @@ class Series:
             # String argument
             if type(arg) == type(''): # Possible path to XML?
                 import pyrecon.handleXML as xml
-                try: # path to .ser file
+                try: # given full path to .ser file
                     self.update(*xml.process(arg))
                     self.path = arg
                     self.name = arg.split('/')[len(arg.split('/'))-1].replace('.ser','')
-                except: # directory instead of path to .ser file
+                except: # given directory path instead of path to .ser file
                     path = arg
                     if path[-1] != '/':
                         path += '/'
@@ -285,3 +285,129 @@ class Series:
             if len(duplicates) != 0:
                 duplicateDict[key] = duplicates
         return duplicateDict
+# excelTool functions
+    def getObject(self, regex):
+        '''Returns a list of 1 list per section containing all the contour that match the regex'''
+        objects = []
+        for section in self.sections:
+            section.append(section.getObject(regex))
+        return objects  
+    def getObjectLists(self):
+        '''Returns sorted lists of dendrite names, protrusion names, trace names, and a list of other objects in series'''
+        dendrite_expression = 'd[0-9]{2,}' # represents base dendrite name (d##)
+        protrusion_expression = 'd[0-9]{2,}p[0-9]{2,}$' # represents base protrusion name (d##p##)
+        trace_expression = 'd[0-9]{2,}.{1,}[0-9]{2,}' # represents trace name (d##<tracetype>##)
+        
+        # Convert expressions to usable regular expressions
+        dendrite_expression = re.compile(dendrite_expression)
+        protrusion_expression = re.compile(protrusion_expression, re.I)
+        trace_expression = re.compile(trace_expression, re.I)
+
+        # Create lists for names of dendrites, protrusions, traces, and other objects
+        dendrites = []
+        protrusions = []
+        traces = []
+        others = []
+        for section in self.sections:
+            for contour in section.contours:
+                # Dendrite
+                if dendrite_expression.match(contour.name) != None:
+                    dendrites.append(contour.name[0:dendrite_expression.match(contour.name).end()])
+                # Protrusion
+                if protrusion_expression.match(contour.name) != None:
+                    protrusions.append(contour.name)
+                # Trace === expand to > 2 digits!
+                if (trace_expression.match(contour.name) != None and
+                    protrusion_expression.match(contour.name) == None):
+                    traces.append(contour.name)
+                    # Make sure a d##p## exists for this trace
+                    thisProt = contour.name[0:3]+'p'+contour.name[4:6]
+                    if (protrusion_expression.match(thisProt) and
+                        thisProt not in protrusions):
+                        protrusions.append(thisProt)
+                # Everything else (other)
+                if (dendrite_expression.match(contour.name) == None and
+                    protrusion_expression.match(contour.name) == None and
+                    trace_expression.match(contour.name) == None):
+                    others.append(contour.name)
+        return sorted(list(set(dendrites))), sorted(list(set(protrusions))), sorted(list(set(traces))), sorted(list(set(others)))
+    def getData(self, object_name, data_string):
+        string = str(data_string).lower()
+        if string == 'volume':
+            return self.getVolume(object_name)
+        elif string == 'total volume':
+            return self.getTotalVolume(object_name)
+        elif string == 'surface area':
+            return self.getSurfaceArea(object_name)
+        elif string == 'flat area':
+            return self.getFlatArea(object_name)
+        elif string == 'start':
+            return self.getStartEndCount(object_name)[0]
+        elif string == 'end':
+            return self.getStartEndCount(object_name)[1]
+        elif string == 'count':    
+            return self.getStartEndCount(object_name)[2]
+    def getVolume(self, object_name):
+        '''Returns volume of the object throughout the series. Volume calculated by summing the value obtained by
+        multiplying the area by section thickness over all sections.'''
+        vol = 0
+        for section in self.sections:
+            for contour in section.contours:
+                if contour.name == object_name:
+                    contour.popShape()
+                    vol += (contour.shape.area * section.thickness)
+        return vol
+    def getTotalVolume(self, object_name):
+        related_objects = []
+        if object_name[-1].isalpha():
+            object_name = object_name[:-1]
+            # Get all related objects by base object name
+            for section in self.sections:
+                for contour in section.contours:
+                    if object_name in contour.name:
+                        related_objects.append(contour.name)
+        # Find total volume by summing volume for all related objects
+        totVol = 0
+        for obj in list(set(related_objects)):
+            totVol+=self.getVolume(obj)
+        return totVol
+    def getSurfaceArea(self, object_name):
+        '''Returns surface area of the object throughout the series. Surface area calculated by summing
+        the length multiplied by section thickness across sections.'''
+        sArea = 0
+        for section in self.sections:
+            for contour in section.contours:
+                if contour.name == object_name:
+                    sArea += (contour.getLength() * section.thickness)
+        return sArea
+    def getFlatArea(self, object_name):
+        '''Returns the flat area of the object throughout the series. Flat area calculated by summing the area of
+        the object across all sections.'''
+        fArea = 0
+        for section in self.sections:
+            for contour in section.contours:
+                if contour.name == object_name:
+                    contour.popShape()
+                    if contour.closed:
+                        fArea += contour.shape.area
+                    else:
+                        fArea += (contour.getLength() * section.thickness)
+        return fArea
+    def getStartEndCount(self, object_name):
+        '''Returns a tuple containing the start index, end index, and count of the item in series.'''
+        start = 0
+        end = 0
+        count = 0
+        # Count
+        for section in self.sections:
+            for contour in section.contours:
+                if contour.name == object_name:
+                    count += 1
+            # Start/End
+            if object_name in [cont.name for cont in section.contours]:
+                # Start index
+                if start == 0:
+                    start = section.index
+                # End index
+                end = section.index
+        return start, end, count
