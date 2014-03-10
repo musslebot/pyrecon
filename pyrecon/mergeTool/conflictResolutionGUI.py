@@ -235,20 +235,8 @@ class sectionContours(QWidget):
 		# Load UI
 		self.loadObjects()
 		self.loadFunctions()
-		# Check if user is necessary
-		if not self.isNecessary():
-			self.done()
 		self.loadLayout()
 		self.show()
-	def isNecessary(self):
-		'''If uniqueA, uniqueB, and inOvlp has no items, then user is not needed for merge... return comp ovlps.'''
-		if self.inUniqueA.count() != 0:
-			return True
-		if self.inUniqueB.count() != 0:
-			return True
-		if self.inOvlp.count() != 0:
-			return True
-		return False
 	def loadObjects(self):
 		# List contours in their appropriate listWidgets
 		self.inUniqueA = QListWidget(self)
