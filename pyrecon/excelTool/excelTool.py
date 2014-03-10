@@ -2,25 +2,32 @@
 # To change what data is shown in the excelWorkbook for each trace type, edit the function: classes.MultiSectionContour.makeSpecific()
 import openpyxl, argparse, os
 from pyrecon.main import openSeries
-from pyrecon.classes import MultiSectionContour
+from pyrecon.classes.MultiSectionContour import MultiSectionContour
 from operator import attrgetter
 
-def main(path_to_series, save_path):
+def main(series, save_path):
+    # Load series
+    if type(series) == type(''):
+        series = openSeries(path_to_series)
+    # Output directory
     if save_path[-1] != '/':
         save_path += '/'
     if not os.path.exists(save_path):
         print 'Creating new directory: '+save_path
         os.mkdir(save_path)
+    # Make output .xlsx
     if '.xlsx' not in save_path:
-        save_path += path_to_series.replace('.ser','').split('/')[-1]
+        save_path += series.path.replace('.ser','').split('/')[-1]
         save_path += '.xlsx'
-    series = openSeries(path_to_series)
+    # Load workbook data
     wkbk = Workbook(series=series)
     wkbk.getDendrites()
     wkbk.getProtrusions()
     wkbk.listProtrusionChildren()
+    # Write data to workbook
     wkbk.writeProtrusionsPerDendrite()
     wkbk.writeProtrusionChildrenToProtrusions()        
+    # Save workbook to .xlsx
     wkbk.save(save_path)
 
 class Workbook(openpyxl.Workbook):
