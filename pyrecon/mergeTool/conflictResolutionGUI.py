@@ -53,8 +53,8 @@ class sectionImages(QWidget):
 			self.pix2.setAlignment(Qt.AlignHCenter)
 		self.pick1.setText('Choose this image')
 		self.pick2.setText('Choose this image')
-		self.pick1.clicked.connect( self.ret1 ) #===
-		self.pick2.clicked.connect( self.ret2 ) #===
+		self.pick1.clicked.connect( self.ret1 )
+		self.pick2.clicked.connect( self.ret2 )
 	def loadLayout(self):
 		self.setWindowTitle('PyRECONSTRUCT Section Image Resolver')
 		hbox = QHBoxLayout()
@@ -122,8 +122,13 @@ class contourPixmap(QLabel):
 		preCropSize = self.pixmap.size()
 		self.pixmap = self.pixmap.copy().scaled( 500, 500, Qt.KeepAspectRatio ) #=== is copy necessary?
 		# Scale points
-		wScale = self.pixmap.size().width()/float(preCropSize.width())
-		hScale = self.pixmap.size().height()/float(preCropSize.height())
+		preWidth = float(preCropSize.width())
+		preHeight = float(preCropSize.height())
+		if preWidth == 0.0 or preHeight == 0.0:
+			preWidth = 1.0
+			preHeight = 1.0
+		wScale = self.pixmap.size().width()/preWidth
+		hScale = self.pixmap.size().height()/preHeight
 		scale = np.array([wScale,hScale])
 		scaledPoints = list(map(tuple,np.array(self.contour.points)*scale))
 		self.contour.points = scaledPoints
@@ -151,14 +156,14 @@ class resolveOvlp(QDialog):
 		# Buttons to choose contours
 		self.cont1But = QPushButton('Choose Contour 1')
 		self.cont2But = QPushButton('Choose Contour 2')
-		self.bothContBut = QPushButton('Choose Both Contours') #===
+		self.bothContBut = QPushButton('Choose Both Contours')
 		# Labels to hold pixmap
 		self.pix1 = None
 		self.pix2 = None
 	def loadFunctions(self):
 		self.cont1But.clicked.connect( self.finish )
 		self.cont2But.clicked.connect( self.finish )
-		self.bothContBut.clicked.connect( self.finish ) #===
+		self.bothContBut.clicked.connect( self.finish )
 		self.pix1 = contourPixmap(self.item.image1, self.item.contour1)
 		self.pix2 = contourPixmap(self.item.image2, self.item.contour2, pen=Qt.cyan)
 		if self.pix1.pixmap.isNull(): # If image doesnt exist
@@ -180,14 +185,14 @@ class resolveOvlp(QDialog):
 		# Add other containers to container
 		container.addLayout(imageContainer)
 		container.addLayout(butBox)
-		container.addWidget(self.bothContBut) #===
+		container.addWidget(self.bothContBut)
 		self.setLayout(container)
 	def finish(self): # Return int associated with selected contour
 		if self.sender() == self.cont1But:
 			self.done(1)
 		elif self.sender() == self.cont2But:
 			self.done(2)
-		elif self.sender() == self.bothContBut: #===
+		elif self.sender() == self.bothContBut:
 			self.done(3)
 class contourTableItem(QListWidgetItem):
 	'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
@@ -214,7 +219,7 @@ class contourTableItem(QListWidgetItem):
 		elif resolution == 2:
 			self.contour = self.contour2
 			self.setBackground(QColor('lightgreen'))
-		elif resolution == 3: #===
+		elif resolution == 3:
 			self.contour = [self.contour1, self.contour2]
 			self.setBackground(QColor('lightgreen'))
 class sectionContours(QWidget):
