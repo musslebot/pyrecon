@@ -1,8 +1,8 @@
 #!/usr/bin/python
-# To change what data is shown in the excelWorkbook for each trace type, edit the function: tools.classes.rObject.makeSpecific()
+# To change what data is shown in the excelWorkbook for each trace type, edit the function: classes.MultiSectionContour.makeSpecific()
 import openpyxl, argparse, os
 from pyrecon.main import openSeries
-from pyrecon.classes import rObject
+from pyrecon.classes import MultiSectionContour
 from operator import attrgetter
 
 def main(path_to_series, save_path):
@@ -14,7 +14,7 @@ def main(path_to_series, save_path):
     if '.xlsx' not in save_path:
         save_path += path_to_series.replace('.ser','').split('/')[-1]
         save_path += '.xlsx'
-    series = loadSeries(path_to_series) #===
+    series = openSeries(path_to_series)
     wkbk = Workbook(series=series)
     wkbk.getDendrites()
     wkbk.getProtrusions()
@@ -30,7 +30,7 @@ class Workbook(openpyxl.Workbook):
         self.series = series # Series object for this workbook
         self.objects = series.getObjectLists() # Names of objects in this series #===
         self.filterType = ['c'] # Ignore these rTypes
-    def listProtrusionChildren(self): #===
+    def listProtrusionChildren(self):
         childList = []
         for protrusion in self.protrusions:
             for child in protrusion.children:
@@ -40,13 +40,13 @@ class Workbook(openpyxl.Workbook):
         '''Gathering protrusions/children from series'''
         protrusions = []
         for protName in self.objects[1]:
-            protrusion = rObject(name=protName, series=self.series)
+            protrusion = MultiSectionContour(name=protName, series=self.series) #===
             protrusions.append(protrusion)
         self.protrusions = protrusions
     def getDendrites(self):
         dendrites = []
         for dendName in self.objects[0]:
-            dendrite = rObject(name=dendName, series=self.series)
+            dendrite = MultiSectionContour(name=dendName, series=self.series)
             dendrites.append(dendrite)
         self.dendrites = dendrites
     def writeProtrusionsPerDendrite(self):
@@ -107,7 +107,7 @@ class Workbook(openpyxl.Workbook):
                         subColumn = column
                         for subChild in prot.children[child]:
                             subColumn = column
-                            subChildObj = rObject(name=subChild, series=self.series)
+                            subChildObj = MultiSectionContour(name=subChild, series=self.series)
                             sheet.cell(row=row, column=subColumn).value = subChildObj.name
                             subColumn = column+1
                             for data_item in subChildObj.data:
