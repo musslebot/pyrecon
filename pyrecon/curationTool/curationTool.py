@@ -1,6 +1,5 @@
 #!/usr/bin/python
 from pyrecon.main import openSeries
-from pyrecon.classes import *
 import argparse
 
 def main(seriesPath, threshold):
