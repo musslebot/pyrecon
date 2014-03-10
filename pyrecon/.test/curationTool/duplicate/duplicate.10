@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<!DOCTYPE Section SYSTEM "section.dtd">
+
+<Section index="10" thickness="0.0532501" alignLocked="true">
+<Transform dim="0"
+ xcoef=" 0 1 0 0 0 0"
+ ycoef=" 0 0 1 0 0 0">
+<Image mag="0.00186575" contrast="1" brightness="0" red="true" green="true" blue="true"
+ src="010____z9.0.tif" />
+<Contour name="domain1" hidden="false" closed="true" simplified="false" border="1 0 1" fill="1 0 1" mode="11"
+ points="0 0,
+	8837 0,
+	8837 5405,
+	0 5405,
+	"/>
+</Transform>
+
+<Transform dim="0"
+ xcoef=" 0 1 0 0 0 0"
+ ycoef=" 0 0 1 0 0 0">
+<Contour name="duplicate" hidden="false" closed="true" simplified="true" border="0 1 0" fill="0 1 0" mode="11"
+ points="5.15056 4.08539,
+	6.01348 3.4382,
+	6.44494 3.11461,
+	6.66067 2.95281,
+	6.76854 2.87191,
+	6.78202 2.85843,
+	6.78876 2.87191,
+	6.2764 4.59775,
+	6.14831 5.02247,
+	5.28539 4.21348,
+	5.17753 4.11236,
+	5.1573 4.09213,
+	"/>
+</Transform>
+
+<Transform dim="0"
+ xcoef=" 0 1 0 0 0 0"
+ ycoef=" 0 0 1 0 0 0">
+<Contour name="duplicate" hidden="false" closed="true" simplified="true" border="0 1 0" fill="0 1 0" mode="11"
+ points="5.15056 4.08539,
+	6.01348 3.4382,
+	6.44494 3.11461,
+	6.66067 2.95281,
+	6.76854 2.87191,
+	6.78202 2.85843,
+	6.78876 2.87191,
+	6.2764 4.59775,
+	6.14831 5.02247,
+	5.28539 4.21348,
+	5.17753 4.11236,
+	5.1573 4.09213,
+	"/>
+</Transform>
+
+<Transform dim="0"
+ xcoef=" 0 1 0 0 0 0"
+ ycoef=" 0 0 1 0 0 0">
+<Contour name="not_duplicate" hidden="false" closed="true" simplified="true" border="1 0 0" fill="1 0 0" mode="11"
+ points="8.37303 4.15281,
+	8.50786 3.28989,
+	8.52134 3.18202,
+	8.52809 3.17528,
+	9.39101 3.84944,
+	9.49887 3.93708,
+	9.35056 4.36854,
+	9.26966 4.58427,
+	8.40674 4.19326,
+	8.37977 4.17977,
+	8.37303 4.15955,
+	"/>
+<Contour name="not_duplicate" hidden="false" closed="true" simplified="true" border="1 0 0" fill="1 0 0" mode="11"
+ points="3.12809 3.23595,
+	3.55955 2.85843,
+	3.61348 2.81123,
+	3.64045 2.78427,
+	4.46966 3.64719,
+	4.57078 3.75505,
+	4.62472 3.80899,
+	4.64494 3.82921,
+	3.78202 4.07865,
+	3.35056 4.2,
+	3.2427 4.22696,
+	3.22921 4.23371,
+	3.21573 4.22696,
+	3.14157 3.36404,
+	3.12809 3.25618,
+	3.12809 3.2427,
+	"/>
+</Transform>
+
+</Section>
