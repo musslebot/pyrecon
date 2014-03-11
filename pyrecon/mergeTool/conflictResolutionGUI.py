@@ -124,6 +124,7 @@ class contourPixmap(QLabel):
 		# Scale points
 		preWidth = float(preCropSize.width())
 		preHeight = float(preCropSize.height())
+		# Prevent division by 0.0
 		if preWidth == 0.0 or preHeight == 0.0:
 			preWidth = 1.0
 			preHeight = 1.0
@@ -241,7 +242,13 @@ class sectionContours(QWidget):
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
+		# self.checkIfNecessary() #===
 		self.show()
+	def checkIfNecessary(self): #===
+		if self.inUniqueA.count() > 0 or self.inUniqueB.count() > 0 or self.inOvlp.count():
+			self.show()
+		else:
+			self.doneBut.click() #=== Doesn't work... can't figure out why
 	def loadObjects(self):
 		# List contours in their appropriate listWidgets
 		self.inUniqueA = QListWidget(self)
@@ -374,7 +381,7 @@ class sectionContours(QWidget):
 		'domain1' not in [item.contour.name for item in oA] and
 		'domain1' not in [item.contour.name for item in oB]):
 			msg = QMessageBox(self)
-			msg.setText('"domain1" was not found in any output column. The "domain1" contour essential for correctly mapping contours to their place on the image. Merge aborted.')
+			msg.setText('"domain1" was not found in any output column. The "domain1" contour is essential for correctly mapping contours to their place on the image. Merge aborted.')
 			msg.exec_()
 			return
 		# set self.output to chosen contours
