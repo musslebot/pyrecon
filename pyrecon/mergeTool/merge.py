@@ -7,11 +7,15 @@ import pyrecon.handleXML as xml
 import argparse
 
 def main(series1, series2, directory, *args, **kwargs): #===
-	#=== Are path1/2 series or sections?
-	#=== series+sections or just series?
-	# GUI handlers?
+	'''Merge <series1> and <series2> together, and place the merged series into <directory>. For a graphical merge handler, also pass the 'graphical=True' argument.'''
+	# Are <series1/2> paths or Series objects?
+	if type(series1) == type(''):
+		series1 = openSeries(series1)
+	if type(series2) == type(''):
+		series2 = openSeries(series2)
+	# GUI or non-GUI handlers?
 	gui = False
-	if 'graphical' in args or kwargs['graphical'] == True:
+	if 'graphical' in args or ('graphical' in kwargs and kwargs['graphical'] == True):
 		gui = True
 	# Merge series
 	mergedSer = seriesMerge.main(series1, series2, graphical=gui)
