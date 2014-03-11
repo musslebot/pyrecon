@@ -1,12 +1,13 @@
 Visit the [GitHub repo](https://github.com/wtrdrnkr/pyrecon) for additional detail
 
-Version 2.0.0 (UPCOMING PATCH)
+Version 2.0.0
 ===
 * New package structure:
     * overarching code (handleXML.py and main.py) in main pyrecon folder
     * each tool has its own folder (calibrationTool, curationTool, excelTool, mergeTool)
     * projects in development go in ./.dev/
     * classes have individual files in ./classes/
+    * test tools with files/functions in ./.test/
 
 * pyRECONSTRUCT is integrating with git: see README.md for installation instructions <br>
     * `git merge` now uses pyrecon.mergeTool to handle merges
