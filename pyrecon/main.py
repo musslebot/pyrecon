@@ -4,7 +4,7 @@ import os, re
 try:
 	from PySide.QtCore import *
 	from PySide.QtGui import *
-	print('PySide import successfully.')
+	print('PySide imported successfully.')
 except:
 	print('Problem importing PySide. You will not be able to use GUI functions.')
 
@@ -39,7 +39,7 @@ def start():
 	if app is None: # Create QApplication if doesn't exist
 		app = QApplication([])
 	pickTool = toolLoader()
-	app.exec_()
+	app.exec_() # Start event-loop
 
 class toolLoader(QWidget):
 	def __init__(self):
@@ -67,7 +67,7 @@ class toolLoader(QWidget):
 		self.setLayout(vbox)
 	def mergeGo(self):
 		self.a = mergeToolLoader()
-		self.hide()
+		self.close()
 	def excelGo(self): #===
 		print('excelTool')
 	def curateGo(self): #===
@@ -92,9 +92,9 @@ class mergeToolLoader(QWidget):
 		self.outDir.setText('<Enter directory to save merged files in>')
 		self.browse1 = QPushButton(self) # button to browse for series
 		self.browse1.setText('Browse')
-		self.browse2 = QPushButton(self) # button to browse for series
+		self.browse2 = QPushButton(self)
 		self.browse2.setText('Browse')
-		self.browse3 = QPushButton(self) # button to browse for series
+		self.browse3 = QPushButton(self)
 		self.browse3.setText('Browse')
 		self.closeButton = QPushButton(self)
 		self.closeButton.setText('Begin merge')
@@ -130,8 +130,11 @@ class mergeToolLoader(QWidget):
 			self.path3.setText( str(dirName) )
 	def loadClose(self):
 		from pyrecon import mergeTool
-		self.output = (str(self.path1.text()), str(self.path2.text()), str(self.outDir.text()))
-		mergeTool.merge.main(*self.output, graphical=True)
+		# Add paths to self.output
+		self.output = ( str(self.path1.text()), str(self.path2.text()), str(self.outDir.text()) )
 		self.close()
+		# Run mergeTool
+		mergeTool.merge.main(*self.output, graphical=True)
+		
 
 
