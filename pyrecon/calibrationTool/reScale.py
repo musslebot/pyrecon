@@ -3,21 +3,8 @@ from pyrecon.main import openSeries
 from pyrecon.classes import Transform
 from pyrecon import handleXML as xml
 import argparse
-
-parser = argparse.ArgumentParser(description='Rescales a <series> to a new <magnitude>')
-parser.add_argument('series', nargs=1, type=str, help='Path to the series/sections that needs to be re-scaled')
-parser.add_argument('magnitude', nargs=1, help='New magnitude to be scaled to')
-parser.add_argument('outpath', nargs=1, type=str, help='Path to where the re-scaled series/sections will be placed')
-args = vars(parser.parse_args())
-# Assign argparse things to their variables
-series = str(args['series'][0])
-magnitude = float(args['magnitude'][0])
-outpath = str(args['outpath'][0])
-
-if outpath[len(outpath)-1] != '/':
-    outpath += '/'
-    
-def reScale(ser, newMag, outpath):
+ 
+def main(ser, newMag, outpath):
     ser = openSeries(ser)
     ser.zeroIdentity() # Non-image contour transform -> unity transform
     
@@ -75,4 +62,17 @@ def scaleImgTForms(oldT, scale):
     newT.tform()
     return newT
 
-reScale(series, magnitude, outpath)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Rescales a <series> to a new <magnitude>')
+    parser.add_argument('series', nargs=1, type=str, help='Path to the series/sections that needs to be re-scaled')
+    parser.add_argument('magnitude', nargs=1, help='New magnitude to be scaled to')
+    parser.add_argument('outpath', nargs=1, type=str, help='Path to where the re-scaled series/sections will be placed')
+    args = vars(parser.parse_args())
+    # Assign argparse things to their variables
+    series = str(args['series'][0])
+    magnitude = float(args['magnitude'][0])
+    outpath = str(args['outpath'][0])
+
+    if outpath[len(outpath)-1] != '/':
+        outpath += '/'
+    main(series, magnitude, outpath)
