@@ -4,6 +4,7 @@ import os, re
 try:
 	from PySide.QtCore import *
 	from PySide.QtGui import *
+	print('PySide import successfully.')
 except:
 	print('Problem importing PySide. You will not be able to use GUI functions.')
 
@@ -64,10 +65,9 @@ class toolLoader(QWidget):
 		vbox.addWidget(self.curateBut)
 		vbox.addWidget(self.calibBut)
 		self.setLayout(vbox)
-	def mergeGo(self): #===
-		print('mergeTool')
-		self.a = seriesLoader(title='Load Series 1')
-		self.b = seriesLoader(title='Load Series 2')
+	def mergeGo(self):
+		self.a = mergeToolLoader()
+		self.hide()
 	def excelGo(self): #===
 		print('excelTool')
 	def curateGo(self): #===
@@ -75,43 +75,63 @@ class toolLoader(QWidget):
 	def calibGo(self): #===
 		print('calibrationTool')
 
-class seriesLoader(QWidget):
-	def __init__(self, title='Load Series'):
+class mergeToolLoader(QWidget):
+	def __init__(self, title='mergeTool Loader'):
 		QWidget.__init__(self)
-		print('start serload')
 		self.setWindowTitle(title)
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayouts()
 		self.show()
 	def loadObjects(self):
-		self.pathLine = QLineEdit(self) # Line to enter path to series
-		self.pathLine.setText('<Enter path to series file, or browse>')
-		self.browseButton = QPushButton(self) # button to browse for series
-		self.browseButton.setText('Browse')
+		self.path1 = QLineEdit(self) # Line to enter path to series
+		self.path1.setText('<Enter path to series 1, or browse>')
+		self.path2 = QLineEdit(self)
+		self.path2.setText('<Enter path to series 2, or browse>')
+		self.outDir = QLineEdit(self)
+		self.outDir.setText('<Enter directory to save merged files in>')
+		self.browse1 = QPushButton(self) # button to browse for series
+		self.browse1.setText('Browse')
+		self.browse2 = QPushButton(self) # button to browse for series
+		self.browse2.setText('Browse')
+		self.browse3 = QPushButton(self) # button to browse for series
+		self.browse3.setText('Browse')
 		self.closeButton = QPushButton(self)
-		self.closeButton.setText('Load and Close')
+		self.closeButton.setText('Begin merge')
 	def loadFunctions(self):
-		self.browseButton.clicked.connect( self.browseFiles )
+		for but in [self.browse1, self.browse2, self.browse3]:
+			but.clicked.connect( self.browseStuff )
 		self.closeButton.clicked.connect( self.loadClose )
 	def loadLayouts(self):
 		vbox = QVBoxLayout()
-		
-		hbox = QHBoxLayout()
-		hbox.addWidget(self.pathLine)
-		hbox.addWidget(self.browseButton)
-		
-		vbox.addLayout(hbox)
+		hbox1 = QHBoxLayout()
+		hbox1.addWidget(self.path1)
+		hbox1.addWidget(self.browse1)
+		hbox2 = QHBoxLayout()
+		hbox2.addWidget(self.path2)
+		hbox2.addWidget(self.browse2)
+		hbox3 = QHBoxLayout()
+		hbox3.addWidget(self.outDir)
+		hbox3.addWidget(self.browse3)
+		vbox.addLayout(hbox1)
+		vbox.addLayout(hbox2)
+		vbox.addLayout(hbox3)
 		vbox.addWidget(self.closeButton)
 		self.setLayout(vbox)
-
-	def browseFiles(self):
-		fileName = QFileDialog.getOpenFileName(self, "Load Series", "/home/", "Series File (*.ser)")
-		self.pathLine.setText( str(fileName[0]) )
-	def loadClose(self): #===
-		print 'closing'
-		print self.pathLine.text()
-		return openSeries( self.pathLine.text() )
+	def browseStuff(self):
+		if self.sender() == self.browse1:
+			fileName = QFileDialog.getOpenFileName(self, "Load Series 1", "/home/", "Series File (*.ser)")
+			self.path1.setText( str(fileName[0]) )
+		elif self.sender() == self.browse2:
+			fileName = QFileDialog.getOpenFileName(self, "Load Series 2", "/home/", "Series File (*.ser)")
+			self.path2.setText( str(fileName[0]) )
+		elif self.sender() == self.browse3:
+			dirName = QFileDialog.getExistingDirectory(self)
+			self.path3.setText( str(dirName) )
+	def loadClose(self):
+		from pyrecon import mergeTool
+		self.output = (str(self.path1.text()), str(self.path2.text()), str(self.outDir.text()))
+		mergeTool.merge.main(*self.output, graphical=True)
 		self.close()
 
 
