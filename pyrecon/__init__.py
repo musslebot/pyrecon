@@ -8,7 +8,7 @@ __all__ = [
 
 # Important functions/classes & xml handling
 from classes import Contour, Image, Section, Series, Transform, ZContour
-from main import openSeries
+from main import openSeries, start
 import handleXML as xml
 
 # Import packages!
