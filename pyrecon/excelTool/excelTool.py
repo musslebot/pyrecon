@@ -8,7 +8,7 @@ from operator import attrgetter
 def main(series, save_path):
     # Load series
     if type(series) == type(''):
-        series = openSeries(path_to_series)
+        series = openSeries(series)
     # Output directory
     if save_path[-1] != '/':
         save_path += '/'
