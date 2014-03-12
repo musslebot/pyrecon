@@ -7,8 +7,12 @@ import conflictResolutionGUI as handlersGUI
 def main(series1, series2, graphical=False):
 	# Check for argument issues
 	if series1.__class__.__name__ != 'Series' or series2.__class__.__name__ != 'Series':
-		print('Incorrect data types for series1 and/or series2:\n\tMust both be a pyrecon.classes.Section object.')
-		return
+		try:
+			series1 = pyrecon.main.openSeries(series1)
+			series2 = pyrecon.main.openSeries(series2)
+		except:
+			print('Incorrect data types for series1 and/or series2:\n\tMust both be a pyrecon.classes.Section object.')
+			return
 	elif series1.name != series2.name:
 		choice = 0
 		while str(choice).lower()[0] not in ['y','n']: 
