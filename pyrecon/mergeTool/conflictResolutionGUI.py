@@ -6,25 +6,26 @@ from pyrecon.classes import Contour
 
 # SECTIONS
 # - Attributes
-class sectionAttributes(QWidget): #=== Section A's attributes are default as of now
+class sectionAttributes(QDialog): #=== Section A's attributes are default as of now
 	def __init__(self, dictA, dictB):
-		QWidget.__init__(self)
+		QDialog.__init__(self)
 		self.output = {}
 		self.output['name'] = dictA['name']
 		self.output['index'] = dictA['index']
 		self.output['thickness'] = dictA['thickness']
 		self.output['alignLocked'] = dictA['alignLocked']
+		self.close()
 # - Image
-class sectionImages(QWidget):
+class sectionImages(QDialog):
 	def __init__(self, image1, image2):
-		QWidget.__init__(self)
+		QDialog.__init__(self)
 		self.loadObjects()
 		self.loadFunctions(image1,image2)
 		self.loadLayout()
 		self.img1 = image1
 		self.img2 = image2 
 		self.output = None
-		self.show()
+		self.exec_()
 	def loadObjects(self):
 		self.img1label = QLabel(self)
 		self.img2label = QLabel(self)
@@ -223,9 +224,9 @@ class contourTableItem(QListWidgetItem):
 		elif resolution == 3:
 			self.contour = [self.contour1, self.contour2]
 			self.setBackground(QColor('lightgreen'))
-class sectionContours(QWidget):
+class sectionContours(QDialog):
 	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None):
-		QWidget.__init__(self)
+		QDialog.__init__(self)
 		self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
 		# input
 		self.uniqueA = uniqueA
@@ -243,10 +244,10 @@ class sectionContours(QWidget):
 		self.loadFunctions()
 		self.loadLayout()
 		# self.checkIfNecessary() #===
-		self.show()
+		self.exec_()
 	def checkIfNecessary(self): #===
 		if self.inUniqueA.count() > 0 or self.inUniqueB.count() > 0 or self.inOvlp.count():
-			self.show()
+			self.exec_()
 		else:
 			self.doneBut.click() #=== Doesn't work... can't figure out why
 	def loadObjects(self):
@@ -270,7 +271,7 @@ class sectionContours(QWidget):
 			table.setSelectionMode(QAbstractItemView.ExtendedSelection)
 			table.itemDoubleClicked.connect(self.doubleClickCheck)
 		self.doneBut.setText('Merge')
-		self.doneBut.clicked.connect( self.done )
+		self.doneBut.clicked.connect( self.finish )
 		self.moveSelectedA.setText('Move Selected')
 		self.moveSelectedO.setText('Move Selected')
 		self.moveSelectedB.setText('Move Selected')
@@ -356,7 +357,7 @@ class sectionContours(QWidget):
 			inTable.addItem( outTable.takeItem(outTable.row(item)) )
 		inTable.clearSelection()
 		outTable.clearSelection()
-	def done(self):
+	def finish(self):
 		# Check ovlp table for unresolved conflicts (red)
 		numItems = self.outOvlp.count()
 		for i in range(numItems):
@@ -395,9 +396,9 @@ class sectionContours(QWidget):
 
 # SERIES
 # - Attributes #=== low priority, return A's for now
-class seriesAttributes(QWidget):
+class seriesAttributes(QDialog):
 	def __init__(self, dictA, dictB):
-		QWidget.__init__(self)
+		QDialog.__init__(self)
 		self.setWindowTitle('Series Attributes')
 		box = QVBoxLayout()
 		self.lab = QLabel('This is a placeholder until complete. Attributes from series1 are kept for now. x out of window') #===
@@ -411,11 +412,11 @@ class seriesAttributes(QWidget):
 		for key in dictA:
 			if key not in ['zcontours','contours', 'sections']: # ignore zcontours, contours, sections -- they have their own merge functions
 				self.output[key] = dictA[key]
-		self.show()
+		self.exec_()
 # - Contours #=== low priority, return A's for now
-class seriesContours(QWidget):
+class seriesContours(QDialog):
 	def __init__(self, contsA, contsB):
-		QWidget.__init__(self)
+		QDialog.__init__(self)
 		self.setWindowTitle('Series Contours')
 		box = QVBoxLayout()
 		self.lab = QLabel('This is a placeholder until complete. Contours from series1 are kept for now. x out of window') #===
@@ -426,11 +427,11 @@ class seriesContours(QWidget):
 		box.addWidget(self.closeBut)
 		self.setLayout(box)
 		self.output = contsA #===
-		self.show()
+		self.exec_()
 # - ZContours #=== HIGH PRIORITY, add uniques to merged
-class seriesZContours(QWidget):
+class seriesZContours(QDialog):
 	def __init__(self, zConts1, zConts2, mergedZConts):
-		QWidget.__init__(self)
+		QDialog.__init__(self)
 		self.setWindowTitle('Series ZContours')
 		box = QVBoxLayout()
 		self.lab = QLabel('This is a placeholder until complete. ZContours from both series are kept for now. x out of window') #===
@@ -444,4 +445,4 @@ class seriesZContours(QWidget):
 		mergedZConts.extend(zConts1)
 		mergedZConts.extend(zConts2)
 		self.output = mergedZConts
-		self.show()
+		self.exec_()
