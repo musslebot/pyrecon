@@ -11,8 +11,8 @@ setup(
       url='https://github.com/wtrdrnkr/pyrecon',
       packages=[
                 'pyrecon',
-                'pyrecon.calibrationTool',
                 'pyrecon.classes',
+                'pyrecon.calibrationTool',
                 'pyrecon.curationTool',
                 'pyrecon.excelTool',
                 'pyrecon.mergeTool'

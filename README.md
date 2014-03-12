@@ -14,6 +14,10 @@ This package also contains several tools for managing this data:
 
 The functions/tools already in place can be used to develop solutions to a wide range of problems associated with RECONSTRUCT data.
 
+To start graphical tool loader, use commands in python shell:
+* `import pyrecon`
+* `pyrecon.start()`
+
 # Install Instructions
 *The build found on GitHub is the development build and may be unstable.*<br>
 *The stable version can be found here: [PyPI](https://pypi.python.org/pypi/PyRECONSTRUCT) (Python Package Index)*

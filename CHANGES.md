@@ -3,6 +3,7 @@ Visit the [GitHub repo](https://github.com/wtrdrnkr/pyrecon) for additional deta
 Version 2.0.0
 ===
 * New package structure:
+    * use pyrecon.start() after import to launch GUI tool selector
     * overarching code (handleXML.py and main.py) in main pyrecon folder
     * each tool has its own folder (calibrationTool, curationTool, excelTool, mergeTool)
     * projects in development go in ./.dev/
