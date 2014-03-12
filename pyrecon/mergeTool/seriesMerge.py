@@ -45,7 +45,6 @@ def graphicalMerge(series1, series2):
 		handler=handlersGUI.seriesContours)
 	newZContours = mergeZContours(series1, series2,
 		handler=handlersGUI.seriesZContours)
-	app.exec_() # Open QWidgets and pause interpreter until closed
 	# Gather data from handlers
 	try: # GUI resolution used
 		mergedAttributes = newAttributes.output

@@ -37,7 +37,6 @@ def graphicalMerge(section1, section2):
 		handler=handlersGUI.sectionContours)
 	newAttributes = mergeAttributes(section1, section2,
 		handler=handlersGUI.sectionAttributes)
-	app.exec_() # Open QWidgets and pause interpreter until closed
 	# Gather data from handlers
 	try: # GUI resolution used
 		mergedImage = newImage.output
