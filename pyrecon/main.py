@@ -80,6 +80,7 @@ class mergeToolLoader(QWidget):
 	def __init__(self, title='mergeTool Loader'):
 		QWidget.__init__(self)
 		self.setWindowTitle(title)
+		self.resize(QSize(350,200))
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayouts()
@@ -141,6 +142,7 @@ class excelToolLoader(QWidget):
 	def __init__(self, title='excelTool Loader'):
 		QWidget.__init__(self)
 		self.setWindowTitle(title)
+		self.resize(QSize(300,100))
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayouts()
@@ -189,6 +191,7 @@ class curationToolLoader(QWidget):
 	def __init__(self, title='curationTool Loader'):
 		QWidget.__init__(self)
 		self.setWindowTitle(title)
+		self.resize(QSize(300,100))
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayouts()
@@ -232,6 +235,7 @@ class calibrationToolLoader(QWidget):
 	def __init__(self, title='calibrationTool Loader'):
 		QWidget.__init__(self)
 		self.setWindowTitle(title)
+		self.resize(QSize(375,100))
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayouts()
