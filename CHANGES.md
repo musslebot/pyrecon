@@ -17,6 +17,9 @@ Version 2.0.0
     * each class has its own file in pyrecon/classes/
     * all xml handling has been moved to ./handleXML.py
 
+> 2.0.1
+* Added setup.cfg to recognize README.md on PyPI
+
 >> Version 1.4.3
 ---
 * moved dev files and/or programs to their own folder. bethBellMerge.py, excelTool-dev.py, mergeTool-dev.py
