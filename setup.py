@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
       name='PyRECONSTRUCT',
-      version='2.0.1',
+      version='2.0.2',
       author='Michael Musslewhite',
       author_email='mdmusslewhite@gmail.com',
       url='https://github.com/wtrdrnkr/pyrecon',
@@ -19,7 +19,6 @@ setup(
                 ],
       license='LICENSE.txt',
       description='Python tools for interacting with XML files associated with RECONSTRUCT',
-      long_description=open('README.md').read(),
       install_requires=[
                         "cython >= 0.19.1",
                         "numpy >= 1.7.1",

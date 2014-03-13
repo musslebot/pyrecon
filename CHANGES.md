@@ -17,8 +17,9 @@ Version 2.0.0
     * each class has its own file in pyrecon/classes/
     * all xml handling has been moved to ./handleXML.py
 
-> 2.0.1
+> 2.0.1/2
 * Added setup.cfg to recognize README.md on PyPI
+* Deleted long_description from setup.py
 
 >> Version 1.4.3
 ---
