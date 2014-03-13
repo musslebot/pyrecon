@@ -88,7 +88,7 @@ class contourPixmap(QLabel):
 		QLabel.__init__(self)
 		self.image = image
 		self.pixmap = QPixmap( image._path+image.src ) # Create pixmap from image info
-		self.contour = Contour( contour.__dict__ ) # Create copy of contour
+		self.contour = Contour( contour.__dict__ ) # Create copy of contour to be altered for visualization
 		self.transformToPixmap()
 		self.crop()
 		self.scale()
@@ -98,8 +98,13 @@ class contourPixmap(QLabel):
 		'''Transforms points from RECONSTRUCT'S coordsys to PySide's coordSys'''
 		self.contour.convertToPixCoords(self.image.mag) # Convert biological points to pixel points
 		flipVector = np.array( [1,-1] ) # Flip about x axis
+		# Is Pixmap valid? #=== probably a better way than using hardcoded values for new size
+		if self.pixmap.isNull(): # If image doesnt exist...
+			self.pixmap = QPixmap(2000,1000) # Make new 2000x1000 pixmap with white background
+			self.pixmap.fill(fillColor=Qt.white)
 		translationVector = np.array( [0,self.pixmap.size().height()] )
 		# Apply flip and translation to get points in PySide's image space
+		# 	transformedPts = (oldPts*flipVector)+translationVector
 		transformedPoints = list(map(tuple,translationVector+(np.array(list(self.contour.shape.exterior.coords))*flipVector)))
 		# Update self.contour's information to match transformation
 		self.contour.points = transformedPoints
@@ -168,12 +173,6 @@ class resolveOvlp(QDialog):
 		self.bothContBut.clicked.connect( self.finish )
 		self.pix1 = contourPixmap(self.item.image1, self.item.contour1)
 		self.pix2 = contourPixmap(self.item.image2, self.item.contour2, pen=Qt.cyan)
-		if self.pix1.pixmap.isNull(): # If image doesnt exist
-			self.pix1.setText('Image not available.\n'+str(self.item.contour1.name))
-			self.pix1.setAlignment(Qt.AlignHCenter)
-		if self.pix2.pixmap.isNull(): # If image doesnt exist
-			self.pix2.setText('Image not available.\n'+str(self.item.contour2.name))
-			self.pix2.setAlignment(Qt.AlignHCenter)
 	def loadLayout(self):
 		container = QVBoxLayout() # Contains everything
 		# - Contains Images
@@ -428,7 +427,7 @@ class seriesContours(QDialog):
 		self.setLayout(box)
 		self.output = contsA #===
 		self.exec_()
-# - ZContours #=== HIGH PRIORITY, add uniques to merged
+# - ZContours #=== HIGH PRIORITY, add uniques from zConts1,zConts2 to merged
 class seriesZContours(QDialog):
 	def __init__(self, zConts1, zConts2, mergedZConts):
 		QDialog.__init__(self)
