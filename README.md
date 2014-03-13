@@ -39,7 +39,8 @@ To start graphical tool loader, use commands in python shell:
 * Install [PySide](http://qt-project.org/wiki/PySide)
 * Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from its parent folder
 
-### Windows *(discouraged: currently testing, run successfully pre 2.0.0)*
+### Windows
+**(DISCOURAGED: currently testing for 2.0.0, ran successfully pre 2.0.0)**
 * Download and install [Python2.7](http://www.python.org/download/releases/2.7.5/)
 * Download and install [python-setuptools](http://python-distribute.org/distribute_setup.py)
 * Download [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT)
