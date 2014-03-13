@@ -19,6 +19,7 @@ setup(
                 ],
       license='LICENSE.txt',
       description='Python tools for interacting with XML files associated with RECONSTRUCT',
+      long_description = open('README.txt').read(),
       install_requires=[
                         "cython >= 0.19.1",
                         "numpy >= 1.7.1",

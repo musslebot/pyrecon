@@ -27,7 +27,7 @@ Version 2.0.X
 
 > 2.0.3
 ---
-* Fixed README.md issue?
+* Fixed README.md issue (kind of -- added a README.txt along with .md)
 
 Version 1.4.X
 ===
