@@ -31,6 +31,7 @@ def start():
 class toolLoader(QWidget):
 	def __init__(self):
 		QWidget.__init__(self)
+		self.setWindowTitle('PyRECONSTRUCT tools')
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayouts()
