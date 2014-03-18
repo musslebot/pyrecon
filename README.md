@@ -40,21 +40,24 @@ To start graphical tool loader, use commands in python shell:
 * Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from its parent folder
 
 ### Windows
-**(DISCOURAGED: currently testing for 2.0.x, ran successfully pre 2.0.x)**
+**(DISCOURAGED: Last successful test on PyRECONSTRUCT 2.0.3, using Python 2.7.6, and 64bit packages)**
 * Download and install [Python2.7](http://www.python.org/download/releases/2.7.6/)
 * Download and install [python-setuptools](http://python-distribute.org/distribute_setup.py)
-* Download [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT)
-* Run `python setup.py install` from parent folder
-    * Dependencies will likely be missing, but the errors will tell you what you need
-* Download and install [lxml](http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
-* Download and install [Cython](http://www.lfd.uci.edu/~gohlke/pythonlibs/#cython)
-* Download and install [Scipy-stack](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy-stack)
-* Download and install [scikit-image](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-image)
-* Download and install [scipy](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy)
-    * fixes missing scipy.special package
-* Download and install [shapely](http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely)
-* ...Should work now?
-	*email me if there are problems (address located in setup.py)!*
+* Download and install the following:
+    * [lxml](http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
+    * [Cython](http://www.lfd.uci.edu/~gohlke/pythonlibs/#cython)
+    * [Scipy-stack](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy-stack)
+    * [scikit-image](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-image)
+    * [scipy](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy)
+    * [shapely](http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely)
+* Install PyRECONSTRUCT:
+    * **Method 1:** 
+        * Download [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT)
+        * Run `python setup.py install` from parent folder
+    * **Method 2:**
+        * Install [PIP](http://www.pip-installer.org/en/latest/installing.html)
+            * you may also need to add `C:\Python27\Scripts;` to your Windows user environment variable: Path
+        * Run `pip install PyRECONSTRUCT` in windows command line (cmd.exe)
 
 ### PyRECONSTRUCT + Git Installation
 * 1) Add the following lines to your Series' repository's `.git/config` file, replacing PATH_TO_gitmerge.py appropriately:
