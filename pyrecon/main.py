@@ -20,7 +20,6 @@ def openSeries(path):
 	series = Series(pathToSeries)
 	series.update(sections=True) # find sections in directory
 	return series
-
 def start():
 	app = QApplication.instance()
 	if app is None: # Create QApplication if doesn't exist
@@ -75,7 +74,6 @@ class toolLoader(QWidget):
 	def calibGo(self):
 		self.a = calibrationToolLoader()
 		self.close()
-
 class mergeToolLoader(QWidget):
 	def __init__(self, title='mergeTool Loader'):
 		QWidget.__init__(self)
@@ -137,7 +135,6 @@ class mergeToolLoader(QWidget):
 		self.close()
 		# Run mergeTool
 		mergeTool.merge.main(*self.output, graphical=True)
-
 class excelToolLoader(QWidget):
 	def __init__(self, title='excelTool Loader'):
 		QWidget.__init__(self)
@@ -186,7 +183,6 @@ class excelToolLoader(QWidget):
 		self.output = ( str(self.path.text()), str(self.outDir.text()) )
 		self.close()
 		excelTool.excelTool.main(*self.output)
-
 class curationToolLoader(QWidget):
 	def __init__(self, title='curationTool Loader'):
 		QWidget.__init__(self)
@@ -230,7 +226,6 @@ class curationToolLoader(QWidget):
 		self.close()
 		# Run mergeTool
 		curationTool.curationTool.main(*self.output)
-
 class calibrationToolLoader(QWidget):
 	def __init__(self, title='calibrationTool Loader'):
 		QWidget.__init__(self)
