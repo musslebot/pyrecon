@@ -41,17 +41,18 @@ To start graphical tool loader, use commands in python shell:
 
 ### Windows
 **(DISCOURAGED: currently testing for 2.0.x, ran successfully pre 2.0.x)**
-* Download and install [Python2.7](http://www.python.org/download/releases/2.7.5/)
+* Download and install [Python2.7](http://www.python.org/download/releases/2.7.6/)
 * Download and install [python-setuptools](http://python-distribute.org/distribute_setup.py)
 * Download [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT)
 * Run `python setup.py install` from parent folder
     * Dependencies will likely be missing, but the errors will tell you what you need
-* Download and install [lxml](https://pypi.python.org/packages/2.7/l/lxml/lxml-3.2.3.win-amd64-py2.7.exe#md5=3720e7d124275b728f553eb93831869c)
+* Download and install [lxml](www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
 * Download and install [Cython](http://www.lfd.uci.edu/~gohlke/pythonlibs/#cython)
 * Download and install [Scipy-stack](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy-stack)
 * Download and install [scikit-image](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-image)
 * Download and install [scipy](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy)
     * fixes missing scipy.special package
+* Download and install [shapely](http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely)
 * ...Should work now?
 	*email me if there are problems (address located in setup.py)!*
 
