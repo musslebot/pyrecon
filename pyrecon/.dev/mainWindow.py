@@ -1,6 +1,3 @@
-from PySide.QtGui import *
-from PySide.QtCore import *
-
 class pyreconMain(QMainWindow):
     def __init__(self, *args, **kwargs):
         QMainWindow.__init__(self)
@@ -29,7 +26,6 @@ class pyreconMain(QMainWindow):
         excelAction.triggered.connect( self.loadExcel )
         excelAction.setStatusTip( 'Open excel widget' )
         # - curationTool
-        self.toolsMenu.addAction('curationTool')
         curateAction = QAction( QIcon(), 'curationTool', self )
         curateAction.triggered.connect( self.loadCurate )
         curateAction.setStatusTip( 'Open curation widget' )
@@ -40,7 +36,7 @@ class pyreconMain(QMainWindow):
         self.toolsMenu.addAction( excelAction )
         self.toolsMenu.addAction( curateAction )
         
-    def loadMerge(self): #=== Why isn't this showing? QLabel is...
+    def loadMerge(self): 
         print('Load merge widget')
         m = mergeWidget()
         self.setCentralWidget(m)
@@ -50,20 +46,21 @@ class pyreconMain(QMainWindow):
         print('Load excel widget')
     def loadCurate(self): #===
         print('Load curation widget')
-    
-class testLabel(QLabel):
-    def __init__(self):
-        QLabel.__init__(self)
-        self.setText('TESTING CENTRAL WIDGET')
 
 class mergeWidget(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         self.setWindowTitle('Merge Widget')
-
-class sectionScroll(QWidget):
-    def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        self.loadLayout()
+    def loadLayout(self):
+        vbox = QVBoxLayout()
+        lab = QLabel('Test merge widget')
+        vbox.addWidget(lab)
+        self.setLayout(vbox)
+    
+class sectionScroll(QListWidget): #=== Eventually will be a QDockWidget()?
+    def __init__(self):
+        QListWidget.__init__(self)
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
