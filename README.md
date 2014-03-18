@@ -46,7 +46,7 @@ To start graphical tool loader, use commands in python shell:
 * Download [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT)
 * Run `python setup.py install` from parent folder
     * Dependencies will likely be missing, but the errors will tell you what you need
-* Download and install [lxml](www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
+* Download and install [lxml](http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
 * Download and install [Cython](http://www.lfd.uci.edu/~gohlke/pythonlibs/#cython)
 * Download and install [Scipy-stack](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy-stack)
 * Download and install [scikit-image](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-image)
