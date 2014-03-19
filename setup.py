@@ -15,7 +15,8 @@ setup(
                 'pyrecon.calibrationTool',
                 'pyrecon.curationTool',
                 'pyrecon.excelTool',
-                'pyrecon.mergeTool'
+                'pyrecon.mergeTool',
+                'pyrecon.mergeTool.gui'
                 ],
       license='LICENSE.txt',
       description='Python tools for interacting with XML files associated with RECONSTRUCT',
