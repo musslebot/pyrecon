@@ -1,4 +1,9 @@
-class pyreconMain(QMainWindow):
+'''Contains graphical components of PyRECONSTRUCT that are used accross multple tools.'''
+from PySide.QtCore import *
+from PySide.QtGui import *
+
+class pyreconMainWindow(QMainWindow):
+    '''Main PyRECONSTRUCT window.'''
     def __init__(self, *args, **kwargs):
         QMainWindow.__init__(self)
         self.setWindowTitle('PyRECONSTRUCT')
@@ -36,10 +41,17 @@ class pyreconMain(QMainWindow):
         self.toolsMenu.addAction( excelAction )
         self.toolsMenu.addAction( curateAction )
         
-    def loadMerge(self): 
-        print('Load merge widget')
-        m = mergeWidget()
-        self.setCentralWidget(m)
+    def loadMerge(self):
+        from pyrecon.mergeTool.mergeToolGUI import mergeSelection, saveComplete
+        lDock = QDockWidget() # Left dockWidget
+        m = mergeSelection()
+        lDock.setWidget(m)
+        rDock = QDockWidget() # Right dockWidget
+        s = saveComplete()
+        rDock.setWidget(s)
+        self.addDockWidget( Qt.LeftDockWidgetArea, lDock )
+        self.addDockWidget( Qt.BottomDockWidgetArea, rDock )
+        self.setCentralWidget( )
     def loadCalib(self): #===
         print('Load calibration widget')
     def loadExcel(self): #===
@@ -47,30 +59,33 @@ class pyreconMain(QMainWindow):
     def loadCurate(self): #===
         print('Load curation widget')
 
-class mergeWidget(QWidget):
-    def __init__(self):
+class directoryBrowse(QWidget):
+    '''Provides a QLineEdit and button for browsing for directory paths'''
+    def __init__(self, title='Enter directory or browse'):
         QWidget.__init__(self)
-        self.setWindowTitle('Merge Widget')
-        self.loadLayout()
-    def loadLayout(self):
-        vbox = QVBoxLayout()
-        lab = QLabel('Test merge widget')
-        vbox.addWidget(lab)
-        self.setLayout(vbox)
-    
-class sectionScroll(QListWidget): #=== Eventually will be a QDockWidget()?
-    def __init__(self):
-        QListWidget.__init__(self)
-        self.loadObjects()
+        self.loadObjects(title)
         self.loadFunctions()
         self.loadLayout()
-    def loadObjects(self):
-        return
+    def loadObjects(self, title):
+        self.path = QLineEdit()
+        self.path.setText(title)
+        self.browseButton = QPushButton()
+        self.browseButton.setText('Browse')
     def loadFunctions(self):
-        return
+        self.browseButton.clicked.connect( self.browseDir )
     def loadLayout(self):
-        return
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.path)
+        hbox.addWidget(self.browseButton)
+        self.setLayout(hbox)
+    def browseDir(self):
+        dirName = QFileDialog.getExistingDirectory(self)
+        self.path.setText( str(dirName) )
 
-class sectionPropChooser(QDockWidget):
-    def __init__(self, parent=None):
-        QDockWidget.__init__(self, parent)
+
+if __name__ == '__main__':
+    app = QApplication.instance()
+    if app == None:
+        app = QApplication([])
+    a = pyreconMainWindow()
+    app.exec_()
