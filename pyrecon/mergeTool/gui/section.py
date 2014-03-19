@@ -2,9 +2,9 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 # - Attributes
-class sectionAttributes(QDialog): #=== Section A's attributes are default as of now
+class sectionAttributes(QWidget): #=== Section A's attributes are default as of now
 	def __init__(self, dictA, dictB):
-		QDialog.__init__(self)
+		QWidget.__init__(self)
 		self.output = {}
 		self.output['name'] = dictA['name']
 		self.output['index'] = dictA['index']
@@ -12,9 +12,9 @@ class sectionAttributes(QDialog): #=== Section A's attributes are default as of 
 		self.output['alignLocked'] = dictA['alignLocked']
 		self.close()
 # - Image
-class sectionImages(QDialog):
+class sectionImages(QWidget):
 	def __init__(self, image1, image2):
-		QDialog.__init__(self)
+		QWidget.__init__(self)
 		self.loadObjects()
 		self.loadFunctions(image1,image2)
 		self.loadLayout()
@@ -146,9 +146,9 @@ class contourPixmap(QLabel):
 		painter.begin(self.pixmap)
 		painter.setPen(pen)
 		painter.drawConvexPolygon(polygon)
-class resolveOvlp(QDialog):
+class resolveOvlp(QWidget):
 	def __init__(self, item):
-		QDialog.__init__(self)
+		QWidget.__init__(self)
 		self.setWindowTitle('Contour Overlap Resolution')
 		self.item = item
 		self.loadObjects()
@@ -219,9 +219,9 @@ class contourTableItem(QListWidgetItem):
 		elif resolution == 3:
 			self.contour = [self.contour1, self.contour2]
 			self.setBackground(QColor('lightgreen'))
-class sectionContours(QDialog):
+class sectionContours(QWidget):
 	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None):
-		QDialog.__init__(self)
+		QWidget.__init__(self)
 		self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
 		# input
 		self.uniqueA = uniqueA
