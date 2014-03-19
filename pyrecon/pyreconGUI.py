@@ -1,6 +1,7 @@
 '''Contains graphical components of PyRECONSTRUCT that are used accross multple tools.'''
 from PySide.QtCore import *
 from PySide.QtGui import *
+import pyrecon
 
 class pyreconMainWindow(QMainWindow):
     '''Main PyRECONSTRUCT window.'''
@@ -9,18 +10,24 @@ class pyreconMainWindow(QMainWindow):
         self.setWindowTitle('PyRECONSTRUCT')
         self.loadMenus()
         self.show()
-        self.statusBar().showMessage('Ready')
+        self.resize(QDesktopWidget().availableGeometry().size())
+        self.statusBar().showMessage('Ready! Welcome to PyRECONSTRUCT')
     def loadMenus(self):
         self.fileMenu = self.menuBar().addMenu("&File")
+        self.loadFileMenu()
         self.toolsMenu = self.menuBar().addMenu("&Tools")
         self.loadToolsMenu()
         self.helpMenu = self.menuBar().addMenu("&Help")
-        
+    def loadFileMenu(self):
+        saveAction = QAction( QIcon(), 'Save', self)
+        saveAction.triggered.connect( self.save )
+        saveAction.setStatusTip( 'Save current series' )
+        self.fileMenu.addAction( saveAction )
     def loadToolsMenu(self):
         # 1) Create Actions
         # - mergeTool
         mergeAction = QAction( QIcon(), 'mergeTool', self ) #QIcon() is null, but necessary for Action creation
-        mergeAction.triggered.connect( self.loadMerge )
+        mergeAction.triggered.connect( self.loadMergeTool )
         mergeAction.setStatusTip( 'Open merge widget' )
         # - calibrationTool
         calibAction = QAction( QIcon(), 'calibrationTool', self )
@@ -34,45 +41,59 @@ class pyreconMainWindow(QMainWindow):
         curateAction = QAction( QIcon(), 'curationTool', self )
         curateAction.triggered.connect( self.loadCurate )
         curateAction.setStatusTip( 'Open curation widget' )
-        
         # 2) Add actions to toolbars
         self.toolsMenu.addAction( mergeAction )
         self.toolsMenu.addAction( calibAction )
         self.toolsMenu.addAction( excelAction )
         self.toolsMenu.addAction( curateAction )
-        
-    def loadMerge(self):
-        from pyrecon.mergeTool.mergeToolGUI import mergeSelection, saveComplete
-        lDock = QDockWidget() # Left dockWidget
-        m = mergeSelection()
-        lDock.setWidget(m)
-        rDock = QDockWidget() # Right dockWidget
-        s = saveComplete()
-        rDock.setWidget(s)
-        self.addDockWidget( Qt.LeftDockWidgetArea, lDock )
-        self.addDockWidget( Qt.BottomDockWidgetArea, rDock )
-        self.setCentralWidget( )
+    def loadMergeTool(self): #===
+        from pyrecon.mergeTool.gui.main import mergeSelection
+        self.lDock = QDockWidget() # Left dockWidget
+        mergeSel = mergeSelection() #=== parent stuff? Whats the deal? i.e. print statements not working in mergeSelection
+        self.lDock.setWidget( mergeSel )
+        self.addDockWidget( Qt.LeftDockWidgetArea, self.lDock )
+        # PlaceHolder for resoution widgets
+        self.placeHolder = QLabel()
+        self.placeHolder.setPixmap( QPixmap(750,750) )
+        self.placeHolder.setAlignment( Qt.AlignCenter )
+        self.setCentralWidget( self.placeHolder )
+    #===
     def loadCalib(self): #===
         print('Load calibration widget')
     def loadExcel(self): #===
         print('Load excel widget')
     def loadCurate(self): #===
         print('Load curation widget')
+    def save(self): #===
+        print('THIS WILL SAVE YOUR SERIES (in the future :D)')
 
-class directoryBrowse(QWidget):
-    '''Provides a QLineEdit and button for browsing for directory paths'''
-    def __init__(self, title='Enter directory or browse'):
+class browseWidget(QWidget):
+    '''Provides a QLineEdit and button for browsing through a file system. browseType can be directory, file or series but defaults to directory.'''
+    def __init__(self, browseType='directory'):
         QWidget.__init__(self)
-        self.loadObjects(title)
-        self.loadFunctions()
+        self.loadObjects(browseType)
+        self.loadFunctions(browseType)
         self.loadLayout()
-    def loadObjects(self, title):
+    def loadObjects(self, browseType):
+        # Path entry area
         self.path = QLineEdit()
+        if browseType == 'directory':
+            title = 'Enter or browse path to directory'
+        elif browseType == 'file':
+            title = 'Enter or browse path to file'
+        else:
+            title = 'Enter or browse path'
         self.path.setText(title)
+        # Browse button
         self.browseButton = QPushButton()
         self.browseButton.setText('Browse')
-    def loadFunctions(self):
-        self.browseButton.clicked.connect( self.browseDir )
+    def loadFunctions(self, browseType):
+        if browseType == 'directory':
+            self.browseButton.clicked.connect( self.browseDir )
+        elif browseType == 'file':
+            self.browseButton.clicked.connect( self.browseFile )
+        elif browseType == 'series':
+            self.browseButton.clicked.connect( self.browseSeries )
     def loadLayout(self):
         hbox = QHBoxLayout()
         hbox.addWidget(self.path)
@@ -81,7 +102,12 @@ class directoryBrowse(QWidget):
     def browseDir(self):
         dirName = QFileDialog.getExistingDirectory(self)
         self.path.setText( str(dirName) )
-
+    def browseFile(self):
+        fileName = QFileDialog.getOpenFileName(self, "Open File", "/home/")
+        self.path.setText( str(fileName[0]))
+    def browseSeries(self):
+        fileName = QFileDialog.getOpenFileName(self, "Open Series", "/home/", "Series File (*.ser)")
+        self.path.setText( str(fileName[0]))
 
 if __name__ == '__main__':
     app = QApplication.instance()
