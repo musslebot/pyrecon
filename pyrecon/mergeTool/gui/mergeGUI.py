@@ -3,7 +3,37 @@ from PySide.QtGui import *
 
 from pyrecon.pyreconGUI import *
 from pyrecon.main import openSeries
-
+#===
+class testWidget2(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def loadObjects(self):
+        self.b1 = QPushButton()
+        self.b2 = QPushButton()
+        self.b3 = QPushButton()
+    def loadFunctions(self):
+        self.b1.setText('One')
+        self.b2.setText('Two')
+        self.b3.setText('Three')
+        for but in [self.b1, self.b2, self.b3]:
+            but.clicked.connect( self.butClick )
+    def loadLayout(self):
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.b1)
+        vbox.addWidget(self.b2)
+        vbox.addWidget(self.b3)
+        self.setLayout(vbox)
+    def butClick(self):
+        if self.sender() == self.b1:
+            print('BUTTON 1')
+        elif self.sender() == self.b2:
+            print('BUTTON 2')
+        elif self.sender() == self.b3:
+            print('BUTTON 3')
+#===
 class mergeSelection(QWidget):
     '''Select what section/attributes to look at.'''
     def __init__(self, parent=None):

@@ -25,6 +25,15 @@ class pyreconMainWindow(QMainWindow):
         self.fileMenu.addAction( saveAction )
     def loadToolsMenu(self):
         # 1) Create Actions
+        
+        #===
+        # - TEST
+        testAction = QAction( QIcon(), 'TEST', self )
+        testAction.triggered.connect( self.test )
+        testAction.setStatusTip('TEST HERE')
+        self.toolsMenu.addAction( testAction )
+        #===
+
         # - mergeTool
         mergeAction = QAction( QIcon(), 'mergeTool', self ) #QIcon() is null, but necessary for Action creation
         mergeAction.triggered.connect( self.loadMergeTool )
@@ -58,6 +67,16 @@ class pyreconMainWindow(QMainWindow):
         self.placeHolder.setAlignment( Qt.AlignCenter )
         self.setCentralWidget( self.placeHolder )
     #===
+    def test(self):
+        from pyrecon.mergeTool.gui.mergeGUI import testWidget2
+        print('Begin Test')
+        lDock = QDockWidget() # Widget on same page as mainWindow
+        rDock = QDockWidget() # Widget in mergeTool/gui/mergeGUI
+        lDock.setWidget( testWidget() )
+        rDock.setWidget( testWidget2() )
+        self.addDockWidget( Qt.LeftDockWidgetArea, lDock)
+        self.addDockWidget( Qt.RightDockWidgetArea, rDock)
+    #===
     def loadCalib(self): #===
         print('Load calibration widget')
     def loadExcel(self): #===
@@ -66,6 +85,38 @@ class pyreconMainWindow(QMainWindow):
         print('Load curation widget')
     def save(self): #===
         print('THIS WILL SAVE YOUR SERIES (in the future :D)')
+
+#===
+class testWidget(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def loadObjects(self):
+        self.b1 = QPushButton()
+        self.b2 = QPushButton()
+        self.b3 = QPushButton()
+    def loadFunctions(self):
+        self.b1.setText('One')
+        self.b2.setText('Two')
+        self.b3.setText('Three')
+        for but in [self.b1, self.b2, self.b3]:
+            but.clicked.connect( self.butClick )
+    def loadLayout(self):
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.b1)
+        vbox.addWidget(self.b2)
+        vbox.addWidget(self.b3)
+        self.setLayout(vbox)
+    def butClick(self):
+        if self.sender() == self.b1:
+            print('BUTTON 1')
+        elif self.sender() == self.b2:
+            print('BUTTON 2')
+        elif self.sender() == self.b3:
+            print('BUTTON 3')
+#===
 
 class browseWidget(QWidget):
     '''Provides a QLineEdit and button for browsing through a file system. browseType can be directory, file or series but defaults to directory.'''
