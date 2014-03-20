@@ -1,5 +1,29 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
+import pyrecon
+
+class sectionWrapper(QTabWidget): #===
+	def __init__(self, section1, section2, parent=None):
+		print 'Loading sectionWrapper' #===
+		QTabWidget.__init__(self, parent)
+		self.loadObjects(section1, section2)
+		self.loadFunctions()
+		self.loadLayout()
+		self.show()
+	def loadObjects(self, section1, section2):
+		# Load widgest to be used as tabs
+		attributes = pyrecon.mergeTool.sectionMerge.mergeAttributes(section1, section2, handler=sectionAttributes)
+		images = pyrecon.mergeTool.sectionMerge.mergeImages(
+			section1, section2, handler=sectionImages)
+		contours = pyrecon.mergeTool.sectionMerge.mergeContours(section1, section2, handler=sectionContours)
+		# Add widgets as tabs
+		self.addTab(attributes, 'Attributes')
+		self.addTab(images, 'Images')
+		self.addTab(contours, 'Contours')
+	def loadFunctions(self):
+		return
+	def loadLayout(self):
+		return
 
 # - Attributes
 class sectionAttributes(QWidget): #=== Section A's attributes are default as of now
@@ -11,6 +35,12 @@ class sectionAttributes(QWidget): #=== Section A's attributes are default as of 
 		self.output['thickness'] = dictA['thickness']
 		self.output['alignLocked'] = dictA['alignLocked']
 		self.close()
+	def loadObjects(self):
+		return
+	def loadFunctions(self):
+		return
+	def loadLayout(self):
+		return
 # - Image
 class sectionImages(QWidget):
 	def __init__(self, image1, image2):
@@ -21,7 +51,6 @@ class sectionImages(QWidget):
 		self.img1 = image1
 		self.img2 = image2 
 		self.output = None
-		self.exec_()
 	def loadObjects(self):
 		self.img1label = QLabel(self)
 		self.img2label = QLabel(self)
@@ -154,7 +183,6 @@ class resolveOvlp(QWidget):
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
-		self.exec_()
 	def loadObjects(self):
 		# Buttons to choose contours
 		self.cont1But = QPushButton('Choose Contour 1')
@@ -238,13 +266,6 @@ class sectionContours(QWidget):
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
-		# self.checkIfNecessary() #===
-		self.exec_()
-	def checkIfNecessary(self): #===
-		if self.inUniqueA.count() > 0 or self.inUniqueB.count() > 0 or self.inOvlp.count():
-			self.exec_()
-		else:
-			self.doneBut.click() #=== Doesn't work... can't figure out why
 	def loadObjects(self):
 		# List contours in their appropriate listWidgets
 		self.inUniqueA = QListWidget(self)
