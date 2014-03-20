@@ -11,7 +11,8 @@ class pyreconMainWindow(QMainWindow):
         self.setWindowTitle('PyRECONSTRUCT')
         self.loadMenus()
         self.show()
-        self.resize(QDesktopWidget().availableGeometry().size())
+        newSize = QDesktopWidget().availableGeometry().size() / 4
+        self.resize( newSize )
         self.statusBar().showMessage('Ready! Welcome to PyRECONSTRUCT')
     def loadMenus(self):
         self.fileMenu = self.menuBar().addMenu("&File")
