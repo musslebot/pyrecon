@@ -3,6 +3,7 @@ from PySide.QtGui import *
 
 from pyrecon.pyreconGUI import *
 from pyrecon.main import openSeries
+from pyrecon.mergeTool.gui import sectionHandlers, seriesHandlers
 
 class mergeSelection(QWidget):
     '''Select what section/attributes to look at.'''
@@ -14,32 +15,15 @@ class mergeSelection(QWidget):
     def loadObjects(self):
         self.seriesButton = QPushButton()
         self.sectionSelect = QListWidget()
-        self.attSelect = QPushButton()
-        self.imgSelect = QPushButton()
-        self.contSelect = QPushButton()
     def loadFunctions(self):
         self.seriesButton.setText('Load Series')
         self.seriesButton.clicked.connect( self.loadSeries )
-        self.attSelect.clicked.connect( self.viewAttributes )
-        self.attSelect.setText('A')
-        self.attSelect.setToolTip('Resolve attribute conflicts')
-        self.imgSelect.clicked.connect( self.viewImages )
-        self.imgSelect.setText('I')
-        self.imgSelect.setToolTip('Resolve image conflicts')
-        self.contSelect.clicked.connect( self.viewContours )
-        self.contSelect.setText('C')
-        self.contSelect.setToolTip('Resolve contour conflicts')
     def loadLayout(self):
         mainBox = QHBoxLayout()
         #--- Select What you're looking at (series, section, attributes, images, contours)
         selectBox = QVBoxLayout()
         selectBox.addWidget( self.seriesButton )
         selectBox.addWidget( self.sectionSelect )
-        AICBox = QHBoxLayout()
-        AICBox.addWidget( self.attSelect )
-        AICBox.addWidget( self.imgSelect )
-        AICBox.addWidget( self.contSelect )
-        selectBox.addLayout(AICBox)
         #---
         mainBox.addLayout( selectBox )
         self.setLayout(mainBox)
@@ -49,26 +33,24 @@ class mergeSelection(QWidget):
         try:
             self.series1 = openSeries(seriesDialog.output[0])
             self.series2 = openSeries(seriesDialog.output[1])
+            seriesItem = doubleListItem(self.series1, self.series2)
+            self.sectionSelect.clear() # Remove contents currently in table
+            self.sectionSelect.addItem( seriesItem )
+            self.seriesButton.setText('Change Series')
             self.loadSections()
         except: #=== Error message
+            print('mergeGUI.loadSeries() error') #===
             self.msg = QMessageBox()
             self.msg.setText('Invalid series paths!')
             self.msg.exec_()
     def loadSections(self):
-        self.sectionSelect.clear() # Remove contents currently in table
         self.sectionSelect.itemDoubleClicked.connect( self.itemClicked ) # What to do when item doubleclicked
         for i in range( len(self.series1.sections) ):
             sectionItem = doubleListItem( self.series1.sections[i], self.series2.sections[i] )
             self.sectionSelect.addItem( sectionItem )
-        
     def itemClicked(self, item): #===
         item.clicked()
-    def viewAttributes(self): #===
-        print('VIEW ATTRIBUTES')
-    def viewImages(self): #===
-        print('VIEW IMAGES')
-    def viewContours(self): #===
-        print('VIEW CONTOURS')
+        self.parentWidget().parentWidget().setCentralWidget(item.resolution) # parentWidget() is DockWidget, parentWidget()x2 is MainWindow
 
 class doubleListItem(QListWidgetItem):
     '''This is a ListWidgetItem that contains two objects.'''
@@ -76,6 +58,7 @@ class doubleListItem(QListWidgetItem):
         QListWidgetItem.__init__(self)
         self.object1 = object1
         self.object2 = object2
+        self.resolution = None # Holds the conflict resolution wrapper
         self.loadDetails(name,colors)
     def loadDetails(self, name, colors):
         if not name:
@@ -85,13 +68,17 @@ class doubleListItem(QListWidgetItem):
                 self.setText('Unknown name')
         if colors == True and self.object1 != self.object2:
             self.setBackground(QColor('red'))
-    def clicked(self): #===
-        print('doubleListItem clicked!')
-        if type(self.object1).__name__ == 'Section':
-            self.attributes = pyrecon.mergeTool.sectionMerge.
-            self.images = 
-            self.contours =
-
+    def clicked(self): #=== add series resolution
+        if self.object1.__class__.__name__ == 'Section':
+            self.resolution = sectionHandlers.sectionWrapper(self.object1, self.object2)
+        #     self.attributes = pyrecon.mergeTool.sectionMerge.mergeAttributes(
+        #         self.object1, self.object2, handler=sectionHandlers.sectionAttributes)
+        #     self.images = pyrecon.mergeTool.sectionMerge.mergeImages(
+        #         self.object1, self.object2, handler=sectionHandlers.sectionImages)
+        #     self.contours = pyrecon.mergeTool.sectionMerge.mergeContours(
+        #         self.object1, self.object2, handler=sectionHandlers.sectionContours)
+        elif self.object1.__class__.__name__ == 'Series':
+            print ('Series item doubleclicked, placeholder for ser conflict resolution') #===
 
 class seriesLoad(QDialog):
     '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
