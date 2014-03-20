@@ -2,7 +2,6 @@
 #!/usr/bin/python
 from pyrecon.main import openSeries
 from pyrecon.classes import Section, Series
-from pyrecon.mergeTool import sectionMerge, seriesMerge
 import pyrecon.handleXML as xml
 import argparse
 
@@ -27,11 +26,6 @@ def main(series1, series2, directory, *args, **kwargs): #===
 		mergedSer.sections.append(mergedSec)
 	# Write <series> & <sections> to XML files in directory
 	xml.writeSeries(mergedSer, directory, sections=True)
-
-def mergeSeries(): #=== 
-	return
-def mergeSections(): #===
-	return
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Merge two series together.')

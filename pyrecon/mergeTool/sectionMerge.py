@@ -1,7 +1,7 @@
 '''Driver for merging two section objects (as per section XML file).'''
 from pyrecon.classes import *
 import conflictResolution as handlers
-import conflictResolutionGUI as handlersGUI
+import gui.sectionHandlers as handlersGUI
 # MAIN FUNCTIONS
 def main(section1, section2, graphical=False):
 	# Check for type/index issues

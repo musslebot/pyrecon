@@ -1,3 +1,3 @@
 import mergeGUI
-import section
-import series
+import sectionHandlers
+import seriesHandlers
