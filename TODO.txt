@@ -1,0 +1,3 @@
+Fix GUI conflict resolution 'merge' buttons
+
+make series/section/contour subclasses for doubleListItem
