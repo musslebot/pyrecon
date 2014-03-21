@@ -1,7 +1,7 @@
 '''Driver for merging two series objects (as per .ser XML file). Does not take into account differences in the sections associated with this series -- refer to sectionMerge.py for merging sections.'''
 from pyrecon.classes import *
 import conflictResolution as handlers
-import gui.sectionHandlers as handlersGUI
+import pyrecon.mergeTool.gui.sectionHandlers as handlersGUI
 
 # MAIN FUNCTIONS
 def main(series1, series2, graphical=False):

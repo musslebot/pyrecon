@@ -1,6 +1,7 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 import pyrecon
+import pyrecon.tools.mergeTool as mergeTool
 
 class sectionWrapper(QTabWidget): #===
 	def __init__(self, section1, section2, parent=None):
@@ -12,10 +13,10 @@ class sectionWrapper(QTabWidget): #===
 		self.show()
 	def loadObjects(self, section1, section2):
 		# Load widgest to be used as tabs
-		attributes = pyrecon.mergeTool.sectionMerge.mergeAttributes(section1, section2, handler=sectionAttributes)
-		images = pyrecon.mergeTool.sectionMerge.mergeImages(
+		attributes = mergeTool.sectionMerge.mergeAttributes(section1, section2, handler=sectionAttributes)
+		images = mergeTool.sectionMerge.mergeImages(
 			section1, section2, handler=sectionImages)
-		contours = pyrecon.mergeTool.sectionMerge.mergeContours(section1, section2, handler=sectionContours)
+		contours = mergeTool.sectionMerge.mergeContours(section1, section2, handler=sectionContours)
 		# Add widgets as tabs
 		self.addTab(attributes, 'Attributes')
 		self.addTab(images, 'Images')

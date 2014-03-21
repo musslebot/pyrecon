@@ -3,7 +3,8 @@ from PySide.QtGui import *
 
 from pyrecon.pyreconGUI import *
 from pyrecon.main import openSeries
-from pyrecon.mergeTool.gui import sectionHandlers, seriesHandlers
+
+import sectionHandlers, seriesHandlers #===
 
 class mergeSelection(QWidget):
     '''Select what section/attributes to look at.'''
