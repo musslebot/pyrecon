@@ -86,9 +86,13 @@ class Section:
 	def __len__(self):
 		'''Return number of contours in Section object'''
 		return len(self.contours)
-	def __eq__(self, other):
+	def __eq__(self, other): #=== how are image/contours being evaluated?
 		'''Allows use of == between multiple objects'''
-		return self.__dict__ == other.__dict__
+		return (self.thickness == other.thickness and
+				self.index == other.thickness and
+				self.alignLocked == other.alignLocked and
+				self.image == other.image and
+				self.contours == other.contours)
 	def __ne__(self, other):
 		'''Allows use of != between multiple objects'''
-		return self.__dict__ != other.__dict__
+		return not self.__eq__(other)

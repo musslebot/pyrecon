@@ -29,6 +29,10 @@ Version 2.0.X
 ---
 * Fixed README.md issue (kind of -- added a README.txt along with .md)
 
+> 2.0.4
+---
+* Improved __eq__ functions in classes
+
 Version 1.4.X
 ===
 > 1.4.0
