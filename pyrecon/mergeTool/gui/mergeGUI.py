@@ -71,12 +71,6 @@ class doubleListItem(QListWidgetItem):
     def clicked(self): #=== add series resolution
         if self.object1.__class__.__name__ == 'Section':
             self.resolution = sectionHandlers.sectionWrapper(self.object1, self.object2)
-        #     self.attributes = pyrecon.mergeTool.sectionMerge.mergeAttributes(
-        #         self.object1, self.object2, handler=sectionHandlers.sectionAttributes)
-        #     self.images = pyrecon.mergeTool.sectionMerge.mergeImages(
-        #         self.object1, self.object2, handler=sectionHandlers.sectionImages)
-        #     self.contours = pyrecon.mergeTool.sectionMerge.mergeContours(
-        #         self.object1, self.object2, handler=sectionHandlers.sectionContours)
         elif self.object1.__class__.__name__ == 'Series':
             print ('Series item doubleclicked, placeholder for ser conflict resolution') #===
 
