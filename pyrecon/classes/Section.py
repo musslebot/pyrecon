@@ -86,25 +86,11 @@ class Section:
 	def __len__(self):
 		'''Return number of contours in Section object'''
 		return len(self.contours)
-	def __eq__(self, other, eqType='attributes'):
+	def __eq__(self, other):
 		'''Allows use of == between multiple objects'''
-		eqType = eqType.lower()
-		if eqType == 'attributes':
-			return (self.thickness == other.thickness and 
+		return (self.thickness == other.thickness and 
 					self.index == other.index and
 					self.alignLocked == other.alignLocked)
-		elif eqType == 'images':
-			return (self.image == other.image)
-		elif eqType == 'contours': #=== how is it checking equiv. b/t conts?
-			return (self.contours == other.contours)
 	def __ne__(self, other, eqType='attributes'):
-		eqType = eqType.lower()
 		'''Allows use of != between multiple objects'''
-		if eqType == 'attributes':
-			return (self.thickness != other.thickness or
-					self.index != other.index or
-					self.alignLocked != other.alignLocked)
-		elif eqType == 'images':
-			return (self.image != other.image)
-		elif eqType == 'contours': #=== how is it checking equiv. b/t conts?
-			return (self.contours != other.contours)
+		return not self.__eq__(other)
