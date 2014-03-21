@@ -2,13 +2,10 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 import pyrecon
 
-class sectionWrapper(QTabWidget): #===
+class sectionWrapper(QTabWidget):
 	def __init__(self, section1, section2, parent=None):
-		print 'Loading sectionWrapper' #===
 		QTabWidget.__init__(self, parent)
 		self.loadObjects(section1, section2)
-		self.loadFunctions()
-		self.loadLayout()
 		self.show()
 	def loadObjects(self, section1, section2):
 		# Load widgest to be used as tabs
@@ -20,27 +17,33 @@ class sectionWrapper(QTabWidget): #===
 		self.addTab(attributes, 'Attributes')
 		self.addTab(images, 'Images')
 		self.addTab(contours, 'Contours')
-	def loadFunctions(self):
-		return
-	def loadLayout(self):
-		return
 
 # - Attributes
 class sectionAttributes(QWidget): #=== Section A's attributes are default as of now
 	def __init__(self, dictA, dictB):
 		QWidget.__init__(self)
-		self.output = {}
-		self.output['name'] = dictA['name']
-		self.output['index'] = dictA['index']
-		self.output['thickness'] = dictA['thickness']
-		self.output['alignLocked'] = dictA['alignLocked']
-		self.close()
+		self.atts1 = dictA
+		self.atts2 = dictB
+		self.output = None
+		self.loadObjects()
+		self.loadFunctions()
+		self.loadLayout()
 	def loadObjects(self):
-		return
+		self.attList = QListWidget()
+		for key in ['index','thickness','alignLocked']:
+			item = QListWidgetItem()
+			item.setText(str(key))
+			if self.atts1[key] != self.atts2[key]:
+				item.setBackground(QColor('red'))
+			self.attList.addItem(item)
 	def loadFunctions(self):
-		return
+		self.attList.itemDoubleClicked.connect( self.resItem )
 	def loadLayout(self):
-		return
+		vbox = QVBoxLayout()
+		vbox.addWidget(self.attList)
+		self.setLayout(vbox)
+	def resItem(self, item): #===
+		print('ITEM CLICKED')
 # - Image
 class sectionImages(QWidget):
 	def __init__(self, image1, image2):
