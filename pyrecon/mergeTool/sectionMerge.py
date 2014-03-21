@@ -131,15 +131,5 @@ def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName
 					confOvlps.append([contA, contB])
 	return compOvlps, confOvlps
 # - Attributes
-def mergeAttributes(sectionA, sectionB, handler=handlers.sectionAttributes):
-	# Evaluate equivalency between attributes
-	nameEq = (sectionA.name == sectionB.name)
-	indexEq = (sectionA.index == sectionB.index)
-	thicknessEq = (sectionA.thickness == sectionB.thickness)
-	alignLockedEq = (sectionA.alignLocked == sectionB.alignLocked)
-	if nameEq & indexEq & thicknessEq & alignLockedEq: # All attributes are equivalent
-		return {'name':sectionA.name,
-		'index':sectionA.index,
-		'thickness':sectionA.thickness,
-		'alignLocked':sectionA.alignLocked}
+def mergeAttributes(sectionA, sectionB, handler=handlers.sectionAttributes): #===
 	return handler(sectionA.__dict__, sectionB.__dict__)
