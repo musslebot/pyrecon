@@ -1,6 +1,7 @@
 '''Contains graphical components of PyRECONSTRUCT that are used accross multple tools.'''
 from PySide.QtCore import *
 from PySide.QtGui import *
+import pyrecon
 # Pyrecon tool modules imported when called by their functions below
 
 class pyreconMainWindow(QMainWindow):
@@ -65,7 +66,6 @@ class pyreconMainWindow(QMainWindow):
         print('Load excel widget')
     def loadCurate(self): #===
         print('Load curation widget')
-
     def save(self): #===
         print('THIS WILL SAVE YOUR SERIES (in the future :D)')
 

@@ -183,6 +183,7 @@ class Series:
                     # sort sections by index
                     self.sections = sorted(self.sections, key=lambda Section: Section.index)
                     print(' SUCCESS!')
+# ACCESSORS
 # calibrationTool functions
     def zeroIdentity(self):
         '''Converts points for all sections in a series to identity transform'''

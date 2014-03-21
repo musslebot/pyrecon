@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!DOCTYPE Section SYSTEM "section.dtd">
+
+<Section index="0" thickness="0.051826" alignLocked="true">
+<Transform dim="3"
+ xcoef=" 0 0.982593678233697 0 0 0 0"
+ ycoef=" 0 0 0.982593678233697 0 0 0">
+<Image mag="0.00221272" contrast="1" brightness="0" red="true" green="true" blue="true"
+ src="TNKPS052.jpg" />
+<Contour name="domain1" hidden="false" closed="true" simplified="false" border="1 0 1" fill="1 0 1" mode="11"
+ points="0 0,
+	4083 0,
+	4083 4083,
+	0 4083,
+	"/>
+</Transform>
+
+<Transform dim="0"
+ xcoef=" 0 1 0 0 0 0"
+ ycoef=" 0 0 1 0 0 0">
+<Contour name="calibrate check 4" hidden="false" closed="false" simplified="true" border="0 0 1" fill="0 0 1" mode="9"
+ points="1.26478 7.64332,
+	5.9886 7.70803,
+	"/>
+<Contour name="calibrate check 5" hidden="false" closed="false" simplified="true" border="0 0 1" fill="0 0 1" mode="9"
+ points="1.27403 7.19035,
+	5.9886 7.23657,
+	"/>
+<Contour name="calibrate check 6" hidden="false" closed="false" simplified="true" border="0 0 1" fill="0 0 1" mode="9"
+ points="1.28327 6.25668,
+	5.99785 6.31214,
+	"/>
+<Contour name="calibrate check 7" hidden="false" closed="false" simplified="true" border="0 0 1" fill="0 0 1" mode="9"
+ points="1.28327 8.11478,
+	1.30176 3.52038,
+	"/>
+<Contour name="calibrate check 1" hidden="false" closed="false" simplified="true" border="0 0 1" fill="0 0 1" mode="9"
+ points="1.76768 8.10233,
+	1.76768 3.50468,
+	"/>
+<Contour name="calibrate check 3" hidden="false" closed="false" simplified="true" border="0 0 1" fill="0 0 1" mode="9"
+ points="3.15986 8.12402,
+	3.18759 3.52962,
+	"/>
+<Contour name="calibrate check 8" hidden="false" closed="false" simplified="true" border="0 0 1" fill="0 0 1" mode="9"
+ points="4.11202 8.14251,
+	4.1305 3.53887,
+	"/>
+<Contour name="calibrate check 9" hidden="false" closed="false" simplified="true" border="0 0 1" fill="0 0 1" mode="9"
+ points="1.29251 6.70965,
+	6.00709 6.76511,
+	"/>
+</Transform>
+
+</Section>

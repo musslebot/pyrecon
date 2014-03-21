@@ -88,9 +88,7 @@ class Section:
 		return len(self.contours)
 	def __eq__(self, other):
 		'''Allows use of == between multiple objects'''
-		return (self.thickness == other.thickness and 
-					self.index == other.index and
-					self.alignLocked == other.alignLocked)
-	def __ne__(self, other, eqType='attributes'):
+		return self.__dict__ == other.__dict__
+	def __ne__(self, other):
 		'''Allows use of != between multiple objects'''
-		return not self.__eq__(other)
+		return self.__dict__ != other.__dict__

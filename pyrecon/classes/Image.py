@@ -42,12 +42,8 @@ class Image:
                 self.transform = arg
 # ACCESSORS
     def __eq__(self, other):
-        return (self.transform == other.transform and
-                self.src == other.src and
-                self.brightness == other.brightness and
-                self.contrast == other.contrast)
+        return (self.transform == other.transform or
+                self.src == other.src)
     def __ne__(self, other):
         return (self.transform != other.transform or
-                self.src != other.src or
-                self.brightness != other.brightness or
-                self.contrast != other.contrast)  
+                self.src != other.src)  
