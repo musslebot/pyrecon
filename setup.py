@@ -12,11 +12,12 @@ setup(
       packages=[
                 'pyrecon',
                 'pyrecon.classes',
-                'pyrecon.calibrationTool',
-                'pyrecon.curationTool',
-                'pyrecon.excelTool',
-                'pyrecon.mergeTool',
-                'pyrecon.mergeTool.gui'
+                
+                'pyrecon.tools',
+                'pyrecon.tools.calibrationTool',
+                'pyrecon.tools.curationTool',
+                'pyrecon.tools.excelTool',
+                'pyrecon.tools.mergeTool',
                 ],
       license='LICENSE.txt',
       description='Python tools for interacting with XML files associated with RECONSTRUCT',
