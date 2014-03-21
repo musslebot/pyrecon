@@ -184,6 +184,22 @@ class Series:
                     self.sections = sorted(self.sections, key=lambda Section: Section.index)
                     print(' SUCCESS!')
 # ACCESSORS
+    def __eq__(self, other, eqType='attributes'): #===
+        eqType = eqType.lower()
+        if eqType == 'attributes': #=== what else should be checked?
+            return (self.units == other.units)
+        elif eqType == 'contours':
+            return (self.contours == other.contours) #=== how eq being checked?
+        elif eqType == 'zcontours':
+            return (self.zcontours == other.zcontours) #=== how eq being checked?
+    def __ne__(self, other, eqType='attributes'): #===
+        eqType = eqType.lower()
+        if eqType == 'attributes': #=== what else should be checked?
+            return (self.units != other.units)
+        elif eqType == 'contours':
+            return (self.contours != other.contours) #=== how eq being checked?
+        elif eqType == 'zcontours':
+            return (self.zcontours != other.zcontours) #=== how eq being checked?
 # calibrationTool functions
     def zeroIdentity(self):
         '''Converts points for all sections in a series to identity transform'''
