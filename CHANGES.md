@@ -19,7 +19,7 @@ Version 2.0.X
 
 > 2.0.1
 ---
-* Added setup.cfg to recognize README.md on PyPI
+* Added setup.cfg to recognize README.md on PyPI (removed in 2.0.3)
 
 > 2.0.2
 ---
