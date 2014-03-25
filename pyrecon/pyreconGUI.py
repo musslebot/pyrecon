@@ -20,11 +20,11 @@ class pyreconMainWindow(QMainWindow):
         self.toolsMenu = self.menuBar().addMenu("&Tools")
         self.loadToolsMenu()
         self.helpMenu = self.menuBar().addMenu("&Help")
-    def loadFileMenu(self): #===
-        saveAction = QAction( QIcon(), 'Save', self)
-        saveAction.triggered.connect( self.save )
-        saveAction.setStatusTip( 'Save current series' )
-        self.fileMenu.addAction( saveAction )
+    # def loadFileMenu(self):
+    #     saveAction = QAction( QIcon(), 'Save', self)
+    #     saveAction.triggered.connect( self.save )
+    #     saveAction.setStatusTip( 'Save current series' )
+    #     self.fileMenu.addAction( saveAction )
     def loadToolsMenu(self):
         # 1) Create Actions
         # - mergeTool
