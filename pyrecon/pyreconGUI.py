@@ -15,12 +15,12 @@ class pyreconMainWindow(QMainWindow):
         self.resize( newSize )
         self.statusBar().showMessage('Ready! Welcome to PyRECONSTRUCT')
     def loadMenus(self):
-        self.fileMenu = self.menuBar().addMenu("&File")
-        self.loadFileMenu()
+        # self.fileMenu = self.menuBar().addMenu("&File")
+        # self.loadFileMenu()
         self.toolsMenu = self.menuBar().addMenu("&Tools")
         self.loadToolsMenu()
         self.helpMenu = self.menuBar().addMenu("&Help")
-    def loadFileMenu(self):
+    def loadFileMenu(self): #===
         saveAction = QAction( QIcon(), 'Save', self)
         saveAction.triggered.connect( self.save )
         saveAction.setStatusTip( 'Save current series' )
@@ -54,11 +54,9 @@ class pyreconMainWindow(QMainWindow):
         mergeSel = mergeSelection(self)
         self.mergeSelector.setWidget( mergeSel )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.mergeSelector )
-        # PlaceHolder for resoution widgets
-        self.placeHolder = QLabel()
-        self.placeHolder.setPixmap( QPixmap(750,750) )
-        self.placeHolder.setAlignment( Qt.AlignCenter )
-        self.setCentralWidget( self.placeHolder )
+        # stackedWidget contains each mergeItem's resolution wrapper
+        self.resolutionStack = QStackedWidget()
+        self.setCentralWidget( self.resolutionStack )
 
     def loadCalib(self): #===
         print('Load calibration widget')
