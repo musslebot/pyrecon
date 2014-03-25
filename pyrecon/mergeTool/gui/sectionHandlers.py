@@ -3,23 +3,35 @@ from PySide.QtGui import *
 import pyrecon
 
 class sectionWrapper(QTabWidget):
+	'''sectionWrapper is a TabWidget. It contains multiple widgets that can be swapped via their tabs.'''
 	def __init__(self, section1, section2, parent=None):
 		QTabWidget.__init__(self, parent)
+		self.section1 = section1
+		self.section2 = section2
 		self.loadObjects(section1, section2)
-		self.show()
 	def loadObjects(self, section1, section2):
 		# Load widgest to be used as tabs
-		attributes = pyrecon.mergeTool.sectionMerge.mergeAttributes(section1, section2, handler=sectionAttributes)
-		images = pyrecon.mergeTool.sectionMerge.mergeImages(
+		self.attributes = pyrecon.mergeTool.sectionMerge.mergeAttributes(section1, section2, handler=sectionAttributes)
+		self.images = pyrecon.mergeTool.sectionMerge.mergeImages(
 			section1, section2, handler=sectionImages)
-		contours = pyrecon.mergeTool.sectionMerge.mergeContours(section1, section2, handler=sectionContours)
+		self.contours = pyrecon.mergeTool.sectionMerge.mergeContours(section1, section2, handler=sectionContours)
 		# Add widgets as tabs
-		self.addTab(attributes, 'Attributes')
-		self.addTab(images, 'Images')
-		self.addTab(contours, 'Contours')
+		self.addTab(self.attributes, '&Attributes')
+		self.addTab(self.images, '&Images')
+		self.addTab(self.contours, '&Contours')
+	def toObject(self):
+		'''Returns a section object from the output of each resolution tab.'''
+		try:#===
+			mergeSection = pyrecon.classes.Section(self.attributes.output,
+				self.images.output,
+				self.contours.output)
+			return mergeSection
+		except:
+			print 'Could not output to Section object :('
+
 
 # - Attributes
-class sectionAttributes(QWidget): #=== Section A's attributes are default as of now
+class sectionAttributes(QWidget):
 	def __init__(self, dictA, dictB):
 		QWidget.__init__(self)
 		self.atts1 = dictA
@@ -30,7 +42,7 @@ class sectionAttributes(QWidget): #=== Section A's attributes are default as of 
 		self.loadLayout()
 	def loadObjects(self):
 		self.attList = QListWidget()
-		for key in ['index','thickness','alignLocked']:
+		for key in ['name','index','thickness','alignLocked']:
 			item = QListWidgetItem()
 			item.setText(str(key))
 			if self.atts1[key] != self.atts2[key]:
@@ -42,8 +54,9 @@ class sectionAttributes(QWidget): #=== Section A's attributes are default as of 
 		vbox = QVBoxLayout()
 		vbox.addWidget(self.attList)
 		self.setLayout(vbox)
-	def resItem(self, item): #===
+	def resItem(self, item):
 		print('ITEM CLICKED')
+# class resolveAttribute(Q)
 # - Image
 class sectionImages(QWidget):
 	def __init__(self, image1, image2):
@@ -105,10 +118,12 @@ class sectionImages(QWidget):
 		self.setLayout(hbox)
 	def ret1(self):
 		self.output = self.img1
-		self.close()
+		self.pick1.setBackground(QColor('lightgreen'))
+		self.pick2.setBackground(QColor('red'))
 	def ret2(self):
 		self.output = self.img2
-		self.close()
+		self.pick2.setBackground(QColor('lightgreen'))
+		self.pick1.setBackground(QColor('red'))
 # - Contours
 class contourPixmap(QLabel):
 	'''QLabel that contains a contour drawn on its region in an image'''
