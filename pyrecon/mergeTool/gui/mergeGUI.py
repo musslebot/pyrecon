@@ -13,47 +13,80 @@ class mergeSelection(QWidget):
         self.loadFunctions()
         self.loadLayout()
     def loadObjects(self):
-        self.seriesButton = QPushButton()
-        self.sectionSelect = QListWidget()
+        self.loadButton = QPushButton()
+        self.finishedButton = QPushButton()
+        self.mergeSelect = QListWidget()
     def loadFunctions(self):
-        self.seriesButton.setText('Load Series')
-        self.seriesButton.clicked.connect( self.loadSeries )
+        self.loadButton.setText('&Load Series')
+        self.loadButton.clicked.connect( self.loadSeries )
+        self.finishedButton.setText('&Finish Merge') 
+        self.finishedButton.clicked.connect( self.finishMerge )
+        # What to do when an item is clicked
+        self.mergeSelect.itemClicked.connect( self.itemClicked )
+        # Hide list and finish button until series successfully loaded
+        self.mergeSelect.hide()
+        self.finishedButton.hide()
     def loadLayout(self):
         mainBox = QHBoxLayout()
         #--- Select What you're looking at (series, section, attributes, images, contours)
         selectBox = QVBoxLayout()
-        selectBox.addWidget( self.seriesButton )
-        selectBox.addWidget( self.sectionSelect )
+        selectBox.addWidget( self.loadButton )
+        selectBox.addWidget( self.mergeSelect )
+        selectBox.addWidget( self.finishedButton )
         #---
         mainBox.addLayout( selectBox )
         self.setLayout(mainBox)
-    def loadSeries(self): #=== add series object as doubleListItem
+    def loadSeries(self):
         seriesDialog = seriesLoad()
         seriesDialog.exec_()
-        try:
-            self.series1 = openSeries(seriesDialog.output[0])
-            self.series2 = openSeries(seriesDialog.output[1])
-            seriesItem = doubleListItem(self.series1, self.series2)
-            self.sectionSelect.clear() # Remove contents currently in table
-            self.sectionSelect.addItem( seriesItem )
-            self.seriesButton.setText('Change Series')
-            self.loadSections()
-        except: #=== Error message
-            print('mergeGUI.loadSeries() error') #===
-            self.msg = QMessageBox()
-            self.msg.setText('Invalid series paths!')
-            self.msg.exec_()
+        # try:
+        self.series1 = openSeries(seriesDialog.output[0])
+        self.series2 = openSeries(seriesDialog.output[1])
+        self.mergeSelect.clear() # Delete contents currently in table
+        seriesItem = mergeItem(self.series1, self.series2)
+        self.mergeSelect.addItem( seriesItem )
+        # Add mergeItem's resolution widget to mainWindow's resolutionStack
+        self.parentWidget().parentWidget().resolutionStack.addWidget(seriesItem.resolution)
+        self.loadButton.setText('Change Series')
+        self.loadSections()
+        # Display buttons
+        self.mergeSelect.show() 
+        self.finishedButton.show()
+        # except:
+        #     self.msg = QMessageBox()
+        #     self.msg.setText('Invalid series paths!')
+        #     self.msg.exec_()
     def loadSections(self):
-        self.sectionSelect.itemDoubleClicked.connect( self.itemClicked ) # What to do when item doubleclicked
         for i in range( len(self.series1.sections) ):
-            sectionItem = doubleListItem( self.series1.sections[i], self.series2.sections[i] )
-            self.sectionSelect.addItem( sectionItem )
-    def itemClicked(self, item): #===
-        item.clicked()
-        self.parentWidget().parentWidget().setCentralWidget(item.resolution) # parentWidget() is DockWidget, parentWidget()x2 is MainWindow
+            sectionItem = mergeItem( self.series1.sections[i], self.series2.sections[i] )
+            self.mergeSelect.addItem( sectionItem )
+            # Add mergeItem's resolution widget to mainWindow's resolutionStack
+            self.parentWidget().parentWidget().resolutionStack.addWidget(sectionItem.resolution)
+    def itemClicked(self, item):
+        self.parentWidget().parentWidget().resolutionStack.setCurrentWidget(item.resolution)
+    def finishMerge(self): #===
+        for i in range(self.mergeSelect.count()): #=== yellow?
+            if self.mergeSelect.item(i).background() == QColor('red') or self.mergeSelect.item(i).background() == QColor('yellow'):
+                msg = QMessageBox()
+                msg.setText('Not all conflicts were resolved (red background).')
+                msg.setInformativeText('Would you like to default unresolved conflicts to the first loaded series?')
+                msg.setStandardButtons( QMessageBox.Ok | QMessageBox.Cancel)
+                ret = msg.exec_()
+            if ret == QMessageBox.Ok:
+                print('Continue merge out') #===        
+                for i in range(self.mergeSelect.count()):
+                    try:
+                        print 'res:',
+                        print self.mergeSelect.item(i).resolution.toObject().__dict__
+                    except:
+                        print 'No res...' #=== look at individual merge stuff too!
+                        print self.mergeSelect.item(i).resolution.object1.__dict__
+            elif ret == QMessageBox.Cancel:
+                print('Cancel merge out') #===
+                return
 
-class doubleListItem(QListWidgetItem):
-    '''This is a ListWidgetItem that contains two objects.'''
+class mergeItem(QListWidgetItem):
+    '''This is a ListWidgetItem that contains two objects and their resolution handler.'''
     def __init__(self, object1, object2, name=None, colors=True):
         QListWidgetItem.__init__(self)
         self.object1 = object1
@@ -61,18 +94,20 @@ class doubleListItem(QListWidgetItem):
         self.resolution = None # Holds the conflict resolution wrapper
         self.loadDetails(name,colors)
     def loadDetails(self, name, colors):
+        # Load name to display in list
         if not name:
             try:
                 self.setText(self.object1.name)
             except:
                 self.setText('Unknown name')
+        # Determine color of background
         if colors == True and self.object1 != self.object2:
             self.setBackground(QColor('red'))
-    def clicked(self): #=== add series resolution
+        # Load resolution wrapper
         if self.object1.__class__.__name__ == 'Section':
             self.resolution = sectionHandlers.sectionWrapper(self.object1, self.object2)
         elif self.object1.__class__.__name__ == 'Series':
-            print ('Series item doubleclicked, placeholder for ser conflict resolution') #===
+            self.resolution = seriesHandlers.seriesWrapper(self.object1,self.object2)
 
 class seriesLoad(QDialog):
     '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
