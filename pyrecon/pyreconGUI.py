@@ -33,15 +33,15 @@ class pyreconMainWindow(QMainWindow):
         mergeAction.setStatusTip( 'Open merge widget' )
         # - calibrationTool
         calibAction = QAction( QIcon(), 'calibrationTool', self )
-        calibAction.triggered.connect( self.loadCalib )
+        calibAction.triggered.connect( self.loadCalibrationTool )
         calibAction.setStatusTip( 'Open calibration widget' )
         # - excelTool
         excelAction = QAction( QIcon(), 'excelTool', self )
-        excelAction.triggered.connect( self.loadExcel )
+        excelAction.triggered.connect( self.loadExcelTool )
         excelAction.setStatusTip( 'Open excel widget' )
         # - curationTool
         curateAction = QAction( QIcon(), 'curationTool', self )
-        curateAction.triggered.connect( self.loadCurate )
+        curateAction.triggered.connect( self.loadCurationTool )
         curateAction.setStatusTip( 'Open curation widget' )
         # 2) Add actions to toolbars
         self.toolsMenu.addAction( mergeAction )
@@ -58,14 +58,14 @@ class pyreconMainWindow(QMainWindow):
         self.resolutionStack = QStackedWidget()
         self.setCentralWidget( self.resolutionStack )
 
-    def loadCalib(self): #===
+    def loadCalibrationTool(self): #===
         print('Load calibration widget')
-    def loadExcel(self): #===
+    def loadExcelTool(self): #===
         print('Load excel widget')
-    def loadCurate(self): #===
+    def loadCurationTool(self): #===
         print('Load curation widget')
-    def save(self): #===
-        print('THIS WILL SAVE YOUR SERIES (in the future :D)')
+    # def save(self): #===
+    #     print('THIS WILL SAVE YOUR SERIES (in the future :D)')
 
 class browseWidget(QWidget):
     '''Provides a QLineEdit and button for browsing through a file system. browseType can be directory, file or series but defaults to directory.'''
