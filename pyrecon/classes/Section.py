@@ -96,3 +96,15 @@ class Section:
 	def __ne__(self, other):
 		'''Allows use of != between multiple objects'''
 		return not self.__eq__(other)
+	def eq(self, other, eqType=None): #===
+		'''Check equivalency with the option for type of attributes to compare. Default: __eq__'''
+		if not eqType:
+			return self.__eq__(other)
+		elif eqType.lower() == 'attributes':
+			return (self.thickness == other.thickness and
+					self.index == other.index and
+					self.alignLocked == other.alignLocked)
+		elif eqType.lower() in ['images', 'image']:
+			return (self.image == other.image)
+		elif eqType.lower() in ['contours', 'contour']:
+			return (self.contours == other.contours)
