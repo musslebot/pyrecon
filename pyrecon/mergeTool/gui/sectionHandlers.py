@@ -1,7 +1,9 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 import pyrecon
+import numpy as np
 
+# SECTION RESOLUTION WRAPPER
 class sectionWrapper(QTabWidget):
 	'''sectionWrapper is a TabWidget. It contains multiple widgets that can be swapped via their tabs.'''
 	def __init__(self, section1, section2, parent=None):
@@ -21,42 +23,89 @@ class sectionWrapper(QTabWidget):
 		self.addTab(self.contours, '&Contours')
 	def toObject(self):
 		'''Returns a section object from the output of each resolution tab.'''
-		try:#===
-			mergeSection = pyrecon.classes.Section(self.attributes.output,
-				self.images.output,
-				self.contours.output)
-			return mergeSection
-		except:
-			print 'Could not output to Section object :('
-
+		'''Returns series object from the output of each resolution tab.'''
+		# Determine attributes
+		if self.attributes.output == None:
+			print('Section attributes default to section 1')
+			attributes = self.attributes.atts1
+		else:
+			attributes = self.attributes.output
+		# Determine image
+		if self.images.output == None:
+			print('Section image default to section 1')
+			image = self.images.img1
+		else:
+			image = self.images.output
+		# Determine contours
+		if self.contours.output == None:
+			print('Section contours default to section 1')
+			contours = self.contours.conts1
+		else:
+			contours = self.contours.output
+		
+		# Create merged section object
+		return pyrecon.classes.Section(attributes,image,contours)
 
 # - Attributes
 class sectionAttributes(QWidget):
 	def __init__(self, dictA, dictB):
 		QWidget.__init__(self)
-		self.atts1 = dictA
-		self.atts2 = dictB
+		self.atts1 = {}
+		self.atts2 = {}
 		self.output = None
-		self.loadObjects()
+		self.loadObjects(dictA,dictB)
 		self.loadFunctions()
 		self.loadLayout()
-	def loadObjects(self):
-		self.attList = QListWidget()
-		for key in ['name','index','thickness','alignLocked']:
-			item = QListWidgetItem()
-			item.setText(str(key))
-			if self.atts1[key] != self.atts2[key]:
-				item.setBackground(QColor('red'))
-			self.attList.addItem(item)
+	def loadObjects(self,dictA,dictB):
+		# Extract relevant info to attribute dicts
+		for key in ['name', 'index', 'thickness', 'alignLocked']:
+			self.atts1[key] = dictA[key]
+			self.atts2[key] = dictB[key]
+		self.pick1 = QPushButton()
+		self.pick2 = QPushButton()
+		self.pick1.setText('Choose Section 1 Attributes')
+		self.pick2.setText('Choose Section 2 Attributes')
+		self.pick1.setMinimumHeight(50)
+		self.pick2.setMinimumHeight(50)
+		self.attLabel1 = QLabel()
+		self.attLabel2 = QLabel()
+		self.attLabel1.setText('\n'.join(str(key)+':\t'+str(self.atts1[key]) for key in self.atts1))
+		self.attLabel2.setText('\n'.join(str(key)+':\t'+str(self.atts2[key]) for key in self.atts2))
+		# Adjust font
+		font = QFont("Arial", 14)
+		self.attLabel1.setFont(font)
+		self.attLabel2.setFont(font)
 	def loadFunctions(self):
-		self.attList.itemDoubleClicked.connect( self.resItem )
+		self.pick1.clicked.connect( self.chooseAtt )
+		self.pick2.clicked.connect( self.chooseAtt )
 	def loadLayout(self):
-		vbox = QVBoxLayout()
-		vbox.addWidget(self.attList)
-		self.setLayout(vbox)
-	def resItem(self, item):
-		print('ITEM CLICKED')
-# class resolveAttribute(Q)
+		main = QHBoxLayout()
+		sec1 = QVBoxLayout()
+		sec2 = QVBoxLayout()
+		# Add attLabels to QScrollArea
+		self.scrollLabel1 = QScrollArea()
+		self.scrollLabel2 = QScrollArea()
+		self.scrollLabel1.setWidget(self.attLabel1)
+		self.scrollLabel2.setWidget(self.attLabel2)
+		# Add widgets to layout
+		sec1.addWidget(QLabel('Section 1 Attributes'))
+		sec1.addWidget(self.scrollLabel1)
+		sec1.addWidget(self.pick1)
+		sec2.addWidget(QLabel('Section 2 Attributes'))
+		sec2.addWidget(self.scrollLabel2)
+		sec2.addWidget(self.pick2)
+		main.addLayout(sec1)
+		main.addLayout(sec2)
+		self.setLayout(main)
+	def chooseAtt(self):
+		if self.sender() == self.pick1:
+			self.output = self.atts1
+			self.pick1.setStyleSheet('background-color:lightgreen;')
+			self.pick2.setStyleSheet(QWidget().styleSheet())
+		elif self.sender() == self.pick2:
+			self.output = self.atts2
+			self.pick2.setStyleSheet('background-color:lightgreen;')
+			self.pick1.setStyleSheet(QWidget().styleSheet())
 # - Image
 class sectionImages(QWidget):
 	def __init__(self, image1, image2):
@@ -76,6 +125,8 @@ class sectionImages(QWidget):
 		self.img2detail = QLabel(self)
 		self.pick1 = QPushButton(self)
 		self.pick2 = QPushButton(self)
+		self.pick1.setMinimumHeight(50)
+		self.pick2.setMinimumHeight(50)
 	def loadFunctions(self, image1, image2):
 		self.img1label.setText('Section A\'s Image\n'+'-'*17)
 		self.img1label.setAlignment(Qt.AlignHCenter)
@@ -83,20 +134,34 @@ class sectionImages(QWidget):
 		self.img2label.setAlignment(Qt.AlignHCenter)
 		self.img1detail.setText('\n'.join([(str(item)+':\t'+str(image1.__dict__[item])) for item in image1.__dict__ if item != 'transform']))
 		self.img2detail.setText('\n'.join([(str(item)+':\t'+str(image2.__dict__[item])) for item in image2.__dict__ if item != 'transform']))
+		# Load images
 		pixmap1 = QPixmap(image1._path+image1.src)
 		pixmap2 = QPixmap(image2._path+image2.src)
 		self.pix1.setPixmap( pixmap1.scaled(500, 500, Qt.KeepAspectRatio) )
 		self.pix2.setPixmap( pixmap2.scaled(500, 500, Qt.KeepAspectRatio) )
 		if pixmap1.isNull():
-			self.pix1.setText('Image not available.')
-			self.pix1.setAlignment(Qt.AlignHCenter)
+			self.pix1.setText('Image not available.\nLikely due to incorrect path.')
 		if pixmap2.isNull():
-			self.pix2.setText('Image not available.')
-			self.pix2.setAlignment(Qt.AlignHCenter)
+			self.pix2.setText('Image not available.\nLikely due to incorrect path.')
+		# Choose image buttons
 		self.pick1.setText('Choose this image')
 		self.pick2.setText('Choose this image')
 		self.pick1.clicked.connect( self.ret1 )
 		self.pick2.clicked.connect( self.ret2 )
+		# Adjust font/alignment
+		font = QFont('Arial',pointSize=18)
+		self.img1label.setFont(font)
+		self.img2label.setFont(font)
+		self.img1detail.setFont(font)
+		self.img2detail.setFont(font)
+		self.img1label.setAlignment(Qt.AlignHCenter)
+		self.img2label.setAlignment(Qt.AlignHCenter)
+		self.img1detail.setAlignment(Qt.AlignHCenter)
+		self.img2detail.setAlignment(Qt.AlignHCenter)
+		self.pix1.setFont(font)
+		self.pix2.setFont(font)
+		self.pix1.setAlignment(Qt.AlignHCenter)
+		self.pix2.setAlignment(Qt.AlignHCenter)
 	def loadLayout(self):
 		self.setWindowTitle('PyRECONSTRUCT Section Image Resolver')
 		hbox = QHBoxLayout()
@@ -113,162 +178,24 @@ class sectionImages(QWidget):
 		vbox2.addWidget(self.img2detail)
 		vbox2.addWidget(self.pick2)
 		hbox.addLayout(vbox1)
-		hbox.addSpacing(50)
+		# hbox.addSpacing(50)
 		hbox.addLayout(vbox2)
 		self.setLayout(hbox)
 	def ret1(self):
 		self.output = self.img1
-		self.pick1.setBackground(QColor('lightgreen'))
-		self.pick2.setBackground(QColor('red'))
+		self.pick1.setStyleSheet('background-color:lightgreen;')
+		self.pick2.setStyleSheet(QWidget().styleSheet())
 	def ret2(self):
 		self.output = self.img2
-		self.pick2.setBackground(QColor('lightgreen'))
-		self.pick1.setBackground(QColor('red'))
+		self.pick2.setStyleSheet('background-color:lightgreen;')
+		self.pick1.setStyleSheet(QWidget().styleSheet())
 # - Contours
-class contourPixmap(QLabel):
-	'''QLabel that contains a contour drawn on its region in an image'''
-	def __init__(self, image, contour, pen=Qt.red):
-		QLabel.__init__(self)
-		self.image = image
-		self.pixmap = QPixmap( image._path+image.src ) # Create pixmap from image info
-		self.contour = Contour( contour.__dict__ ) # Create copy of contour to be altered for visualization
-		self.transformToPixmap()
-		self.crop()
-		self.scale()
-		self.drawOnPixmap(pen)
-		self.setPixmap(self.pixmap)
-	def transformToPixmap(self):
-		'''Transforms points from RECONSTRUCT'S coordsys to PySide's coordSys'''
-		self.contour.convertToPixCoords(self.image.mag) # Convert biological points to pixel points
-		flipVector = np.array( [1,-1] ) # Flip about x axis
-		# Is Pixmap valid? #=== probably a better way than using hardcoded values for new size
-		if self.pixmap.isNull(): # If image doesnt exist...
-			self.pixmap = QPixmap(2000,1000) # Make new 2000x1000 pixmap with white background
-			self.pixmap.fill(fillColor=Qt.white)
-		translationVector = np.array( [0,self.pixmap.size().height()] )
-		# Apply flip and translation to get points in PySide's image space
-		# 	transformedPts = (oldPts*flipVector)+translationVector
-		transformedPoints = list(map(tuple,translationVector+(np.array(list(self.contour.shape.exterior.coords))*flipVector)))
-		# Update self.contour's information to match transformation
-		self.contour.points = transformedPoints
-		self.contour.popShape()
-	def crop(self):
-		'''Crops image.'''
-		# Determine crop region
-		x = self.contour.shape.bounds[0]-100
-		y = self.contour.shape.bounds[1]-100
-		width = self.contour.shape.bounds[2]-x+100
-		height = self.contour.shape.bounds[3]-y+100
-		# Crop image to defined rectangle
-		self.pixmap = self.pixmap.copy(x,y,width,height)
-		# Adjust points to crop region
-		cropVector = np.array( [x,y] )
-		croppedPoints = list(map(tuple, np.array(self.contour.points)-cropVector ))
-		self.contour.points = croppedPoints
-		self.contour.popShape()
-	def scale(self):
-		# Scale image
-		preCropSize = self.pixmap.size()
-		self.pixmap = self.pixmap.copy().scaled( 500, 500, Qt.KeepAspectRatio ) #=== is copy necessary?
-		# Scale points
-		preWidth = float(preCropSize.width())
-		preHeight = float(preCropSize.height())
-		# Prevent division by 0.0
-		if preWidth == 0.0 or preHeight == 0.0:
-			preWidth = 1.0
-			preHeight = 1.0
-		wScale = self.pixmap.size().width()/preWidth
-		hScale = self.pixmap.size().height()/preHeight
-		scale = np.array([wScale,hScale])
-		scaledPoints = list(map(tuple,np.array(self.contour.points)*scale))
-		self.contour.points = scaledPoints
-		self.contour.popShape()
-	def drawOnPixmap(self, pen=Qt.red):
-		# Create polygon to draw
-		polygon = QPolygon()
-		for point in self.contour.points:
-			polygon.append( QPoint(*point) )
-		# Draw polygon on pixmap
-		painter = QPainter()
-		painter.begin(self.pixmap)
-		painter.setPen(pen)
-		painter.drawConvexPolygon(polygon)
-class resolveOvlp(QWidget):
-	def __init__(self, item):
-		QWidget.__init__(self)
-		self.setWindowTitle('Contour Overlap Resolution')
-		self.item = item
-		self.loadObjects()
-		self.loadFunctions()
-		self.loadLayout()
-	def loadObjects(self):
-		# Buttons to choose contours
-		self.cont1But = QPushButton('Choose Contour 1')
-		self.cont2But = QPushButton('Choose Contour 2')
-		self.bothContBut = QPushButton('Choose Both Contours')
-		# Labels to hold pixmap
-		self.pix1 = None
-		self.pix2 = None
-	def loadFunctions(self):
-		self.cont1But.clicked.connect( self.finish )
-		self.cont2But.clicked.connect( self.finish )
-		self.bothContBut.clicked.connect( self.finish )
-		self.pix1 = contourPixmap(self.item.image1, self.item.contour1)
-		self.pix2 = contourPixmap(self.item.image2, self.item.contour2, pen=Qt.cyan)
-	def loadLayout(self):
-		container = QVBoxLayout() # Contains everything
-		# - Contains Images
-		imageContainer = QHBoxLayout()
-		imageContainer.addWidget(self.pix1)
-		imageContainer.addWidget(self.pix2)
-		# - Contains buttons
-		butBox = QHBoxLayout()
-		butBox.addWidget(self.cont1But)
-		butBox.addWidget(self.cont2But)
-		# Add other containers to container
-		container.addLayout(imageContainer)
-		container.addLayout(butBox)
-		container.addWidget(self.bothContBut)
-		self.setLayout(container)
-	def finish(self): # Return int associated with selected contour
-		if self.sender() == self.cont1But:
-			self.done(1)
-		elif self.sender() == self.cont2But:
-			self.done(2)
-		elif self.sender() == self.bothContBut:
-			self.done(3)
-class contourTableItem(QListWidgetItem):
-	'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
-	def __init__(self, contour, images):
-		QListWidgetItem.__init__(self)
-		if type(contour) == type([]):
-			self.contour = None
-			self.contour1 = contour[0]
-			self.contour2 = contour[1]
-			if type(images) == type([]):
-				self.image1 = images[0]
-				self.image2 = images[1]
-			self.setText(self.contour1.name)
-		else:
-			self.contour = contour
-			self.setText(contour.name)
-	def clicked(self):
-		item = self
-		msg = resolveOvlp(item)
-		resolution = msg.result() # msg returns an int referring to the selected contour
-		if resolution == 1:
-			self.contour = self.contour1
-			self.setBackground(QColor('lightgreen'))
-		elif resolution == 2:
-			self.contour = self.contour2
-			self.setBackground(QColor('lightgreen'))
-		elif resolution == 3:
-			self.contour = [self.contour1, self.contour2]
-			self.setBackground(QColor('lightgreen'))
 class sectionContours(QWidget):
 	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None):
 		QWidget.__init__(self)
 		self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
+		self.conts1 = uniqueA+[ovlp[0] for ovlp in compOvlp]+[ovlp[0] for ovlp in confOvlp]
+		self.conts2 = uniqueB+[ovlp[1] for ovlp in compOvlp]+[ovlp[1] for ovlp in confOvlp]
 		# input
 		self.uniqueA = uniqueA
 		self.uniqueB = uniqueB
@@ -306,6 +233,7 @@ class sectionContours(QWidget):
 			table.itemDoubleClicked.connect(self.doubleClickCheck)
 		self.doneBut.setText('Merge')
 		self.doneBut.clicked.connect( self.finish )
+		self.doneBut.setMinimumHeight(50)
 		self.moveSelectedA.setText('Move Selected')
 		self.moveSelectedO.setText('Move Selected')
 		self.moveSelectedB.setText('Move Selected')
@@ -371,6 +299,7 @@ class sectionContours(QWidget):
 	def doubleClickCheck(self, item):
 		if item.background() == QColor('red') or item.background() == QColor('lightgreen'):
 			item.clicked() # See contourTableItem class
+		self.doneBut.setStyleSheet(QWidget().styleSheet())
 	def moveItems(self):
 		# Move items in what table(s)?
 		if self.sender() == self.moveSelectedA:
@@ -391,6 +320,7 @@ class sectionContours(QWidget):
 			inTable.addItem( outTable.takeItem(outTable.row(item)) )
 		inTable.clearSelection()
 		outTable.clearSelection()
+		self.doneBut.setStyleSheet(QWidget().styleSheet())
 	def finish(self):
 		# Check ovlp table for unresolved conflicts (red)
 		numItems = self.outOvlp.count()
@@ -426,4 +356,145 @@ class sectionContours(QWidget):
 				self.output.extend(item.contour)
 			else:
 				self.output.append(item.contour)
-		self.close()
+		self.doneBut.setStyleSheet('background-color:lightgreen;')
+class contourPixmap(QLabel):
+	'''QLabel that contains a contour drawn on its region in an image'''
+	def __init__(self, image, contour, pen=Qt.red):
+		QLabel.__init__(self)
+		self.image = image
+		self.pixmap = QPixmap( image._path+image.src ) # Create pixmap from image info
+		self.contour = pyrecon.classes.Contour( contour.__dict__ ) # Create copy of contour to be altered for visualization
+		self.transformToPixmap()
+		self.crop()
+		self.scale()
+		self.drawOnPixmap(pen)
+		self.setPixmap(self.pixmap)
+	def transformToPixmap(self):
+		'''Transforms points from RECONSTRUCT'S coordsys to PySide's coordSys'''
+		self.contour.convertToPixCoords(self.image.mag) # Convert biological points to pixel points
+		flipVector = np.array( [1,-1] ) # Flip about x axis
+		# Is Pixmap valid? #=== probably a better way than using hardcoded values for new size
+		if self.pixmap.isNull(): # If image doesnt exist...
+			self.pixmap = QPixmap(2000,1000) # Make new 2000x1000 pixmap with white background
+			self.pixmap.fill(fillColor=Qt.white)
+		translationVector = np.array( [0,self.pixmap.size().height()] )
+		# Apply flip and translation to get points in PySide's image space
+		# 	transformedPts = (oldPts*flipVector)+translationVector
+		transformedPoints = list(map(tuple,translationVector+(np.array(list(self.contour.shape.exterior.coords))*flipVector)))
+		# Update self.contour's information to match transformation
+		self.contour.points = transformedPoints
+		self.contour.popShape()
+	def crop(self):
+		'''Crops image.'''
+		# Determine crop region
+		x = self.contour.shape.bounds[0]-100
+		y = self.contour.shape.bounds[1]-100
+		width = self.contour.shape.bounds[2]-x+100
+		height = self.contour.shape.bounds[3]-y+100
+		# Crop image to defined rectangle
+		self.pixmap = self.pixmap.copy(x,y,width,height)
+		# Adjust points to crop region
+		cropVector = np.array( [x,y] )
+		croppedPoints = list(map(tuple, np.array(self.contour.points)-cropVector ))
+		self.contour.points = croppedPoints
+		self.contour.popShape()
+	def scale(self):
+		# Scale image
+		preCropSize = self.pixmap.size()
+		self.pixmap = self.pixmap.copy().scaled( 500, 500, Qt.KeepAspectRatio ) #=== is copy necessary?
+		# Scale points
+		preWidth = float(preCropSize.width())
+		preHeight = float(preCropSize.height())
+		# Prevent division by 0.0
+		if preWidth == 0.0 or preHeight == 0.0:
+			preWidth = 1.0
+			preHeight = 1.0
+		wScale = self.pixmap.size().width()/preWidth
+		hScale = self.pixmap.size().height()/preHeight
+		scale = np.array([wScale,hScale])
+		scaledPoints = list(map(tuple,np.array(self.contour.points)*scale))
+		self.contour.points = scaledPoints
+		self.contour.popShape()
+	def drawOnPixmap(self, pen=Qt.red):
+		# Create polygon to draw
+		polygon = QPolygon()
+		for point in self.contour.points:
+			polygon.append( QPoint(*point) )
+		# Draw polygon on pixmap
+		painter = QPainter()
+		painter.begin(self.pixmap)
+		painter.setPen(pen)
+		painter.drawConvexPolygon(polygon)
+class resolveOvlp(QDialog):
+	def __init__(self, item):
+		QDialog.__init__(self)
+		self.setWindowTitle('Contour Overlap Resolution')
+		self.item = item
+		self.loadObjects()
+		self.loadFunctions()
+		self.loadLayout()
+		self.exec_()
+	def loadObjects(self):
+		# Buttons to choose contours
+		self.cont1But = QPushButton('Choose Contour 1')
+		self.cont2But = QPushButton('Choose Contour 2')
+		self.bothContBut = QPushButton('Choose Both Contours')
+		# Labels to hold pixmap
+		self.pix1 = None
+		self.pix2 = None
+	def loadFunctions(self):
+		self.cont1But.clicked.connect( self.finish )
+		self.cont2But.clicked.connect( self.finish )
+		self.bothContBut.clicked.connect( self.finish )
+		self.pix1 = contourPixmap(self.item.image1, self.item.contour1)
+		self.pix2 = contourPixmap(self.item.image2, self.item.contour2, pen=Qt.cyan)
+	def loadLayout(self):
+		container = QVBoxLayout() # Contains everything
+		# - Contains Images
+		imageContainer = QHBoxLayout()
+		imageContainer.addWidget(self.pix1)
+		imageContainer.addWidget(self.pix2)
+		# - Contains buttons
+		butBox = QHBoxLayout()
+		butBox.addWidget(self.cont1But)
+		butBox.addWidget(self.cont2But)
+		# Add other containers to container
+		container.addLayout(imageContainer)
+		container.addLayout(butBox)
+		container.addWidget(self.bothContBut)
+		self.setLayout(container)
+	def finish(self): # Return int associated with selected contour
+		if self.sender() == self.cont1But:
+			self.done(1)
+		elif self.sender() == self.cont2But:
+			self.done(2)
+		elif self.sender() == self.bothContBut:
+			self.done(3)
+class contourTableItem(QListWidgetItem):
+	'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
+	def __init__(self, contour, images):
+		QListWidgetItem.__init__(self)
+		if type(contour) == type([]):
+			self.contour = None
+			self.contour1 = contour[0]
+			self.contour2 = contour[1]
+			if type(images) == type([]):
+				self.image1 = images[0]
+				self.image2 = images[1]
+			self.setText(self.contour1.name)
+		else:
+			self.contour = contour
+			self.setText(contour.name)
+	def clicked(self):
+		item = self
+		msg = resolveOvlp(item)
+		resolution = msg.result() # msg returns an int referring to the selected contour
+		if resolution == 1:
+			self.contour = self.contour1
+			self.setBackground(QColor('lightgreen'))
+		elif resolution == 2:
+			self.contour = self.contour2
+			self.setBackground(QColor('lightgreen'))
+		elif resolution == 3:
+			self.contour = [self.contour1, self.contour2]
+			self.setBackground(QColor('lightgreen'))
