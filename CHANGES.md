@@ -1,5 +1,11 @@
 Visit the [GitHub repo](https://github.com/wtrdrnkr/pyrecon) for additional detail
 
+Version 2.1.X
+===
+> 2.1.0
+---
+* New GUI for pyrecon!
+
 Version 2.0.X
 ===
 > 2.0.0
@@ -28,10 +34,6 @@ Version 2.0.X
 > 2.0.3
 ---
 * Fixed README.md issue (kind of -- added a README.txt along with .md)
-
-> 2.0.4
----
-* Improved __eq__ functions in classes
 
 Version 1.4.X
 ===
