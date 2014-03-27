@@ -67,9 +67,10 @@ class mergeSelection(QWidget):
             self.parentWidget().parentWidget().resolutionStack.addWidget(sectionItem.resolution)
     def itemClicked(self, item):
         self.parentWidget().parentWidget().resolutionStack.setCurrentWidget(item.resolution)
-    def finishMerge(self): #===
+        item.clicked()
+    def finishMerge(self):
         # Check if conflicts are resolved
-        for i in range(self.mergeSelect.count()): #=== yellow?
+        for i in range(self.mergeSelect.count()):
             if self.mergeSelect.item(i).background() == QColor('red') or self.mergeSelect.item(i).background() == QColor('yellow'):
                 msg = QMessageBox()
                 msg.setText('Not all conflicts were resolved (red or yellow background).')
@@ -114,11 +115,20 @@ class mergeItem(QListWidgetItem):
         # Determine color of background
         if colors == True and self.object1 != self.object2:
             self.setBackground(QColor('red'))
+        elif colors == True and self.object1 == self.object2:
+            self.setBackground(QColor('lightgreen')) #===
         # Load resolution wrapper
         if self.object1.__class__.__name__ == 'Section':
-            self.resolution = sectionHandlers.sectionWrapper(self.object1, self.object2)
+            self.resolution = sectionHandlers.sectionWrapper(self.object1, self.object2, parent=self)
         elif self.object1.__class__.__name__ == 'Series':
-            self.resolution = seriesHandlers.seriesWrapper(self.object1,self.object2)
+            self.resolution = seriesHandlers.seriesWrapper(self.object1,self.object2, parent=self)
+    def isResolved(self):
+        '''Returns True if all resolutions have output != None.'''
+        return self.resolution.isResolved()
+    def clicked(self):
+        if not self.isResolved():
+            self.setBackground(QColor('yellow'))
+
 
 class seriesLoad(QDialog):
     '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
