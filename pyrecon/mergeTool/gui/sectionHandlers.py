@@ -26,19 +26,19 @@ class sectionWrapper(QTabWidget):
 		'''Returns a section object from the output of each resolution tab.'''
 		'''Returns series object from the output of each resolution tab.'''
 		# Determine attributes
-		if self.attributes.output == None:
+		if self.attributes.output is None:
 			print('Section attributes default to section 1')
 			attributes = self.attributes.atts1
 		else:
 			attributes = self.attributes.output
 		# Determine image
-		if self.images.output == None:
+		if self.images.output is None:
 			print('Section image default to section 1')
 			image = self.images.img1
 		else:
 			image = self.images.output
 		# Determine contours
-		if self.contours.output == None:
+		if self.contours.output is None:
 			print('Section contours default to section 1')
 			contours = self.contours.conts1
 		else:

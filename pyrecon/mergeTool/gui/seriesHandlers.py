@@ -24,19 +24,19 @@ class seriesWrapper(QTabWidget):
 	def toObject(self):
 		'''Returns series object from the output of each resolution tab.'''
 		# Determine attributes
-		if self.attributes.output == None:
+		if self.attributes.output is None:
 			print('Series attributes default to series 1')
 			attributes = self.attributes.atts1
 		else:
 			attributes = self.attributes.output
 		# Determine contours
-		if self.contours.output == None:
+		if self.contours.output is None:
 			print('Series contours default to series 1')
 			contours = self.contours.conts1
 		else:
 			contours = self.contours.output
 		# Determine zcontours
-		if self.zcontours.output == None:
+		if self.zcontours.output is None:
 			print('Series zcontours default to series 1')
 			zcontours = self.zcontours.zconts1
 		else:
