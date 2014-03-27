@@ -5,17 +5,18 @@ import pyrecon
 class seriesWrapper(QTabWidget):
 	'''seriesWrapper is a TabWidget. It contains multiple widgets that can be swapped bia their tabs.'''
 	def __init__(self, series1, series2, parent=None):
-		QTabWidget.__init__(self, parent)
+		QTabWidget.__init__(self)
+		self.parent = parent
 		self.series1 = series1
 		self.series2 = series2
 		self.loadObjects()
 	def loadObjects(self):
 		# Load widgets to be used as tabs
-		self.attributes = pyrecon.mergeTool.seriesMerge.mergeAttributes(self.series1, self.series2, handler=seriesAttributes)
+		self.attributes = pyrecon.mergeTool.seriesMerge.mergeAttributes(self.series1, self.series2, handler=seriesAttributes, parent=self)
 		self.contours = pyrecon.mergeTool.seriesMerge.mergeContours(
-			self.series1, self.series2, handler=seriesContours)
+			self.series1, self.series2, handler=seriesContours, parent=self)
 		self.zcontours = pyrecon.mergeTool.seriesMerge.mergeZContours(
-			self.series1, self.series2, handler=seriesZContours)
+			self.series1, self.series2, handler=seriesZContours, parent=self)
 		# Add widgets as tabs
 		self.addTab(self.attributes, '&Attributes')
 		self.addTab(self.contours, '&Contours')
@@ -43,10 +44,21 @@ class seriesWrapper(QTabWidget):
 		
 		# Create merged series object
 		return pyrecon.classes.Series(attributes,contours,zcontours)
+	def isResolved(self):
+		'''Return true if self.attributes/contours/zcontours output attribute != None'''
+		resolved = (self.attributes.output is not None and
+					self.contours.output is not None and
+					self.zcontours.output is not None)
+		# Check if parent is merge item and set bg to green
+		if resolved and self.parent.__class__.__name__ == 'mergeItem':
+			self.parent.setBackground(QColor('lightgreen'))
+		return resolved
+
 # - Attributes
 class seriesAttributes(QWidget):
-	def __init__(self, dictA, dictB):
-		QWidget.__init__(self)
+	def __init__(self, dictA, dictB, parent=None):
+		QWidget.__init__(self, parent)
+		self.parent = parent # parent may not be .parentWidget()
 		self.setWindowTitle('Series Attributes')
 		self.atts1 = {}
 		self.atts2 = {}
@@ -100,16 +112,18 @@ class seriesAttributes(QWidget):
 	def chooseAtt(self):
 		if self.sender() == self.pick1:
 			self.output = self.atts1
-			self.pick1.setStyleSheet('background-color:lightgreen;') #===
+			self.pick1.setStyleSheet('background-color:lightgreen;')
 			self.pick2.setStyleSheet(QWidget().styleSheet())
 		elif self.sender() == self.pick2:
 			self.output = self.atts2
-			self.pick2.setStyleSheet('background-color:lightgreen;') #===
+			self.pick2.setStyleSheet('background-color:lightgreen;')
 			self.pick1.setStyleSheet(QWidget().styleSheet())
+		self.parent.isResolved()
 # - Contours
 class seriesContours(QWidget):
-	def __init__(self, contsA, contsB):
-		QWidget.__init__(self)
+	def __init__(self, contsA, contsB, parent=None):
+		QWidget.__init__(self, parent)
+		self.parent = parent
 		self.setWindowTitle('Series Contours')
 		self.conts1 = contsA
 		self.conts2 = contsB
@@ -167,10 +181,12 @@ class seriesContours(QWidget):
 			self.output = self.conts2
 			self.pick2.setStyleSheet('background-color:lightgreen;')
 			self.pick1.setStyleSheet(QWidget().styleSheet())
+		self.parent.isResolved()
 # - ZContours #===
 class seriesZContours(QWidget):
-	def __init__(self, uniqueA, uniqueB, mergedZConts):
-		QWidget.__init__(self)
+	def __init__(self, uniqueA, uniqueB, mergedZConts, parent=None):
+		QWidget.__init__(self, parent)
+		self.parent = parent
 		self.setWindowTitle('Series ZContours')
 		self.uniqueA = uniqueA
 		self.uniqueB = uniqueB
@@ -185,3 +201,4 @@ class seriesZContours(QWidget):
 		self.merged.extend(self.uniqueA)
 		self.merged.extend(self.uniqueB)
 		self.output = self.merged
+		self.parent.isResolved()

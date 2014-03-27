@@ -7,16 +7,17 @@ import numpy as np
 class sectionWrapper(QTabWidget):
 	'''sectionWrapper is a TabWidget. It contains multiple widgets that can be swapped via their tabs.'''
 	def __init__(self, section1, section2, parent=None):
-		QTabWidget.__init__(self, parent)
+		QTabWidget.__init__(self)
+		self.parent = parent
 		self.section1 = section1
 		self.section2 = section2
 		self.loadObjects(section1, section2)
 	def loadObjects(self, section1, section2):
 		# Load widgest to be used as tabs
-		self.attributes = pyrecon.mergeTool.sectionMerge.mergeAttributes(section1, section2, handler=sectionAttributes)
+		self.attributes = pyrecon.mergeTool.sectionMerge.mergeAttributes(section1, section2, handler=sectionAttributes, parent=self)
 		self.images = pyrecon.mergeTool.sectionMerge.mergeImages(
-			section1, section2, handler=sectionImages)
-		self.contours = pyrecon.mergeTool.sectionMerge.mergeContours(section1, section2, handler=sectionContours)
+			section1, section2, handler=sectionImages, parent=self)
+		self.contours = pyrecon.mergeTool.sectionMerge.mergeContours(section1, section2, handler=sectionContours, parent=self)
 		# Add widgets as tabs
 		self.addTab(self.attributes, '&Attributes')
 		self.addTab(self.images, '&Images')
@@ -45,11 +46,22 @@ class sectionWrapper(QTabWidget):
 		
 		# Create merged section object
 		return pyrecon.classes.Section(attributes,image,contours)
+	def isResolved(self):
+		'''Returns true if self.attributes/images/contours output attribute != None'''
+		resolved = (self.attributes.output is not None and
+					self.images.output is not None and
+					self.contours.output is not None)
+		# Check if parent is merge item and set bg to green
+		if resolved and self.parent.__class__.__name__ == 'mergeItem':
+			self.parent.setBackground(QColor('lightgreen'))
+		return resolved
+
 
 # - Attributes
 class sectionAttributes(QWidget):
-	def __init__(self, dictA, dictB):
-		QWidget.__init__(self)
+	def __init__(self, dictA, dictB, parent=None):
+		QWidget.__init__(self, parent)
+		self.parent = parent # parent different from parentWidget()
 		self.atts1 = {}
 		self.atts2 = {}
 		self.output = None
@@ -106,16 +118,18 @@ class sectionAttributes(QWidget):
 			self.output = self.atts2
 			self.pick2.setStyleSheet('background-color:lightgreen;')
 			self.pick1.setStyleSheet(QWidget().styleSheet())
+		self.parent.isResolved()
 # - Image
 class sectionImages(QWidget):
-	def __init__(self, image1, image2):
-		QWidget.__init__(self)
-		self.loadObjects()
-		self.loadFunctions(image1,image2)
-		self.loadLayout()
+	def __init__(self, image1, image2, parent=None):
+		QWidget.__init__(self, parent)
+		self.parent = parent
 		self.img1 = image1
 		self.img2 = image2 
 		self.output = None
+		self.loadObjects()
+		self.loadFunctions(image1,image2)
+		self.loadLayout()
 	def loadObjects(self):
 		self.img1label = QLabel(self)
 		self.img2label = QLabel(self)
@@ -146,8 +160,8 @@ class sectionImages(QWidget):
 		# Choose image buttons
 		self.pick1.setText('Choose this image')
 		self.pick2.setText('Choose this image')
-		self.pick1.clicked.connect( self.ret1 )
-		self.pick2.clicked.connect( self.ret2 )
+		self.pick1.clicked.connect( self.chooseImg )
+		self.pick2.clicked.connect( self.chooseImg )
 		# Adjust font/alignment
 		font = QFont('Arial',pointSize=18)
 		self.img1label.setFont(font)
@@ -181,18 +195,22 @@ class sectionImages(QWidget):
 		# hbox.addSpacing(50)
 		hbox.addLayout(vbox2)
 		self.setLayout(hbox)
-	def ret1(self):
-		self.output = self.img1
-		self.pick1.setStyleSheet('background-color:lightgreen;')
-		self.pick2.setStyleSheet(QWidget().styleSheet())
-	def ret2(self):
-		self.output = self.img2
-		self.pick2.setStyleSheet('background-color:lightgreen;')
-		self.pick1.setStyleSheet(QWidget().styleSheet())
+	def chooseImg(self):
+		if self.sender() == self.pick1:
+			self.output = self.img1
+			self.pick1.setStyleSheet('background-color:lightgreen;')
+			self.pick2.setStyleSheet(QWidget().styleSheet())
+		elif self.sender() == self.pick2:
+			self.output = self.img2
+			self.pick2.setStyleSheet('background-color:lightgreen;')
+			self.pick1.setStyleSheet(QWidget().styleSheet())
+		self.parent.isResolved()
+
 # - Contours
 class sectionContours(QWidget):
-	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None):
-		QWidget.__init__(self)
+	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None, parent=None):
+		QWidget.__init__(self, parent)
+		self.parent = parent
 		self.setWindowTitle('PyRECONSTRUCT Section Contours Resolver')
 		self.conts1 = uniqueA+[ovlp[0] for ovlp in compOvlp]+[ovlp[0] for ovlp in confOvlp]
 		self.conts2 = uniqueB+[ovlp[1] for ovlp in compOvlp]+[ovlp[1] for ovlp in confOvlp]
@@ -321,6 +339,8 @@ class sectionContours(QWidget):
 		inTable.clearSelection()
 		outTable.clearSelection()
 		self.doneBut.setStyleSheet(QWidget().styleSheet())
+		self.output = None
+		self.parent.parent.clicked()
 	def finish(self):
 		# Check ovlp table for unresolved conflicts (red)
 		numItems = self.outOvlp.count()
@@ -357,6 +377,7 @@ class sectionContours(QWidget):
 			else:
 				self.output.append(item.contour)
 		self.doneBut.setStyleSheet('background-color:lightgreen;')
+		self.parent.isResolved()
 class contourPixmap(QLabel):
 	'''QLabel that contains a contour drawn on its region in an image'''
 	def __init__(self, image, contour, pen=Qt.red):
