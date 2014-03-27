@@ -1,0 +1,10 @@
+TODO LIST (in order of high -> low priority)
+--------------------------------------------
+
+* BUGS
+* Series loading widget for long loads in GUI tools
+* Put other tools in main GUI application
+
+mergeTool
+* Right-click mergeItem to quick merge (select which section and turn green)
+* Show contours on resolve images 
