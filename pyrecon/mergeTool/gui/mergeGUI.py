@@ -69,7 +69,8 @@ class mergeSelection(QWidget):
         self.parentWidget().parentWidget().resolutionStack.setCurrentWidget(item.resolution)
         item.clicked()
     def finishMerge(self):
-        # Check if conflicts are resolved
+        # Check if conflicts are resolved #=== make more comprehensive?
+        ret = None
         for i in range(self.mergeSelect.count()):
             if self.mergeSelect.item(i).background() == QColor('red') or self.mergeSelect.item(i).background() == QColor('yellow'):
                 msg = QMessageBox()
@@ -78,14 +79,12 @@ class mergeSelection(QWidget):
                 msg.setStandardButtons( QMessageBox.Ok | QMessageBox.Cancel)
                 ret = msg.exec_()
                 break
-        if ret == QMessageBox.Ok:
+        if ret is None or ret == QMessageBox.Ok:
             dir = outdirBrowse()
             dir.exec_()
             path = dir.output
-            print('Output merged series to:',path)
             for i in range(self.mergeSelect.count()):
                 pyreconObject = self.mergeSelect.item(i).resolution.toObject()
-                print 'pObject:',pyreconObject.__dict__
                 if pyreconObject.__class__.__name__ == 'Section':
                     xml.writeSection(pyreconObject, path)
                 elif pyreconObject.__class__.__name__ == 'Series':
