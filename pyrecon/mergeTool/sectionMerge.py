@@ -54,14 +54,14 @@ def graphicalMerge(section1, section2):
 	return Section(mergedImage, mergedContours, mergedAttributes)
 # MERGE FUNCTIONS
 # - Image
-def mergeImages(sectionA, sectionB, handler=handlers.sectionImages):
+def mergeImages(sectionA, sectionB, handler=handlers.sectionImages, parent=None):
 	srcEq = sectionA.image.src == sectionB.image.src
 	magEq = sectionA.image.mag == sectionB.image.mag
 	if srcEq & magEq: # If both the src and mag components are equal 
 		return sectionA.image
-	return handler(sectionA.image, sectionB.image)
+	return handler(sectionA.image, sectionB.image, parent=parent)
 # - Contours
-def mergeContours(sectionA, sectionB, handler=handlers.sectionContours):
+def mergeContours(sectionA, sectionB, handler=handlers.sectionContours, parent=None):
 	'''Returns merged contours between two sections'''
 	# Populate shapely shapes
 	sectionA.popShapes()
@@ -84,7 +84,7 @@ def mergeContours(sectionA, sectionB, handler=handlers.sectionContours):
 	# Identify unique contours
 	uniqueA, uniqueB = contsA, contsB
 	# Handle conflicts
-	mergedConts = handler(uniqueA, compOvlp, confOvlp, uniqueB, sections=(sectionA,sectionB))
+	mergedConts = handler(uniqueA, compOvlp, confOvlp, uniqueB, sections=(sectionA,sectionB), parent=parent)
 	return mergedConts
 def checkOverlappingContours(contsA, contsB, threshold=(1+2**(-17)), sameName=True):
 	'''Returns lists of mutually overlapping contours.''' 
@@ -131,7 +131,7 @@ def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName
 					confOvlps.append([contA, contB])
 	return compOvlps, confOvlps
 # - Attributes
-def mergeAttributes(sectionA, sectionB, handler=handlers.sectionAttributes):
+def mergeAttributes(sectionA, sectionB, handler=handlers.sectionAttributes, parent=None):
 	# extract attributes from class dictionaries
 	attributes = ['name', 'index', 'thickness', 'alignLocked']
 	secAatts = {} 
@@ -139,4 +139,4 @@ def mergeAttributes(sectionA, sectionB, handler=handlers.sectionAttributes):
 	for key in attributes:
 		secAatts[key] = sectionA.__dict__[key]
 		secBatts[key] = sectionB.__dict__[key]
-	return handler(secAatts, secBatts)
+	return handler(secAatts, secBatts, parent=parent)
