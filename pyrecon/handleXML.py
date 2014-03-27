@@ -429,7 +429,20 @@ def writeSeries(series, directory, outpath=None, sections=False, overwrite=False
 		outpath = directory+series.name+'.ser'
     	# Raise error if this file already exists to prevent overwrite
 	if not overwrite and os.path.exists(outpath):
-		a = raw_input('Files already exist in ths directory: Do you want to overwrite them? (y/n) ')
+		msg = 'CAUTION: Files already exist in ths directory: Do you want to overwrite them?'
+		try: # Graphical
+			from PySide.QtCore import *
+			from PySide.QtGui import *
+			msgBox = QMessageBox()
+			msgBox.setText(msg)
+			msgBox.setStandardButtons( QMessageBox.Ok | QMessageBox.Cancel)
+			response = msgBox.exec_()
+			if response == QMessageBox.Ok:
+				a = 'yes'
+			else:
+				a = 'no'
+		except: # Terminal
+			a = raw_input(msg+' (y/n)')
 		overwrite = str(a).lower() in ['y','yes']
 		if not overwrite:
 			raise IOError('\nFilename %s already exists.\nQuiting write command to avoid overwrite'%outpath)
