@@ -29,6 +29,11 @@ class ZContour:
                     # Dict:attributes
                     if key in self.__dict__:
                         self.__dict__[key] = arg[key]
+    def __eq__(self,other):
+        return (self.name == other.name and
+                self.points == other.points)
+    def __ne__(self,other):
+        return not self.__eq__(other)
     # mergeTool Functions
     def overlaps(self, other, threshold=(1+2**(-17))):
         def distance(pt0, pt1):

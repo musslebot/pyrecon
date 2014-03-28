@@ -1,7 +1,7 @@
 '''Driver for merging two series objects (as per .ser XML file). Does not take into account differences in the sections associated with this series -- refer to sectionMerge.py for merging sections.'''
 from pyrecon.classes import *
 import conflictResolution as handlers
-import conflictResolutionGUI as handlersGUI
+import gui.sectionHandlers as handlersGUI
 
 # MAIN FUNCTIONS
 def main(series1, series2, graphical=False):
@@ -62,11 +62,11 @@ def graphicalMerge(series1, series2):
 	return Series(mergedContours, mergedZContours, mergedAttributes)
 # MERGE FUNCTIONS
 # - Contours #=== low priority
-def mergeContours(series1, series2, handler=handlers.seriesContours):
+def mergeContours(series1, series2, handler=handlers.seriesContours, parent=None):
 	#=== Series contours reflect RECONSTRUCT palette options, return A for now
-	return handler(series1.contours, series2.contours)
+	return handler(series1.contours, series2.contours, parent=parent)
 # - ZContours
-def mergeZContours(series1, series2, threshold=(1+2**(-17)), handler=handlers.seriesZContours): #=== HIGH PRIORITY
+def mergeZContours(series1, series2, threshold=(1+2**(-17)), handler=handlers.seriesZContours, parent=None): #=== HIGH PRIORITY
 	zConts1 = [cont for cont in series1.zcontours]
 	zConts2 = [cont for cont in series2.zcontours]
 	mergedZConts = []
@@ -76,7 +76,7 @@ def mergeZContours(series1, series2, threshold=(1+2**(-17)), handler=handlers.se
 				mergedZConts.append( elem ) 
 				zConts1.remove( elem )
 				zConts2.remove( elem2 )
-	return handler(zConts1, zConts2, mergedZConts)
+	return handler(zConts1, zConts2, mergedZConts, parent=parent)
 # - Attributes #=== low priority?
-def mergeAttributes(series1, series2, handler=handlers.seriesAttributes):
-	return handler(series1.__dict__, series2.__dict__) #=== 
+def mergeAttributes(series1, series2, handler=handlers.seriesAttributes, parent=None):
+	return handler(series1.__dict__, series2.__dict__, parent=parent) #=== 

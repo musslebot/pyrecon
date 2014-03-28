@@ -1,0 +1,4 @@
+LIST OF BUGS (in order of high -> low priority)
+-----------------------------------------------
+
+* mergeTool issues when presented with equivalent series/sections: handlers return objects instead of handlers (i.e. in GUI, uses .output attribute for resolution, whereas handler will return a pyreconstruct object if equivalent [which has no .output attribute])

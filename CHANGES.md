@@ -1,5 +1,11 @@
 Visit the [GitHub repo](https://github.com/wtrdrnkr/pyrecon) for additional detail
 
+Version 2.1.X
+===
+> 2.1.0
+---
+* New GUI for pyrecon!
+
 Version 2.0.X
 ===
 > 2.0.0
@@ -19,7 +25,7 @@ Version 2.0.X
 
 > 2.0.1
 ---
-* Added setup.cfg to recognize README.md on PyPI
+* Added setup.cfg to recognize README.md on PyPI (removed in 2.0.3)
 
 > 2.0.2
 ---

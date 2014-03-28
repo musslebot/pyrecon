@@ -1,7 +1,7 @@
 '''Driver for merging two section objects (as per section XML file).'''
 from pyrecon.classes import *
 import conflictResolution as handlers
-import conflictResolutionGUI as handlersGUI
+import gui.sectionHandlers as handlersGUI
 # MAIN FUNCTIONS
 def main(section1, section2, graphical=False):
 	# Check for type/index issues
@@ -54,14 +54,14 @@ def graphicalMerge(section1, section2):
 	return Section(mergedImage, mergedContours, mergedAttributes)
 # MERGE FUNCTIONS
 # - Image
-def mergeImages(sectionA, sectionB, handler=handlers.sectionImages):
-	srcEq = sectionA.image.src == sectionB.image.src
-	magEq = sectionA.image.mag == sectionB.image.mag
+def mergeImages(sectionA, sectionB, handler=handlers.sectionImages, parent=None):
+	srcEq = (sectionA.image.src == sectionB.image.src)
+	magEq = (sectionA.image.mag == sectionB.image.mag)
 	if srcEq & magEq: # If both the src and mag components are equal 
 		return sectionA.image
-	return handler(sectionA.image, sectionB.image)
+	return handler(sectionA.image, sectionB.image, parent=parent)
 # - Contours
-def mergeContours(sectionA, sectionB, handler=handlers.sectionContours):
+def mergeContours(sectionA, sectionB, handler=handlers.sectionContours, parent=None):
 	'''Returns merged contours between two sections'''
 	# Populate shapely shapes
 	sectionA.popShapes()
@@ -84,7 +84,7 @@ def mergeContours(sectionA, sectionB, handler=handlers.sectionContours):
 	# Identify unique contours
 	uniqueA, uniqueB = contsA, contsB
 	# Handle conflicts
-	mergedConts = handler(uniqueA, compOvlp, confOvlp, uniqueB, sections=(sectionA,sectionB))
+	mergedConts = handler(uniqueA, compOvlp, confOvlp, uniqueB, sections=(sectionA,sectionB), parent=parent)
 	return mergedConts
 def checkOverlappingContours(contsA, contsB, threshold=(1+2**(-17)), sameName=True):
 	'''Returns lists of mutually overlapping contours.''' 
@@ -131,15 +131,12 @@ def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName
 					confOvlps.append([contA, contB])
 	return compOvlps, confOvlps
 # - Attributes
-def mergeAttributes(sectionA, sectionB, handler=handlers.sectionAttributes):
-	# Evaluate equivalency between attributes
-	nameEq = (sectionA.name == sectionB.name)
-	indexEq = (sectionA.index == sectionB.index)
-	thicknessEq = (sectionA.thickness == sectionB.thickness)
-	alignLockedEq = (sectionA.alignLocked == sectionB.alignLocked)
-	if nameEq & indexEq & thicknessEq & alignLockedEq: # All attributes are equivalent
-		return {'name':sectionA.name,
-		'index':sectionA.index,
-		'thickness':sectionA.thickness,
-		'alignLocked':sectionA.alignLocked}
-	return handler(sectionA.__dict__, sectionB.__dict__)
+def mergeAttributes(sectionA, sectionB, handler=handlers.sectionAttributes, parent=None):
+	# extract attributes from class dictionaries
+	attributes = ['name', 'index', 'thickness', 'alignLocked']
+	secAatts = {} 
+	secBatts = {}
+	for key in attributes:
+		secAatts[key] = sectionA.__dict__[key]
+		secBatts[key] = sectionB.__dict__[key]
+	return handler(secAatts, secBatts, parent=parent)
