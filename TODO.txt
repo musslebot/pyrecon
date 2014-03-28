@@ -1,7 +1,7 @@
 TODO LIST (in order of high -> low priority)
 --------------------------------------------
 
-* BUGS
+* BUGS.txt
 * Series loading widget for long loads in GUI tools
 * Put other tools in main GUI application
 
