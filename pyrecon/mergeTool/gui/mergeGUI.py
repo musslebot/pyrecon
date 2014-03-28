@@ -7,7 +7,7 @@ from pyrecon.main import openSeries
 from pyrecon.mergeTool.gui import sectionHandlers, seriesHandlers
 
 class mergeSelection(QWidget):
-    '''Select what section/attributes to look at.'''
+    '''Select what section/series to look at.'''
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.loadObjects()
@@ -127,7 +127,6 @@ class mergeItem(QListWidgetItem):
     def clicked(self):
         if not self.isResolved():
             self.setBackground(QColor('yellow'))
-
 
 class seriesLoad(QDialog):
     '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
