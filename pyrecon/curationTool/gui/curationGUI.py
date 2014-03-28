@@ -23,6 +23,7 @@ class curationToolStuff(QWidget):
 		self.runButton.setText('Run curationTool')
 		self.runButton.clicked.connect( self.runCuration )
 		self.runButton.setMinimumHeight(50)
+		self.runButton.setFlat(True)
 	def loadLayout(self):
 		main = QVBoxLayout()
 		main.addWidget( self.loadButton )
@@ -34,6 +35,8 @@ class curationToolStuff(QWidget):
 		seriesDialog.exec_()
 		self.series = openSeries(seriesDialog.output)
 		self.loadButton.setText('Change Series\nCurrent series:'+self.series.name)
+		self.runButton.setStyleSheet(QPushButton().styleSheet())
+		self.runButton.setFlat(False)
 	def runCuration(self):
 		curationOut = pyrecon.curationTool.main(self.series, *self.options.parameters(), printOut=False)
 		self.outputWidget.loadOutput(curationOut)
@@ -102,6 +105,7 @@ class outputBox(QWidget):
 		self.saveButton.setText('Save to .txt')
 		self.saveButton.clicked.connect( self.saveToText )
 		self.saveButton.setMinimumHeight(50)
+		self.saveButton.setFlat(True)
 	def loadLayout(self):
 		main = QVBoxLayout()
 		main.addWidget(self.scrollArea)
@@ -113,6 +117,7 @@ class outputBox(QWidget):
 			for lineOut in fxnOutput:
 				text.setText(text.text()+lineOut+'\n')
 		self.scrollArea.setWidget(text)
+		self.saveButton.setFlat(False)
 	def saveToText(self):
 		print self.scrollArea.widget().text()
 		saveDia = saveDialog()
