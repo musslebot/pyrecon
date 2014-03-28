@@ -57,7 +57,7 @@ class pyreconMainWindow(QMainWindow):
         self.curationTool = curationToolStuff(self)
         self.curateSelector.setWidget( self.curationTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.curateSelector )
-        self.setCentralWidget(self.curationTool.output)
+        self.setCentralWidget(self.curationTool.outputWidget)
 
     def loadCalibrationTool(self): #===
         print('Load calibration widget')
