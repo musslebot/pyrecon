@@ -15,16 +15,9 @@ class pyreconMainWindow(QMainWindow):
         self.resize( newSize )
         self.statusBar().showMessage('Ready! Welcome to PyRECONSTRUCT')
     def loadMenus(self):
-        # self.fileMenu = self.menuBar().addMenu("&File")
-        # self.loadFileMenu()
         self.toolsMenu = self.menuBar().addMenu("&Tools")
         self.loadToolsMenu()
         self.helpMenu = self.menuBar().addMenu("&Help")
-    # def loadFileMenu(self):
-    #     saveAction = QAction( QIcon(), 'Save', self)
-    #     saveAction.triggered.connect( self.save )
-    #     saveAction.setStatusTip( 'Save current series' )
-    #     self.fileMenu.addAction( saveAction )
     def loadToolsMenu(self):
         # 1) Create Actions
         # - mergeTool
@@ -64,8 +57,6 @@ class pyreconMainWindow(QMainWindow):
         print('Load excel widget')
     def loadCurationTool(self): #===
         print('Load curation widget')
-    # def save(self): #===
-    #     print('THIS WILL SAVE YOUR SERIES (in the future :D)')
 
 class browseWidget(QWidget):
     '''Provides a QLineEdit and button for browsing through a file system. browseType can be directory, file or series but defaults to directory.'''
