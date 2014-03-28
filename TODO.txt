@@ -12,8 +12,5 @@ mergeTool
 calibrationTool
 * Plug into GUI
 
-curationTool
-* Plug into GUI
-
 excelTool
 * Plug into GUI
