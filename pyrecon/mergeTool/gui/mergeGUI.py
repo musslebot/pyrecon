@@ -65,7 +65,7 @@ class mergeSelection(QWidget):
             self.mergeSelect.addItem( sectionItem )
             # Add mergeItem's resolution widget to mainWindow's resolutionStack
             self.parentWidget().parentWidget().resolutionStack.addWidget(sectionItem.resolution)
-    def itemClicked(self, item):
+    def itemClicked(self, item): #=== new mouse event
         self.parentWidget().parentWidget().resolutionStack.setCurrentWidget(item.resolution)
         item.clicked()
     def finishMerge(self):
@@ -124,7 +124,7 @@ class mergeItem(QListWidgetItem):
     def isResolved(self):
         '''Returns True if all resolutions have output != None.'''
         return self.resolution.isResolved()
-    def clicked(self):
+    def clicked(self, button=None): #===
         if not self.isResolved():
             self.setBackground(QColor('yellow'))
 
@@ -149,3 +149,22 @@ class outdirBrowse(QDialog):
         self.output = str(self.path.path.text())
         self.close()
 
+class sectionList(QListWidget):
+    def __init__(self, parent=None):
+        super(sectionList, self).__init__(parent)
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def mousePressEvent(self, event):
+        self._mouse_button = event.button()
+        super(sectionList, self).mousePressEvent(event)
+    def on_item_clicked(self, item):
+        #===
+        return
+    def loadObjects(self):
+        return
+    def loadFunction(self):
+        self.itemClicked.connect(self.on_item_clicked)
+        return
+    def loadLayout(self):
+        return
