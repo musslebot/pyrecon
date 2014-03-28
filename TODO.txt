@@ -1,10 +1,19 @@
 TODO LIST (in order of high -> low priority)
 --------------------------------------------
-
 * BUGS.txt
+
 * Series loading widget for long loads in GUI tools
-* Put other tools in main GUI application
+* Test if command-line versions still work
 
 mergeTool
 * Right-click mergeItem to quick merge (select which section and turn green)
-* Show contours on resolve images 
+* Show contours on resolve images
+
+calibrationTool
+* Plug into GUI
+
+curationTool
+* Plug into GUI
+
+excelTool
+* Plug into GUI
