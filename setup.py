@@ -12,9 +12,14 @@ setup(
       packages=[
                 'pyrecon',
                 'pyrecon.classes',
+                
                 'pyrecon.calibrationTool',
+
                 'pyrecon.curationTool',
+                'pyrecon.curationTool.gui',
+
                 'pyrecon.excelTool',
+                
                 'pyrecon.mergeTool',
                 'pyrecon.mergeTool.gui'
                 ],
