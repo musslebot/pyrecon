@@ -56,7 +56,6 @@ class sectionWrapper(QTabWidget):
 			self.parent.setBackground(QColor('lightgreen'))
 		return resolved
 
-
 # - Attributes
 class sectionAttributes(QWidget):
 	def __init__(self, dictA, dictB, parent=None):
@@ -205,7 +204,6 @@ class sectionImages(QWidget):
 			self.pick2.setStyleSheet('background-color:lightgreen;')
 			self.pick1.setStyleSheet(QWidget().styleSheet())
 		self.parent.isResolved()
-
 # - Contours
 class sectionContours(QWidget):
 	def __init__(self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None, parent=None):
@@ -460,6 +458,9 @@ class resolveOvlp(QDialog):
 		self.cont1But = QPushButton('Choose Contour 1')
 		self.cont2But = QPushButton('Choose Contour 2')
 		self.bothContBut = QPushButton('Choose Both Contours')
+		self.chooseButs = [self.cont1But,self.cont2But,self.bothContBut]
+		for but in self.chooseButs:
+			but.setMinimumHeight(50)
 		# Labels to hold pixmap
 		self.pix1 = None
 		self.pix2 = None
