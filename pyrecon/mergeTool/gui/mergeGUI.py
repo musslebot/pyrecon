@@ -41,7 +41,7 @@ class mergeSelection(QWidget):
         self.setLayout(mainBox)
     def loadSeries(self):
         # Open dialog for entering/browsing series paths
-        seriesDialog = seriesLoad()
+        seriesDialog = doubleSeriesLoad()
         seriesDialog.exec_()
         # Process dialog arguments
         self.series1 = openSeries(seriesDialog.output[0])
@@ -127,31 +127,6 @@ class mergeItem(QListWidgetItem):
     def clicked(self):
         if not self.isResolved():
             self.setBackground(QColor('yellow'))
-
-class seriesLoad(QDialog):
-    '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
-    def __init__(self, parent=None):
-        QDialog.__init__(self, parent)
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-    def loadObjects(self):
-        self.series1 = browseWidget(browseType='series')
-        self.series2 = browseWidget(browseType='series')
-        self.closeButton = QPushButton()
-        self.closeButton.setText('Load Series')
-    def loadFunctions(self):
-        self.closeButton.clicked.connect( self.loadClose )
-    def loadLayout(self):
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.series1)
-        vbox.addWidget(self.series2)
-        vbox.addWidget(self.closeButton)
-        self.setLayout(vbox)
-    def loadClose(self):
-        # Add paths to self.output
-        self.output = ( str(self.series1.path.text()), str(self.series2.path.text()) )
-        self.close()
 
 class outdirBrowse(QDialog):
     def __init__(self, parent=None):
