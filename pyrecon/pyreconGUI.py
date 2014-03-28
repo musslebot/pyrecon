@@ -50,13 +50,20 @@ class pyreconMainWindow(QMainWindow):
         # stackedWidget contains each mergeItem's resolution wrapper
         self.resolutionStack = QStackedWidget()
         self.setCentralWidget( self.resolutionStack )
+    def loadCurationTool(self): #===
+        from pyrecon.curationTool.gui.curationGUI import curationToolStuff
+        # Left dockWidget: load series/options
+        self.curateSelector = QDockWidget()
+        self.curationTool = curationToolStuff(self)
+        self.curateSelector.setWidget( self.curationTool )
+        self.addDockWidget( Qt.LeftDockWidgetArea, self.curateSelector )
+        self.setCentralWidget(self.curationTool.output)
 
     def loadCalibrationTool(self): #===
         print('Load calibration widget')
     def loadExcelTool(self): #===
         print('Load excel widget')
-    def loadCurationTool(self): #===
-        print('Load curation widget')
+    
 
 class browseWidget(QWidget):
     '''Provides a QLineEdit and button for browsing through a file system. browseType can be directory, file or series but defaults to directory.'''
@@ -99,6 +106,54 @@ class browseWidget(QWidget):
     def browseSeries(self):
         fileName = QFileDialog.getOpenFileName(self, "Open Series", "/home/", "Series File (*.ser)")
         self.path.setText( str(fileName[0]))
+
+class singleSeriesLoad(QDialog):
+    '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
+    def __init__(self, parent=None):
+        QDialog.__init__(self, parent)
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def loadObjects(self):
+        self.series = browseWidget(browseType='series')
+        self.closeButton = QPushButton()
+        self.closeButton.setText('Load Series')
+    def loadFunctions(self):
+        self.closeButton.clicked.connect( self.loadClose )
+    def loadLayout(self):
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.series)
+        vbox.addWidget(self.closeButton)
+        self.setLayout(vbox)
+    def loadClose(self):
+        # Add paths to self.output
+        self.output = str(self.series.path.text())
+        self.close()
+
+class doubleSeriesLoad(QDialog):
+    '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
+    def __init__(self, parent=None):
+        QDialog.__init__(self, parent)
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def loadObjects(self):
+        self.series1 = browseWidget(browseType='series')
+        self.series2 = browseWidget(browseType='series')
+        self.closeButton = QPushButton()
+        self.closeButton.setText('Load Series')
+    def loadFunctions(self):
+        self.closeButton.clicked.connect( self.loadClose )
+    def loadLayout(self):
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.series1)
+        vbox.addWidget(self.series2)
+        vbox.addWidget(self.closeButton)
+        self.setLayout(vbox)
+    def loadClose(self):
+        # Add paths to self.output
+        self.output = ( str(self.series1.path.text()), str(self.series2.path.text()) )
+        self.close()
 
 if __name__ == '__main__':
     app = QApplication.instance()
