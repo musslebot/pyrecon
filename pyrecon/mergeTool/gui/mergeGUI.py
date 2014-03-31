@@ -124,10 +124,13 @@ class mergeSelection(QWidget):
                 item.resolution.contours.moveSelectedO.click()
                 # Click merge button (conflicts resolved)
                 item.resolution.contours.finish()
-            elif item.object1.__class__.__name__ == 'Series': #===
+            elif item.object1.__class__.__name__ == 'Series':
                 item.resolution.attributes.pick1.click()
                 item.resolution.contours.pick1.click()
-                # zcontour uniques #===
+                # ZContours
+                item.resolution.zcontours.output = item.resolution.zcontours.uniqueA+item.resolution.zcontours.merged
+                # - update lab
+                item.resolution.zcontours.lab.setText('Only section A\'s zcontours were kept, as per the quickmerge option.')
     def quickMergeB(self, items):
         '''Selects B version for all conflicts in items.'''
         for item in items:
@@ -148,10 +151,13 @@ class mergeSelection(QWidget):
                 item.resolution.contours.moveSelectedO.click()
                 # Click merge button (conflicts resolved)
                 item.resolution.contours.finish()
-            elif item.object1.__class__.__name__ == 'Series': #===
+            elif item.object1.__class__.__name__ == 'Series':
                 item.resolution.attributes.pick2.click()
                 item.resolution.contours.pick2.click()
-                # zcontour uniques #===
+                # ZContours... all but A
+                item.resolution.zcontours.output = item.resolution.zcontours.uniqueA+item.resolution.zcontours.merged
+                # - update lab
+                item.resolution.zcontours.lab.setText('Only section B\'s zcontours were kept, as per the quickmerge option.')
     def quickMergeABContsA(self, items):
         '''This completes the merge resolution by selecting the A version of non-contour conflicts. For contour conflicts, this selects BOTH for overlaps and also includes uniques from A and B.'''
         for item in items:
@@ -175,10 +181,10 @@ class mergeSelection(QWidget):
                 item.resolution.contours.moveSelectedO.click()
                 # Click merge button (conflicts resolved)
                 item.resolution.contours.finish()
-            elif item.object1.__class__.__name__ == 'Series': #===
+            elif item.object1.__class__.__name__ == 'Series':
                 item.resolution.attributes.pick1.click()
                 item.resolution.contours.pick1.click()
-                # zcontour uniques #===
+                # ZContours are default
     def quickMergeABContsB(self, items):
         '''This completes the merge resolution by selection the B version of non-contour conflicts. For contour conflicts, this selects BOTH for overlaps and also includes uniques from A and B.'''
         for item in items:
@@ -202,10 +208,10 @@ class mergeSelection(QWidget):
                 # Click merge button (conflicts resolved)
                 item.resolution.contours.finish()
                 # - - Move to output
-            elif item.object1.__class__.__name__ == 'Series': #===
+            elif item.object1.__class__.__name__ == 'Series':
                 item.resolution.attributes.pick2.click()
                 item.resolution.contours.pick2.click()
-                # zcontour uniques #===
+                # ZContours are default
     def finishMerge(self):
         # Check if conflicts are resolved #=== make more comprehensive?
         ret = None
