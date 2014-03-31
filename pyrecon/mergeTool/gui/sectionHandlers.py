@@ -74,8 +74,8 @@ class sectionAttributes(QWidget):
 			self.atts2[key] = dictB[key]
 		self.pick1 = QPushButton()
 		self.pick2 = QPushButton()
-		self.pick1.setText('Choose Section 1 Attributes')
-		self.pick2.setText('Choose Section 2 Attributes')
+		self.pick1.setText('Choose Section Attributes')
+		self.pick2.setText('Choose Section Attributes')
 		self.pick1.setMinimumHeight(50)
 		self.pick2.setMinimumHeight(50)
 		self.attLabel1 = QLabel()
@@ -99,10 +99,10 @@ class sectionAttributes(QWidget):
 		self.scrollLabel1.setWidget(self.attLabel1)
 		self.scrollLabel2.setWidget(self.attLabel2)
 		# Add widgets to layout
-		sec1.addWidget(QLabel('Section 1 Attributes'))
+		# sec1.addWidget(QLabel('Section 1 Attributes'))
 		sec1.addWidget(self.scrollLabel1)
 		sec1.addWidget(self.pick1)
-		sec2.addWidget(QLabel('Section 2 Attributes'))
+		# sec2.addWidget(QLabel('Section 2 Attributes'))
 		sec2.addWidget(self.scrollLabel2)
 		sec2.addWidget(self.pick2)
 		main.addLayout(sec1)
@@ -130,8 +130,8 @@ class sectionImages(QWidget):
 		self.loadFunctions(image1,image2)
 		self.loadLayout()
 	def loadObjects(self):
-		self.img1label = QLabel(self)
-		self.img2label = QLabel(self)
+		# self.img1label = QLabel(self)
+		# self.img2label = QLabel(self)
 		self.pix1 = QLabel(self)
 		self.pix2 = QLabel(self)
 		self.img1detail = QLabel(self)
@@ -141,10 +141,10 @@ class sectionImages(QWidget):
 		self.pick1.setMinimumHeight(50)
 		self.pick2.setMinimumHeight(50)
 	def loadFunctions(self, image1, image2):
-		self.img1label.setText('Section A\'s Image\n'+'-'*17)
-		self.img1label.setAlignment(Qt.AlignHCenter)
-		self.img2label.setText('Section B\'s Image\n'+'-'*17)
-		self.img2label.setAlignment(Qt.AlignHCenter)
+		# self.img1label.setText('Section A\'s Image\n'+'-'*17)
+		# self.img1label.setAlignment(Qt.AlignHCenter)
+		# self.img2label.setText('Section B\'s Image\n'+'-'*17)
+		# self.img2label.setAlignment(Qt.AlignHCenter)
 		self.img1detail.setText('\n'.join([(str(item)+':\t'+str(image1.__dict__[item])) for item in image1.__dict__ if item != 'transform']))
 		self.img2detail.setText('\n'.join([(str(item)+':\t'+str(image2.__dict__[item])) for item in image2.__dict__ if item != 'transform']))
 		# Load images
@@ -163,12 +163,12 @@ class sectionImages(QWidget):
 		self.pick2.clicked.connect( self.chooseImg )
 		# Adjust font/alignment
 		font = QFont('Arial',pointSize=18)
-		self.img1label.setFont(font)
-		self.img2label.setFont(font)
+		# self.img1label.setFont(font)
+		# self.img2label.setFont(font)
 		self.img1detail.setFont(font)
 		self.img2detail.setFont(font)
-		self.img1label.setAlignment(Qt.AlignHCenter)
-		self.img2label.setAlignment(Qt.AlignHCenter)
+		# self.img1label.setAlignment(Qt.AlignHCenter)
+		# self.img2label.setAlignment(Qt.AlignHCenter)
 		self.img1detail.setAlignment(Qt.AlignHCenter)
 		self.img2detail.setAlignment(Qt.AlignHCenter)
 		self.pix1.setFont(font)
@@ -180,13 +180,13 @@ class sectionImages(QWidget):
 		hbox = QHBoxLayout()
 		# Left image
 		vbox1 = QVBoxLayout()
-		vbox1.addWidget(self.img1label)
+		# vbox1.addWidget(self.img1label)
 		vbox1.addWidget(self.pix1)
 		vbox1.addWidget(self.img1detail)
 		vbox1.addWidget(self.pick1)
 		# Right image
 		vbox2 = QVBoxLayout()
-		vbox2.addWidget(self.img2label)
+		# vbox2.addWidget(self.img2label)
 		vbox2.addWidget(self.pix2)
 		vbox2.addWidget(self.img2detail)
 		vbox2.addWidget(self.pick2)
@@ -455,8 +455,8 @@ class resolveOvlp(QDialog):
 		self.exec_()
 	def loadObjects(self):
 		# Buttons to choose contours
-		self.cont1But = QPushButton('Choose Contour 1')
-		self.cont2But = QPushButton('Choose Contour 2')
+		self.cont1But = QPushButton('Choose Contour A')
+		self.cont2But = QPushButton('Choose Contour B')
 		self.bothContBut = QPushButton('Choose Both Contours')
 		self.chooseButs = [self.cont1But,self.cont2But,self.bothContBut]
 		for but in self.chooseButs:
