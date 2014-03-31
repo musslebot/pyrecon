@@ -25,7 +25,9 @@ class mergeSelection(QWidget):
         self.finishedButton.setText('&Finish Merge') 
         self.finishedButton.clicked.connect( self.finishMerge )
         # What to do when an item is clicked
+        self.mergeSelect.setSelectionMode( QAbstractItemView.ExtendedSelection ) #===
         self.mergeSelect.itemClicked.connect( self.itemClicked )
+        self.mergeSelect.itemDoubleClicked.connect( self.itemDoubleClicked ) #===
         # Hide list and finish button until series successfully loaded
         self.mergeSelect.hide()
         self.finishedButton.hide()
@@ -65,9 +67,102 @@ class mergeSelection(QWidget):
             self.mergeSelect.addItem( sectionItem )
             # Add mergeItem's resolution widget to mainWindow's resolutionStack
             self.parentWidget().parentWidget().resolutionStack.addWidget(sectionItem.resolution)
-    def itemClicked(self, item): #=== new mouse event
+    def itemClicked(self, item):
+        '''clicking a mergeItem opens a detailed conflict resolution window for the user to interact with'''
         self.parentWidget().parentWidget().resolutionStack.setCurrentWidget(item.resolution)
         item.clicked()
+    def itemDoubleClicked(self, item): #===
+        '''double-clicking a mergeItem displays a small menu allowing the user to use quick merge options.'''
+        items = self.mergeSelect.selectedItems()
+        # Make menu
+        dcMenu = QMenu()
+        # - Options for when doubleClicked
+        selAAction = QAction(QIcon(), 'select A all', self) # Select the A versions of all
+        selBAction = QAction(QIcon(), 'select B all', self) # Select the B versions of all
+        selABContsActionA = QAction(QIcon(), 'select both contours, rest A', self) # Select both for contour conflicts, A for rest
+        selABContsActionB = QAction(QIcon(), 'select both contours, rest B', self) # Select both for contour conflicts, B for rest
+        # - ToolTips
+        selAAction.setToolTip('Select the A version of everything for this item(s)')
+        selBAction.setToolTip('Select the B version of everything for this item(s)')
+        selABContsActionA.setToolTip('Select A&&B contours, A for everything else')
+        selABContsActionB.setToolTip('Select A&&B contours, B for everything else')
+        # - Add options to menu
+        dcMenu.addAction(selAAction)
+        dcMenu.addAction(selBAction)
+        dcMenu.addAction(selABContsActionA)
+        dcMenu.addAction(selABContsActionB)
+
+        # Pop open menu for user selection
+        action = dcMenu.exec_( QCursor.pos() )
+
+        # Perform selected action
+        if action == selAAction:
+            self.quickMergeA(items)
+        elif action == selBAction:
+            self.quickMergeB(items)
+        elif action == selABContsActionA:
+            self.quickMergeABContsA(items)
+        elif action == selABContsActionB:
+            self.quickMergeABContsB(items)
+
+    def quickMergeA(self, items):
+        '''Selects A version for all conflicts in items.'''
+        for item in items:
+            if item.object1.__class__.__name__ == 'Section':
+                item.resolution.attributes.pick1.clicked()
+                item.resolution.images.pick1.clicked()
+                # Contours #===
+                # - Move uniqueA to output
+                # - Resolve conflicts with A
+                # - - Move to output
+            elif item.object1.__class__.__name__ == 'Series':
+                item.resolution.attributes.pick1.clicked()
+                item.resolution.contours.pick1.clicked()
+                # zcontour uniques #===
+
+    def quickMergeB(self, items):
+        '''Selects B version for all conflicts in items.'''
+        for item in items:
+            if item.object1.__class__.__name__ == 'Section':
+                item.resolution.attributes.pick2.clicked()
+                item.resolution.images.pick2.clicked() 
+                # Contours #===
+                # - Move uniqueB to output
+                # - Resolve conflicts with B
+                # - - Move to output
+            elif item.object1.__class__.__name__ == 'Series':
+                item.resolution.attributes.pick2.clicked()
+                item.resolution.contours.pick2.clicked()
+                # zcontour uniques #===
+    def quickMergeABContsA(self, items):
+        '''This completes the merge resolution by selecting the A version of non-contour conflicts. For contour conflicts, this selects BOTH for overlaps and also includes uniques from A and B.'''
+        for item in items:
+            if item.object1.__class__.__name__ == 'Section':
+                item.resolution.attributes.pick1.clicked()
+                item.resolution.images.pick1.clicked() 
+                # Contours #===
+                # - Move uniqueA and uniqueB to output
+                # - Resolve conflicts with BOTH
+                # - - Move to output
+            elif item.object1.__class__.__name__ == 'Series':
+                item.resolution.attributes.pick1.clicked()
+                item.resolution.contours.pick1.clicked()
+                # zcontour uniques #===
+    def quickMergeABContsB(self, items):
+        '''This completes the merge resolution by selection the B version of non-contour conflicts. For contour conflicts, this selects BOTH for overlaps and also includes uniques from A and B.'''
+        for item in items:
+            if item.object1.__class__.__name__ == 'Section':
+                item.resolution.attributes.pick2.clicked()
+                item.resolution.images.pick2.clicked() 
+                # Contours #===
+                # - Move uniqueA and uniqueB to output
+                # - Resolve conflicts with BOTH
+                # - - Move to output
+            elif item.object1.__class__.__name__ == 'Series':
+                item.resolution.attributes.pick2.clicked()
+                item.resolution.contours.pick2.clicked()
+                # zcontour uniques #===
+
     def finishMerge(self):
         # Check if conflicts are resolved #=== make more comprehensive?
         ret = None
@@ -115,7 +210,7 @@ class mergeItem(QListWidgetItem):
         if colors == True and self.object1 != self.object2:
             self.setBackground(QColor('red'))
         elif colors == True and self.object1 == self.object2:
-            self.setBackground(QColor('lightgreen')) #===
+            self.setBackground(QColor('lightgreen'))
         # Load resolution wrapper
         if self.object1.__class__.__name__ == 'Section':
             self.resolution = sectionHandlers.sectionWrapper(self.object1, self.object2, parent=self)
@@ -124,7 +219,7 @@ class mergeItem(QListWidgetItem):
     def isResolved(self):
         '''Returns True if all resolutions have output != None.'''
         return self.resolution.isResolved()
-    def clicked(self, button=None): #===
+    def clicked(self, button=None):
         if not self.isResolved():
             self.setBackground(QColor('yellow'))
 
@@ -148,23 +243,3 @@ class outdirBrowse(QDialog):
     def finish(self):
         self.output = str(self.path.path.text())
         self.close()
-
-class sectionList(QListWidget):
-    def __init__(self, parent=None):
-        super(sectionList, self).__init__(parent)
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-    def mousePressEvent(self, event):
-        self._mouse_button = event.button()
-        super(sectionList, self).mousePressEvent(event)
-    def on_item_clicked(self, item):
-        #===
-        return
-    def loadObjects(self):
-        return
-    def loadFunction(self):
-        self.itemClicked.connect(self.on_item_clicked)
-        return
-    def loadLayout(self):
-        return
