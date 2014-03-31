@@ -520,3 +520,15 @@ class contourTableItem(QListWidgetItem):
 		elif resolution == 3:
 			self.contour = [self.contour1, self.contour2]
 			self.setBackground(QColor('lightgreen'))
+	def forceResolution(self, integer):
+		if int(integer) == 1:
+			self.contour = self.contour1
+		elif int(integer) == 2:
+			self.contour = self.contour2
+		elif int(integer) == 3:
+			self.contour = [self.contour1, self.contour2]
+		else:
+			print ('Invalid entry')
+			return
+		self.setBackground(QColor('lightgreen'))
+
