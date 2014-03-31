@@ -122,6 +122,16 @@ class mergeSelection(QWidget):
                     conflict.forceResolution(1) # Choose contour A
                 # - - Move to output
                 item.resolution.contours.moveSelectedO.click()
+                # Move any uniqueB's in output back to input
+                item.resolution.contours.outUniqueB.selectAll()
+                item.resolution.contours.moveSelectedB.click()
+                # Resolve conflicts that may be in output as A
+                item.resolution.contours.outOvlp.selectAll()
+                outConflicts = item.resolution.contours.outOvlp.selectedItems()
+                for conflict in outConflicts:
+                    if conflict.background() == QColor('red') or conflict.background() == QColor('lightgreen'):
+                        conflict.forceResolution(1)
+                item.resolution.contours.outOvlp.clearSelection()
                 # Click merge button (conflicts resolved)
                 item.resolution.contours.finish()
             elif item.object1.__class__.__name__ == 'Series':
@@ -149,6 +159,16 @@ class mergeSelection(QWidget):
                     conflict.forceResolution(2) # Choose contour B
                 # - - Move to output
                 item.resolution.contours.moveSelectedO.click()
+                # Move any uniqueA's in output back to input
+                item.resolution.contours.outUniqueA.selectAll()
+                item.resolution.contours.moveSelectedA.click()
+                # Resolve conflicts that may be in output as B
+                item.resolution.contours.outOvlp.selectAll()
+                outConflicts = item.resolution.contours.outOvlp.selectedItems()
+                for conflict in outConflicts:
+                    if conflict.background() == QColor('red') or conflict.background() == QColor('lightgreen'):
+                        conflict.forceResolution(2)
+                item.resolution.contours.outOvlp.clearSelection()
                 # Click merge button (conflicts resolved)
                 item.resolution.contours.finish()
             elif item.object1.__class__.__name__ == 'Series':
@@ -179,6 +199,13 @@ class mergeSelection(QWidget):
                     conflict.forceResolution(3) # Choose BOTH contours
                 # - - Move to output
                 item.resolution.contours.moveSelectedO.click()
+                # Resolve conflicts that may be in output as BOTH
+                item.resolution.contours.outOvlp.selectAll()
+                outConflicts = item.resolution.contours.outOvlp.selectedItems()
+                for conflict in outConflicts:
+                    if conflict.background() == QColor('red') or conflict.background() == QColor('lightgreen'):
+                        conflict.forceResolution(3)
+                item.resolution.contours.outOvlp.clearSelection()
                 # Click merge button (conflicts resolved)
                 item.resolution.contours.finish()
             elif item.object1.__class__.__name__ == 'Series':
@@ -205,9 +232,15 @@ class mergeSelection(QWidget):
                     conflict.forceResolution(3) # Choose BOTH contours
                 # - - Move to output
                 item.resolution.contours.moveSelectedO.click()
+                # Resolve conflicts that may be in output as BOTH
+                item.resolution.contours.outOvlp.selectAll()
+                outConflicts = item.resolution.contours.outOvlp.selectedItems()
+                for conflict in outConflicts:
+                    if conflict.background() == QColor('red') or conflict.background() == QColor('lightgreen'):
+                        conflict.forceResolution(3)
+                item.resolution.contours.outOvlp.clearSelection()
                 # Click merge button (conflicts resolved)
                 item.resolution.contours.finish()
-                # - - Move to output
             elif item.object1.__class__.__name__ == 'Series':
                 item.resolution.attributes.pick2.click()
                 item.resolution.contours.pick2.click()
