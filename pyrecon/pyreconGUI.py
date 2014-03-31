@@ -64,7 +64,6 @@ class pyreconMainWindow(QMainWindow):
     def loadExcelTool(self): #===
         print('Load excel widget')
     
-
 class browseWidget(QWidget):
     '''Provides a QLineEdit and button for browsing through a file system. browseType can be directory, file or series but defaults to directory.'''
     def __init__(self, browseType='directory'):

@@ -2,8 +2,7 @@ TODO LIST (in order of high -> low priority)
 --------------------------------------------
 * BUGS.txt
 
-* Series loading widget for long loads in GUI tools
-	* Requires Threading
+* Use threading for intensive computations (loading a series, etc.)
 	(http://redino.net/blog/2013/07/pyside-downloading-file-with-progress-bar/)
 * Test if command-line versions still work
 
