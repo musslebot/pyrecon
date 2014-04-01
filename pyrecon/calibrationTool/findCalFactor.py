@@ -8,9 +8,15 @@ if len(sys.argv) > 1:
     path_to_series = str( sys.argv[1] )
     # functions initiated at bottom of page
 
-def findCalFactor(path_to_series):
+def findCalFactor(series):
     '''Returns the scale factor that was applied to the transformation of a series'''
-    ser = openSeries(path_to_series)
+    if type(series) == type(''):
+        ser = openSeries(series)
+    elif series.__class__.__name__ == 'Series':
+        ser = series
+    else:
+        print('Invalid argument... try again.')
+        return
     # create list of all image transforms in a series
     imgtforms = []
     for section in ser.sections:
@@ -53,4 +59,4 @@ def findCalFactor(path_to_series):
     return minScale
 
 if __name__ == '__main__':
-    findCalFactor(path_to_series)
+    findCalFactor(series)
