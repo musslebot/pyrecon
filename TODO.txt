@@ -7,6 +7,7 @@ TODO LIST (in order of high -> low priority)
 * Test if command-line versions still work
 
 mergeTool
+* add note to loadSeries window that describes 1st series as default in cases of unresolved conflicts
 * Show contours on resolve images
 
 calibrationTool

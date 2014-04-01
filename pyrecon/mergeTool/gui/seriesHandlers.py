@@ -21,6 +21,8 @@ class seriesWrapper(QTabWidget):
 		self.addTab(self.attributes, '&Attributes')
 		self.addTab(self.contours, '&Contours')
 		self.addTab(self.zcontours, '&ZContours')
+		# Check for lack of conflicts
+		self.isResolved()
 	def toObject(self):
 		'''Returns series object from the output of each resolution tab.'''
 		# Determine attributes
@@ -53,7 +55,6 @@ class seriesWrapper(QTabWidget):
 		if resolved and self.parent.__class__.__name__ == 'mergeItem':
 			self.parent.setBackground(QColor('lightgreen'))
 		return resolved
-
 # - Attributes
 class seriesAttributes(QWidget):
 	def __init__(self, dictA, dictB, parent=None):
@@ -66,6 +67,7 @@ class seriesAttributes(QWidget):
 		self.loadObjects(dictA,dictB)
 		self.loadFunctions()
 		self.loadLayout()
+		self.checkEquiv()
 	def loadObjects(self,dictA,dictB):
 		for key in dictA:
 			if key not in ['path','zcontours','contours', 'sections']: # ignore zcontours, contours, sections -- they have their own merge functions
@@ -109,6 +111,13 @@ class seriesAttributes(QWidget):
 		main.addLayout(ser1)
 		main.addLayout(ser2)
 		self.setLayout(main)
+	def checkEquiv(self):
+		if self.atts1 == self.atts2:
+			self.output = self.atts1
+			self.pick1.setStyleSheet('background-color:lightgreen;')
+			self.pick2.setStyleSheet('background-color:lightgreen;')
+			self.pick1.setText('NO CONFLICT!')
+			self.pick2.setText('NO CONFLICT!')
 	def chooseAtt(self):
 		if self.sender() == self.pick1:
 			self.output = self.atts1
@@ -131,6 +140,7 @@ class seriesContours(QWidget):
 		self.loadObjects(contsA,contsB)
 		self.loadFunctions()
 		self.loadLayout()
+		self.checkEquiv()
 	def loadObjects(self,dictA,dictB):
 		self.pick1 = QPushButton()
 		self.pick2 = QPushButton()
@@ -172,6 +182,13 @@ class seriesContours(QWidget):
 		main.addLayout(ser1)
 		main.addLayout(ser2)
 		self.setLayout(main)
+	def checkEquiv(self):
+		if self.conts1 == self.conts2:
+			self.output = self.conts1
+			self.pick1.setStyleSheet('background-color:lightgreen;')
+			self.pick2.setStyleSheet('background-color:lightgreen;')
+			self.pick1.setText('NO CONFLICT!')
+			self.pick2.setText('NO CONFLICT!')
 	def chooseConts(self):
 		if self.sender() == self.pick1:
 			self.output = self.conts1
@@ -193,7 +210,7 @@ class seriesZContours(QWidget):
 		self.merged = mergedZConts
 		box = QVBoxLayout()
 		box.setAlignment(Qt.AlignHCenter)
-		self.lab = QLabel('All unique ZContours were kept and all non-unique ZContours were merged.') #===
+		self.lab = QLabel('All unique ZContours were kept and all non-unique ZContours were merged. Double click series object in the list to change this.') #===
 		self.lab.setFont(QFont("Arial",18))
 		box.addWidget(self.lab)
 		self.setLayout(box)
@@ -201,4 +218,3 @@ class seriesZContours(QWidget):
 		self.merged.extend(self.uniqueA)
 		self.merged.extend(self.uniqueB)
 		self.output = self.merged
-		self.parent.isResolved()

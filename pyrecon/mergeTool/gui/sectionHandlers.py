@@ -19,9 +19,14 @@ class sectionWrapper(QTabWidget):
 			section1, section2, handler=sectionImages, parent=self)
 		self.contours = pyrecon.mergeTool.sectionMerge.mergeContours(section1, section2, handler=sectionContours, parent=self)
 		# Add widgets as tabs
+		# - Attributes
 		self.addTab(self.attributes, '&Attributes')
+		# - Images
 		self.addTab(self.images, '&Images')
+		# - Contours
 		self.addTab(self.contours, '&Contours')
+		# Check for lack of conflicts
+		self.isResolved()
 	def toObject(self):
 		'''Returns a section object from the output of each resolution tab.'''
 		'''Returns series object from the output of each resolution tab.'''
@@ -55,7 +60,6 @@ class sectionWrapper(QTabWidget):
 		if resolved and self.parent.__class__.__name__ == 'mergeItem':
 			self.parent.setBackground(QColor('lightgreen'))
 		return resolved
-
 # - Attributes
 class sectionAttributes(QWidget):
 	def __init__(self, dictA, dictB, parent=None):
@@ -67,6 +71,7 @@ class sectionAttributes(QWidget):
 		self.loadObjects(dictA,dictB)
 		self.loadFunctions()
 		self.loadLayout()
+		self.checkEquiv()
 	def loadObjects(self,dictA,dictB):
 		# Extract relevant info to attribute dicts
 		for key in ['name', 'index', 'thickness', 'alignLocked']:
@@ -108,6 +113,13 @@ class sectionAttributes(QWidget):
 		main.addLayout(sec1)
 		main.addLayout(sec2)
 		self.setLayout(main)
+	def checkEquiv(self):
+		if self.atts1 == self.atts2:
+			self.output = self.atts1
+			self.pick1.setStyleSheet('background-color:lightgreen;')
+			self.pick2.setStyleSheet('background-color:lightgreen;')
+			self.pick1.setText('NO CONFLICT!')
+			self.pick2.setText('NO CONFLICT!')
 	def chooseAtt(self):
 		if self.sender() == self.pick1:
 			self.output = self.atts1
@@ -129,6 +141,7 @@ class sectionImages(QWidget):
 		self.loadObjects()
 		self.loadFunctions(image1,image2)
 		self.loadLayout()
+		self.checkEquiv()
 	def loadObjects(self):
 		# self.img1label = QLabel(self)
 		# self.img2label = QLabel(self)
@@ -194,6 +207,13 @@ class sectionImages(QWidget):
 		# hbox.addSpacing(50)
 		hbox.addLayout(vbox2)
 		self.setLayout(hbox)
+	def checkEquiv(self):
+		if self.img1 == self.img2:
+			self.output = self.img1
+			self.pick1.setStyleSheet('background-color:lightgreen;')
+			self.pick2.setStyleSheet('background-color:lightgreen;')
+			self.pick1.setText('NO CONFLICT!')
+			self.pick2.setText('NO CONFLICT!')
 	def chooseImg(self):
 		if self.sender() == self.pick1:
 			self.output = self.img1
@@ -227,6 +247,14 @@ class sectionContours(QWidget):
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
+		self.checkEquiv()
+	def checkEquiv(self): #===
+		if (self.inUniqueA.count() == 0 and
+			self.inUniqueB.count() == 0 and
+			self.inOvlp.count() == 0):
+			# No conflicts
+			self.finish(parent=False)
+			self.doneBut.setText('NO CONFLICTS!')
 	def loadObjects(self):
 		# List contours in their appropriate listWidgets
 		self.inUniqueA = QListWidget(self)
@@ -339,7 +367,7 @@ class sectionContours(QWidget):
 		self.doneBut.setStyleSheet(QWidget().styleSheet())
 		self.output = None
 		self.parent.parent.clicked()
-	def finish(self):
+	def finish(self, parent=True):
 		# Check ovlp table for unresolved conflicts (red)
 		numItems = self.outOvlp.count()
 		for i in range(numItems):
@@ -375,7 +403,8 @@ class sectionContours(QWidget):
 			else:
 				self.output.append(item.contour)
 		self.doneBut.setStyleSheet('background-color:lightgreen;')
-		self.parent.isResolved()
+		if parent:
+			self.parent.isResolved()
 class contourPixmap(QLabel):
 	'''QLabel that contains a contour drawn on its region in an image'''
 	def __init__(self, image, contour, pen=Qt.red):

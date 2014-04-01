@@ -31,7 +31,8 @@ class ZContour:
                         self.__dict__[key] = arg[key]
     def __eq__(self,other):
         return (self.name == other.name and
-                self.points == other.points)
+                self.points == other.points and
+                self.closed == other.closed)
     def __ne__(self,other):
         return not self.__eq__(other)
     # mergeTool Functions
