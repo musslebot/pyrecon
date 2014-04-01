@@ -5,9 +5,16 @@ from pyrecon import handleXML as xml
 import argparse
  
 def main(ser, newMag, outpath):
-    ser = openSeries(ser)
-    ser.zeroIdentity() # Non-image contour transform -> unity transform
-    
+    if type(ser) == type(''):
+        ser = openSeries(ser)
+    elif ser.__class__.__name__ == 'Series':
+        pass
+    else:
+        print('Invalid <ser> argument... try again')
+        return
+
+    # Non-image contour transform -> unity transform
+    ser.zeroIdentity() 
     for section in ser.sections:# Set mag field and rescale
         # img objects exist in two locations per section:
         # (1/2): Set newMag for section.image.mag
