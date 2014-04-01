@@ -14,6 +14,7 @@ setup(
                 'pyrecon.classes',
                 
                 'pyrecon.calibrationTool',
+                'pyrecon.calibrationTool.gui',
 
                 'pyrecon.curationTool',
                 'pyrecon.curationTool.gui',
