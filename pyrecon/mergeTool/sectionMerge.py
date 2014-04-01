@@ -55,10 +55,6 @@ def graphicalMerge(section1, section2):
 # MERGE FUNCTIONS
 # - Image
 def mergeImages(sectionA, sectionB, handler=handlers.sectionImages, parent=None):
-	srcEq = (sectionA.image.src == sectionB.image.src)
-	magEq = (sectionA.image.mag == sectionB.image.mag)
-	if srcEq & magEq: # If both the src and mag components are equal 
-		return sectionA.image
 	return handler(sectionA.image, sectionB.image, parent=parent)
 # - Contours
 def mergeContours(sectionA, sectionB, handler=handlers.sectionContours, parent=None):

@@ -2,6 +2,8 @@
 # SECTION
 # - Image
 def sectionImages(imageA, imageB):
+	if imageA == imageB:
+		return imageA
 	padding = 20
 	print('Section image conflicts:')
 	print('='*(padding*3))
