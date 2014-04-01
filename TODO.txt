@@ -13,5 +13,8 @@ mergeTool
 calibrationTool
 * Plug into GUI
 
+curationTool
+* change options into a QGroupBox?
+
 excelTool
 * Plug into GUI
