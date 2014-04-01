@@ -50,7 +50,7 @@ class pyreconMainWindow(QMainWindow):
         # stackedWidget contains each mergeItem's resolution wrapper
         self.resolutionStack = QStackedWidget()
         self.setCentralWidget( self.resolutionStack )
-    def loadCurationTool(self): #===
+    def loadCurationTool(self):
         from pyrecon.curationTool.gui.curationGUI import curationToolStuff
         # Left dockWidget: load series/options
         self.curateSelector = QDockWidget()
@@ -58,9 +58,14 @@ class pyreconMainWindow(QMainWindow):
         self.curateSelector.setWidget( self.curationTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.curateSelector )
         self.setCentralWidget(self.curationTool.outputWidget)
+    def loadCalibrationTool(self):
+        from pyrecon.calibrationTool.gui.calibrationGUI import calibrationToolStuff
+        # Left dockWidget: load series/options
+        self.calibSelector = QDockWidget()
+        self.calibrationTool = calibrationToolStuff(self)
+        self.calibSelector.setWidget( self.calibrationTool )
+        self.addDockWidget( Qt.LeftDockWidgetArea, self.calibSelector )
 
-    def loadCalibrationTool(self): #===
-        print('Load calibration widget')
     def loadExcelTool(self): #===
         print('Load excel widget')
     
