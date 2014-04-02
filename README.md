@@ -19,11 +19,10 @@ To start graphical tool loader, use commands in python shell:
 * `pyrecon.start()`
 
 # Install Instructions
-*The build found on GitHub is the development build and may be unstable.*<br>
-*The stable version can be found here: [PyPI](https://pypi.python.org/pypi/PyRECONSTRUCT) (Python Package Index)*
+*The most stable version can also be found here: [PyPI](https://pypi.python.org/pypi/PyRECONSTRUCT) (Python Package Index)*
 
 ### Linux
-* Install the following dependencies:
+* Install the following dependencies (through apt-get or other package manager):
     * `python-dev`
     * `python-setuptools`
     * `libgeos-dev`
