@@ -4,3 +4,6 @@ LIST OF BUGS (in order of high -> low priority)
 * curationTool:
  > need some way to see if its working or not
  	idea: set button to flat when clicked, unflat when series loaded
+
+* excelTool:
+ > problems when writing over excel workbook with same name

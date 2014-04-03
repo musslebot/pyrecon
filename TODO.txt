@@ -15,6 +15,3 @@ calibrationTool
 
 curationTool
 * change options into a QGroupBox?
-
-excelTool
-* Plug into GUI
