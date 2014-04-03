@@ -35,7 +35,7 @@ class Workbook(openpyxl.Workbook):
         openpyxl.Workbook.__init__(self)
         
         self.series = series # Series object for this workbook
-        self.objects = series.getObjectLists() # Names of objects in this series #===
+        self.objects = series.getObjectLists() # Names of objects in this series
         self.filterType = ['c'] # Ignore these rTypes
     def listProtrusionChildren(self):
         childList = []
