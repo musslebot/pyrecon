@@ -453,7 +453,7 @@ class contourPixmap(QLabel):
 		# Scale points
 		preWidth = float(preCropSize.width())
 		preHeight = float(preCropSize.height())
-		# Prevent division by 0.0
+		# Prevent division by 0
 		if preWidth == 0.0 or preHeight == 0.0:
 			preWidth = 1.0
 			preHeight = 1.0
