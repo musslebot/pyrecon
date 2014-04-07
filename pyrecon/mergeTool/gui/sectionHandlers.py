@@ -410,7 +410,7 @@ class contourPixmap(QLabel):
 	def __init__(self, image, contour, pen=Qt.red):
 		QLabel.__init__(self)
 		self.image = image
-		self.pixmap = QPixmap( image._path+image.src ) # Create pixmap from image info
+		self.pixmap = QPixmap( image._path+image.src ) # Original, unaltered image
 		self.contour = pyrecon.classes.Contour( contour.__dict__ ) # Create copy of contour to be altered for visualization
 		self.transformToPixmap()
 		self.crop()
@@ -421,10 +421,12 @@ class contourPixmap(QLabel):
 		'''Transforms points from RECONSTRUCT'S coordsys to PySide's coordSys'''
 		self.contour.convertToPixCoords(self.image.mag) # Convert biological points to pixel points
 		flipVector = np.array( [1,-1] ) # Flip about x axis
-		# Is Pixmap valid? #=== probably a better way than using hardcoded values for new size
+		# Is Pixmap valid?
 		if self.pixmap.isNull(): # If image doesnt exist...
-			self.pixmap = QPixmap(2000,1000) # Make new 2000x1000 pixmap with white background
-			self.pixmap.fill(fillColor=Qt.white)
+			# Make new 2000x1000 pixmap with solid background
+			self.pixmap = QPixmap(2000,1000)
+			#=== use a better way than using hardcoded values for new size
+			self.pixmap.fill(fillColor=Qt.black)
 		translationVector = np.array( [0,self.pixmap.size().height()] )
 		# Apply flip and translation to get points in PySide's image space
 		# 	transformedPts = (oldPts*flipVector)+translationVector
