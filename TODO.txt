@@ -10,8 +10,5 @@ mergeTool
 * add note to loadSeries window that describes 1st series as default in cases of unresolved conflicts
 * Show contours on resolve images
 
-calibrationTool
-* Plug into GUI
-
 curationTool
 * change options into a QGroupBox?
