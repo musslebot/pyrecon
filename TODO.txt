@@ -8,6 +8,7 @@ TODO LIST (in order of high -> low priority)
 
 mergeTool
 * add note to loadSeries window that describes 1st series as default in cases of unresolved conflicts
+* Fix scaling in contourPixmap
 * Show contours on resolve images
 
 calibrationTool
