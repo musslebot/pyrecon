@@ -11,4 +11,6 @@ mergeTool
 * Show contours on resolve images
 
 curationTool
+* Typo in threshold
+* Ignore stamps in output (capital D, protrusion, etc.)?
 * change options into a QGroupBox?
