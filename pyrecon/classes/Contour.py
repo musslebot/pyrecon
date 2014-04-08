@@ -182,3 +182,7 @@ class Contour:
             return not ring.is_ccw # For some reason, the opposite is true (image vs biological coordinate system?)
         else:
             return False
+    def isInvalid(self):
+        '''Returns true if this is an invalid contour.'''
+        if self.closed and len(self.points) < 3:
+            return True

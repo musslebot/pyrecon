@@ -196,6 +196,18 @@ class Series:
                     c.transform.xcoef = [0,1,0,0,0,0]
                     c._tform = c.transform.tform()
 # curationTool functions
+    def locateInvalidTraces(self, delete=False):
+        invalidDict = {}
+        for section in self.sections:
+            invalids = []
+            for contour in section.contours:
+                if contour.isInvalid():
+                    invalids.append(contour)
+                    if delete:
+                        section.contours.remove(contour) 
+            if len(invalids) != 0:
+                invalidDict[section.index] = invalids
+        return invalidDict
     def locateReverseTraces(self):
         reverseDict = {}
         for section in self.sections:
