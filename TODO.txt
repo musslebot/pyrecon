@@ -11,6 +11,7 @@ mergeTool
 * Show contours on resolve images
 
 curationTool
-* Typo in threshold
+* search for invalid contours: closed traces with < 3 points
+	* are these always invalid?
 * Ignore stamps in output (capital D, protrusion, etc.)?
 * change options into a QGroupBox?
