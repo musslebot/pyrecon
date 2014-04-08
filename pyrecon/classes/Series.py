@@ -354,8 +354,11 @@ class Series:
         for section in self.sections:
             for contour in section.contours:
                 if contour.name == object_name:
-                    contour.popShape()
-                    vol += (contour.shape.area * section.thickness)
+                    try:
+                        contour.popShape()
+                        vol += (contour.shape.area * section.thickness)
+                    except:
+                        print 'getVolume(): Invalid contour:', contour.name, 'in section index:', section.index, '\nCheck XML file and fix before trusting data.\n'
         return vol
     def getTotalVolume(self, object_name):
         related_objects = []
@@ -378,7 +381,10 @@ class Series:
         for section in self.sections:
             for contour in section.contours:
                 if contour.name == object_name:
-                    sArea += (contour.getLength() * section.thickness)
+                    try:
+                        sArea += (contour.getLength() * section.thickness)
+                    except:
+                        print 'getSurfaceArea(): Invalid contour:', contour.name, 'in section index:', section.index, '\nCheck XML file and fix before trusting data.\n'
         return sArea
     def getFlatArea(self, object_name):
         '''Returns the flat area of the object throughout the series. Flat area calculated by summing the area of
@@ -387,11 +393,14 @@ class Series:
         for section in self.sections:
             for contour in section.contours:
                 if contour.name == object_name:
-                    contour.popShape()
-                    if contour.closed:
-                        fArea += contour.shape.area
-                    else:
-                        fArea += (contour.getLength() * section.thickness)
+                    try:
+                        contour.popShape()
+                        if contour.closed:
+                            fArea += contour.shape.area
+                        else:
+                            fArea += (contour.getLength() * section.thickness)
+                    except:
+                        print 'getFlatArea(): Invalid contour:', contour.name, 'in section index:', section.index, '\nCheck XML file and fix before trusting data.\n'
         return fArea
     def getStartEndCount(self, object_name):
         '''Returns a tuple containing the start index, end index, and count of the item in series.'''
