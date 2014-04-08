@@ -202,9 +202,9 @@ class Series:
             invalids = []
             for contour in section.contours:
                 if contour.isInvalid():
-                    invalids.append(contour)
+                    invalids.append(contour.name)
                     if delete:
-                        print('deleted: 'contour.name,'at section',section.index)
+                        print('deleted: ',contour.name,'at section',section.index)
                         section.contours.remove(contour)
             if len(invalids) != 0:
                 invalidDict[section.index] = invalids
