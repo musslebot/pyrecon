@@ -22,7 +22,7 @@ To start graphical tool loader, use commands in python shell:
 *The most stable version can also be found here: [PyPI](https://pypi.python.org/pypi/PyRECONSTRUCT) (Python Package Index)*
 
 ### Linux
-* Install the following dependencies (through apt-get or other package manager):
+* Install the following dependencies (through `apt-get` or other package manager):
     * `python-dev`
     * `python-setuptools`
     * `libgeos-dev`
