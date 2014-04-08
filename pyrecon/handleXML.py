@@ -238,7 +238,7 @@ def objectToElement(object):
 				points= ', '.join([str(pt[0])+' '+str(pt[1]) for pt in contour.points])+','
 				)
 			except:
-				print('Problem creating Contour element')
+				print('Problem creating Contour element', contour.name)
 		return element
 	def imageToElement(image):
 		element = ET.Element("Image",
@@ -422,7 +422,7 @@ def writeSeries(series, directory, outpath=None, sections=False, overwrite=False
 		# Make sure directory is correctly input
 	if directory[-1] != '/':
 		directory += '/'
-    	# Check if directory exists, make if does not exist
+    # Check if directory exists, make if does not exist
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	if not outpath:
@@ -450,10 +450,16 @@ def writeSeries(series, directory, outpath=None, sections=False, overwrite=False
     # Build series root element
 	root = objectToElement( series ) 
 	# Add Contours/ZContours to root
-	for contour in series.contours:
-		root.append( objectToElement(contour) )
-	for zcontour in series.zcontours:
-		root.append( objectToElement(zcontour) )
+	if series.contours is not None:
+		for contour in series.contours:
+			root.append( objectToElement(contour) )
+	else:
+		print 'No contours in', series.name
+	if series.zcontours is not None:
+		for zcontour in series.zcontours:
+			root.append( objectToElement(zcontour) )
+	else:
+		print 'No zcontours in', series.name
 	# Make tree and write
 	elemtree = ET.ElementTree(root)
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
