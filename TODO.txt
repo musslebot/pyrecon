@@ -2,6 +2,7 @@ TODO LIST (in order of high -> low priority)
 --------------------------------------------
 * BUGS.txt
 
+* verbose option for print statements
 * Use threading for intensive computations (loading a series, etc.)
 	(http://redino.net/blog/2013/07/pyside-downloading-file-with-progress-bar/)
 * Test if command-line versions still work
@@ -11,7 +12,5 @@ mergeTool
 * Show contours on resolve images
 
 curationTool
-* search for invalid contours: closed traces with < 3 points
-	* are these always invalid?
 * Ignore stamps in output (capital D, protrusion, etc.)?
 * change options into a QGroupBox?
