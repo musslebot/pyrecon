@@ -379,6 +379,7 @@ def objectToElement(object):
 		return zcontourToElement(object)
 def writeSection(section, directory, outpath=None, overwrite=False):
 	'''Writes <section> to an XML file in directory'''
+	print 'Writing section:',section.name
 	if not outpath: # Will write to file with sections name
 		if str(directory[-1]) != '/':
 			directory += '/'
@@ -418,16 +419,17 @@ def writeSection(section, directory, outpath=None, overwrite=False):
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
 def writeSeries(series, directory, outpath=None, sections=False, overwrite=False):
 	'''Writes <series> to an XML file in directory'''
+	print 'Writing series:',series.name
 	# Pre-writing checks
-		# Make sure directory is correctly input
+	# - Make sure directory is correctly input
 	if directory[-1] != '/':
 		directory += '/'
-    # Check if directory exists, make if does not exist
+    # - Check if directory exists, make if does not exist
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	if not outpath:
 		outpath = directory+series.name+'.ser'
-    	# Raise error if this file already exists to prevent overwrite
+    # - Raise error if this file already exists to prevent overwrite
 	if not overwrite and os.path.exists(outpath):
 		msg = 'CAUTION: Files already exist in ths directory: Do you want to overwrite them?'
 		try: # Graphical
