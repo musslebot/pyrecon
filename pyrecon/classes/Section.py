@@ -8,7 +8,7 @@ class Section:
 		self.alignLocked = None
 		#Non-attributes
 		self.image = None
-		self.contours = None
+		self.contours = []
 		self._path = None
 		self.processArguments(args, kwargs)
 	def processArguments(self, args, kwargs):
@@ -41,16 +41,12 @@ class Section:
 							if item.__class__.__name__ == 'Image':
 								self.image = item
 							elif item.__class__.__name__ == 'Contour':
-								if self.contours == None:
-									self.contours == []
 								self.contours.append(item)
 					# Dict:Image
 					elif arg[key].__class__.__name__ == 'Image':
 						self.image = arg[key]
 					# Dict:Contour
 					elif arg[key].__class__.__name__ == 'Contour':
-						if self.contours == None:
-							self.contours == []
 						self.contours.append(arg[key])
 			# String argument
 			elif type(arg) == type(''): # Possible path to XML?
@@ -62,8 +58,6 @@ class Section:
 					self._path += '/'
 			# Contour argument
 			elif arg.__class__.__name__ == 'Contour':
-				if self.contours == None:
-					self.contours = []
 				self.contours.append(arg)
 			# Image argument
 			elif arg.__class__.__name__ == 'Image':
@@ -72,8 +66,6 @@ class Section:
 			elif type(arg) == type([]):
 				for item in arg:
 					if item.__class__.__name__ == 'Contour':
-						if self.contours == None:
-							self.contours = []
 						self.contours.append(item)
 					elif item.__class__.__name__ == 'Image':
 						self.image = item
