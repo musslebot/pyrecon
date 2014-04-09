@@ -201,7 +201,7 @@ def transformAttributes(node):
 			try: #=== 
 				return int(input)
 			except:
-				print input,'converted to float',float(input)
+				print '\n\thandleXML.intorfloat():',input,'converted to float',float(input),'\n'
 				return float(input)
 	attributes = {}
 	attributes['dim'] = int(node.get('dim'))
