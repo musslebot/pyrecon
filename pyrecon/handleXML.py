@@ -23,9 +23,13 @@ def processSeriesFile(tree):
 	for elem in root:
 		if elem.tag == 'Contour':
 			contour = Contour(contourAttributes(elem), None)
+			if contours == None:
+				contours = []
 			contours.append(contour)
 		elif elem.tag == 'ZContour':
 			zcontour = ZContour(zContourAttributes(elem)) #===
+			if zcontours == None:
+				zcontours = []
 			zcontours.append(zcontour)
 	return attributes, contours, zcontours
 def processSectionFile(tree):
@@ -43,6 +47,8 @@ def processSectionFile(tree):
 				images.append(img)
 			elif child.tag == 'Contour':
 				cont = Contour( contourAttributes(child), tForm)
+				if contours == None:
+					contours = []
 				contours.append(cont)
 	# Get first image from images list
 	try:
@@ -188,10 +194,15 @@ def seriesAttributes(node):
 	return attributes
 def transformAttributes(node):
 	def intorfloat(input):
+		'''Returns number data type from string.'''
 		if '.' in input:
 			return float(input)
 		else:
-			return int(input)
+			try: #=== 
+				return int(input)
+			except:
+				print input,'converted to float',float(input)
+				return float(input)
 	attributes = {}
 	attributes['dim'] = int(node.get('dim'))
 	attributes['xcoef'] = [intorfloat(x) for x in node.get('xcoef').strip().split(' ')]
