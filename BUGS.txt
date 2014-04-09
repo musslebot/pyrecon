@@ -1,8 +1,5 @@
 LIST OF BUGS (in order of high -> low priority)
 -----------------------------------------------
-* classes
- > invalid sections may be added as None in series.sections
-
 * handleXML
  > No QApplication for showing overwrite conflicts if run outside of pyreconGUI
 
