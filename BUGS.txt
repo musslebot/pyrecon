@@ -1,5 +1,7 @@
 LIST OF BUGS (in order of high -> low priority)
 -----------------------------------------------
+* handleXML
+ > No QApplication for showing overwrite conflicts if run outside of pyreconGUI
 
 * curationTool:
  > need some way to see if its working or not
