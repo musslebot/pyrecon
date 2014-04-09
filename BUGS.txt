@@ -1,7 +1,7 @@
 LIST OF BUGS (in order of high -> low priority)
 -----------------------------------------------
 * classes
- > sections with list attributes (e.g. contours) will crash program when trying to iter through NoneType. Change None -> [] upon __init__
+ > invalid sections may be added as None in series.sections
 
 * handleXML
  > No QApplication for showing overwrite conflicts if run outside of pyreconGUI
