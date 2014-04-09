@@ -93,9 +93,9 @@ class Series:
         #Non-attributes
         self.name = None
         self.path = None
-        self.contours = None
-        self.zcontours = None
-        self.sections = None
+        self.contours = []
+        self.zcontours = []
+        self.sections = []
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
         # 1) ARGS
@@ -136,33 +136,21 @@ class Series:
                 for item in arg:
                     # Contour
                     if item.__class__.__name__ == 'Contour':
-                        if self.contours == None:
-                            self.contours = []
                         self.contours.append(item)
                     # ZSection
                     elif item.__class__.__name__ == 'ZContour':
-                        if self.zcontours == None:
-                            self.zcontours = []
                         self.zcontours.append(item)
                     # Section
                     elif item.__class__.__name__ == 'Section':
-                        if self.sections == None:
-                            self.sections = []
                         self.sections.append(item)
             # Contour
             elif arg.__class__.__name__ == 'Contour':
-                if self.contours == None:
-                    self.contours = []
                 self.contours.append(arg)
             # ZSection
             elif arg.__class__.__name__ == 'ZContour':
-                if self.zcontours == None:
-                    self.zcontours = []
                 self.zcontours.append(item)         
             # Section
             elif arg.__class__.__name__ == 'Section':
-                if self.sections == None:
-                    self.sections = []
                 self.sections.append(arg)
         for kwarg in kwargs:
             # Load sections
@@ -179,7 +167,8 @@ class Series:
                     path = self.path.replace(os.path.basename(self.path),'')
                     for sec in sectionlist:
                         section = Section(path+sec)
-                        self.update(section)
+                        if section.index is not None: #===
+                            self.update(section)
                     # sort sections by index
                     self.sections = sorted(self.sections, key=lambda Section: Section.index)
                     print(' SUCCESS!')
