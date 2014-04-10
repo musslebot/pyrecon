@@ -50,7 +50,7 @@ class Section:
 						self.contours.append(arg[key])
 			# String argument
 			elif type(arg) == type(''): # Possible path to XML?
-				import pyrecon.handleXML as xml
+				import pyrecon.tools.handleXML as xml
 				self.update(*xml.process(arg))
 				self.name = arg.split('/')[-1]
 				self._path = os.path.dirname(arg)
