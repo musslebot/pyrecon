@@ -25,6 +25,6 @@ def start():
 	app = QApplication.instance()
 	if app is None: # Create QApplication if doesn't exist
 		app = QApplication([])
-	import pyrecon.pyreconGUI
-	gui = pyrecon.pyreconGUI.pyreconMainWindow()
+	import pyrecon.gui.pyreconGUI as pyreconGUI
+	gui = pyreconGUI.pyreconMainWindow()
 	app.exec_() # Start event-loop
