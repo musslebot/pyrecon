@@ -5,25 +5,27 @@ except ImportError:
 
 setup(
       name='PyRECONSTRUCT',
-      version='2.0.4',
+      version='2.1.0',
       author='Michael Musslewhite',
       author_email='mdmusslewhite@gmail.com',
       url='https://github.com/wtrdrnkr/pyrecon',
       packages=[
                 'pyrecon',
+                
                 'pyrecon.classes',
                 
-                'pyrecon.calibrationTool',
-                'pyrecon.calibrationTool.gui',
+                'pyrecon.tools',
+                'pyrecon.tools.calibrationTool',
+                'pyrecon.tools.curationTool',
+                'pyrecon.tools.excelTool',
+                'pyrecon.tools.mergeTool',
 
-                'pyrecon.curationTool',
-                'pyrecon.curationTool.gui',
-
-                'pyrecon.excelTool',
-                'pyrecon.excelTool.gui',
+                'pyrecon.gui',
+                'pyrecon.gui.calibrationTool',
+                'pyrecon.gui.curationTool',
+                'pyrecon.gui.excelTool',
+                'pyrecon.gui.mergeTool',
                 
-                'pyrecon.mergeTool',
-                'pyrecon.mergeTool.gui'
                 ],
       license='LICENSE.txt',
       description='Python tools for interacting with XML files associated with RECONSTRUCT',

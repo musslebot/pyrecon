@@ -2,7 +2,6 @@ TODO LIST (in order of high -> low priority)
 --------------------------------------------
 * BUGS.txt
 
-* Put tools into a tools folder
 * verbose option for print statements
 * Use threading for intensive computations (loading a series, etc.)
 	(http://redino.net/blog/2013/07/pyside-downloading-file-with-progress-bar/)
