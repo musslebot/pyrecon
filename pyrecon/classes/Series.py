@@ -93,9 +93,9 @@ class Series:
         #Non-attributes
         self.name = None
         self.path = None
-        self.contours = None
-        self.zcontours = None
-        self.sections = None
+        self.contours = []
+        self.zcontours = []
+        self.sections = []
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
         # 1) ARGS
@@ -136,33 +136,21 @@ class Series:
                 for item in arg:
                     # Contour
                     if item.__class__.__name__ == 'Contour':
-                        if self.contours == None:
-                            self.contours = []
                         self.contours.append(item)
                     # ZSection
                     elif item.__class__.__name__ == 'ZContour':
-                        if self.zcontours == None:
-                            self.zcontours = []
                         self.zcontours.append(item)
                     # Section
                     elif item.__class__.__name__ == 'Section':
-                        if self.sections == None:
-                            self.sections = []
                         self.sections.append(item)
             # Contour
             elif arg.__class__.__name__ == 'Contour':
-                if self.contours == None:
-                    self.contours = []
                 self.contours.append(arg)
             # ZSection
             elif arg.__class__.__name__ == 'ZContour':
-                if self.zcontours == None:
-                    self.zcontours = []
                 self.zcontours.append(item)         
             # Section
             elif arg.__class__.__name__ == 'Section':
-                if self.sections == None:
-                    self.sections = []
                 self.sections.append(arg)
         for kwarg in kwargs:
             # Load sections
@@ -179,7 +167,8 @@ class Series:
                     path = self.path.replace(os.path.basename(self.path),'')
                     for sec in sectionlist:
                         section = Section(path+sec)
-                        self.update(section)
+                        if section.index is not None: #===
+                            self.update(section)
                     # sort sections by index
                     self.sections = sorted(self.sections, key=lambda Section: Section.index)
                     print(' SUCCESS!')
@@ -196,6 +185,19 @@ class Series:
                     c.transform.xcoef = [0,1,0,0,0,0]
                     c._tform = c.transform.tform()
 # curationTool functions
+    def locateInvalidTraces(self, delete=False):
+        invalidDict = {}
+        for section in self.sections:
+            invalids = []
+            for contour in section.contours:
+                if contour.isInvalid():
+                    invalids.append(contour.name)
+                    if delete:
+                        print('deleted: ',contour.name,'at section',section.index)
+                        section.contours.remove(contour)
+            if len(invalids) != 0:
+                invalidDict[section.index] = invalids
+        return invalidDict
     def locateReverseTraces(self):
         reverseDict = {}
         for section in self.sections:
@@ -354,8 +356,11 @@ class Series:
         for section in self.sections:
             for contour in section.contours:
                 if contour.name == object_name:
-                    contour.popShape()
-                    vol += (contour.shape.area * section.thickness)
+                    try:
+                        contour.popShape()
+                        vol += (contour.shape.area * section.thickness)
+                    except:
+                        print 'getVolume(): Invalid contour:', contour.name, 'in section index:', section.index, '\nCheck XML file and fix before trusting data.\n'
         return vol
     def getTotalVolume(self, object_name):
         related_objects = []
@@ -378,7 +383,10 @@ class Series:
         for section in self.sections:
             for contour in section.contours:
                 if contour.name == object_name:
-                    sArea += (contour.getLength() * section.thickness)
+                    try:
+                        sArea += (contour.getLength() * section.thickness)
+                    except:
+                        print 'getSurfaceArea(): Invalid contour:', contour.name, 'in section index:', section.index, '\nCheck XML file and fix before trusting data.\n'
         return sArea
     def getFlatArea(self, object_name):
         '''Returns the flat area of the object throughout the series. Flat area calculated by summing the area of
@@ -387,11 +395,14 @@ class Series:
         for section in self.sections:
             for contour in section.contours:
                 if contour.name == object_name:
-                    contour.popShape()
-                    if contour.closed:
-                        fArea += contour.shape.area
-                    else:
-                        fArea += (contour.getLength() * section.thickness)
+                    try:
+                        contour.popShape()
+                        if contour.closed:
+                            fArea += contour.shape.area
+                        else:
+                            fArea += (contour.getLength() * section.thickness)
+                    except:
+                        print 'getFlatArea(): Invalid contour:', contour.name, 'in section index:', section.index, '\nCheck XML file and fix before trusting data.\n'
         return fArea
     def getStartEndCount(self, object_name):
         '''Returns a tuple containing the start index, end index, and count of the item in series.'''

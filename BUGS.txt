@@ -1,8 +1,12 @@
 LIST OF BUGS (in order of high -> low priority)
 -----------------------------------------------
-
-* mergeTool issues when presented with equivalent series/sections: handlers return objects instead of handlers (i.e. in GUI, uses .output attribute for resolution, whereas handler will return a pyreconstruct object if equivalent [which has no .output attribute])
+* classes:
+ > Contour
+ 	* popShape uses worldpts... is this an issue?
 
 * curationTool:
  > need some way to see if its working or not
  	idea: set button to flat when clicked, unflat when series loaded
+
+* excelTool:
+ > problems when writing over excel workbook with same name

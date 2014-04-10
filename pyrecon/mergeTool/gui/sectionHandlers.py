@@ -410,7 +410,7 @@ class contourPixmap(QLabel):
 	def __init__(self, image, contour, pen=Qt.red):
 		QLabel.__init__(self)
 		self.image = image
-		self.pixmap = QPixmap( image._path+image.src ) # Create pixmap from image info
+		self.pixmap = QPixmap( image._path+image.src ) 
 		self.contour = pyrecon.classes.Contour( contour.__dict__ ) # Create copy of contour to be altered for visualization
 		self.transformToPixmap()
 		self.crop()
@@ -419,15 +419,18 @@ class contourPixmap(QLabel):
 		self.setPixmap(self.pixmap)
 	def transformToPixmap(self):
 		'''Transforms points from RECONSTRUCT'S coordsys to PySide's coordSys'''
-		self.contour.convertToPixCoords(self.image.mag) # Convert biological points to pixel points
-		flipVector = np.array( [1,-1] ) # Flip about x axis
-		# Is Pixmap valid? #=== probably a better way than using hardcoded values for new size
+		# Convert biological points to pixel points
+		self.contour.convertToPixCoords(self.image.mag)
+		# Is Pixmap valid?
 		if self.pixmap.isNull(): # If image doesnt exist...
-			self.pixmap = QPixmap(2000,1000) # Make new 2000x1000 pixmap with white background
-			self.pixmap.fill(fillColor=Qt.white)
-		translationVector = np.array( [0,self.pixmap.size().height()] )
+			# Get shape from contour to determine size of background
+			self.contour.popShape()
+			minx,miny,maxx,maxy = self.contour.shape.bounds
+			self.pixmap = QPixmap(maxx-minx+200,maxy-miny+200)
+			self.pixmap.fill(fillColor=Qt.black)
 		# Apply flip and translation to get points in PySide's image space
-		# 	transformedPts = (oldPts*flipVector)+translationVector
+		flipVector = np.array( [1,-1] ) # Flip about x axis
+		translationVector = np.array( [0,self.pixmap.size().height()] )
 		transformedPoints = list(map(tuple,translationVector+(np.array(list(self.contour.shape.exterior.coords))*flipVector)))
 		# Update self.contour's information to match transformation
 		self.contour.points = transformedPoints
@@ -435,11 +438,12 @@ class contourPixmap(QLabel):
 	def crop(self):
 		'''Crops image.'''
 		# Determine crop region
-		x = self.contour.shape.bounds[0]-100
-		y = self.contour.shape.bounds[1]-100
-		width = self.contour.shape.bounds[2]-x+100
-		height = self.contour.shape.bounds[3]-y+100
-		# Crop image to defined rectangle
+		minx,miny,maxx,maxy = self.contour.shape.bounds
+		x = minx-100 # minimum x and L-padding
+		y = miny-100 # minimum y and L-padding
+		width = maxx-x+100 # width and R-padding
+		height = maxy-y+100 # width and R-padding
+		# Crop pixmap to fit shape (with padding as defined above)
 		self.pixmap = self.pixmap.copy(x,y,width,height)
 		# Adjust points to crop region
 		cropVector = np.array( [x,y] )
@@ -453,7 +457,7 @@ class contourPixmap(QLabel):
 		# Scale points
 		preWidth = float(preCropSize.width())
 		preHeight = float(preCropSize.height())
-		# Prevent division by 0.0
+		# Prevent division by 0
 		if preWidth == 0.0 or preHeight == 0.0:
 			preWidth = 1.0
 			preHeight = 1.0

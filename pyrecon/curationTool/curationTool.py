@@ -51,7 +51,7 @@ def findDistantTraces(series, threshold, printOut=True):
 		series = openSeries(series)
 	distantDict = series.locateDistantTraces(threshold)
 	if printOut:
-		print('-------------------------------------------------\n'+str('Locating distant traces (treshold: +/-%d sections):'%threshold)+'-------------------------------------------------\n')
+		print('-------------------------------------------------\n'+str('Locating distant traces (threshold: +/-%d sections):'%threshold)+'-------------------------------------------------\n')
 		for sec in sorted(distantDict):
 			print('Section index: '+str(sec))
 			for name in distantDict[sec]:

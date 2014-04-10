@@ -194,10 +194,15 @@ def seriesAttributes(node):
 	return attributes
 def transformAttributes(node):
 	def intorfloat(input):
+		'''Returns number data type from string.'''
 		if '.' in input:
 			return float(input)
 		else:
-			return int(input)
+			try: #=== 
+				return int(input)
+			except:
+				print '\n\thandleXML.intorfloat():',input,'converted to float',float(input),'\n'
+				return float(input)
 	attributes = {}
 	attributes['dim'] = int(node.get('dim'))
 	attributes['xcoef'] = [intorfloat(x) for x in node.get('xcoef').strip().split(' ')]
@@ -238,7 +243,7 @@ def objectToElement(object):
 				points= ', '.join([str(pt[0])+' '+str(pt[1]) for pt in contour.points])+','
 				)
 			except:
-				print('Problem creating Contour element')
+				print('Problem creating Contour element', contour.name)
 		return element
 	def imageToElement(image):
 		element = ET.Element("Image",
@@ -379,6 +384,7 @@ def objectToElement(object):
 		return zcontourToElement(object)
 def writeSection(section, directory, outpath=None, overwrite=False):
 	'''Writes <section> to an XML file in directory'''
+	print 'Writing section:',section.name
 	if not outpath: # Will write to file with sections name
 		if str(directory[-1]) != '/':
 			directory += '/'
@@ -418,21 +424,25 @@ def writeSection(section, directory, outpath=None, overwrite=False):
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
 def writeSeries(series, directory, outpath=None, sections=False, overwrite=False):
 	'''Writes <series> to an XML file in directory'''
+	print 'Writing series:',series.name
 	# Pre-writing checks
-		# Make sure directory is correctly input
+	# - Make sure directory is correctly input
 	if directory[-1] != '/':
 		directory += '/'
-    	# Check if directory exists, make if does not exist
+    # - Check if directory exists, make if does not exist
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	if not outpath:
 		outpath = directory+series.name+'.ser'
-    	# Raise error if this file already exists to prevent overwrite
+    # - Raise error if this file already exists to prevent overwrite
 	if not overwrite and os.path.exists(outpath):
 		msg = 'CAUTION: Files already exist in ths directory: Do you want to overwrite them?'
-		try: # Graphical
+		try: # Graphical #=== Not working: 'must contstruct QApplication before QPaintDevice'
 			from PySide.QtCore import *
 			from PySide.QtGui import *
+			app = QApplication.instance()
+			if app == None:
+				app = QApplication([])
 			msgBox = QMessageBox()
 			msgBox.setText(msg)
 			msgBox.setStandardButtons( QMessageBox.Ok | QMessageBox.Cancel)
@@ -450,10 +460,16 @@ def writeSeries(series, directory, outpath=None, sections=False, overwrite=False
     # Build series root element
 	root = objectToElement( series ) 
 	# Add Contours/ZContours to root
-	for contour in series.contours:
-		root.append( objectToElement(contour) )
-	for zcontour in series.zcontours:
-		root.append( objectToElement(zcontour) )
+	if series.contours is not None:
+		for contour in series.contours:
+			root.append( objectToElement(contour) )
+	else:
+		print 'No contours in', series.name
+	if series.zcontours is not None:
+		for zcontour in series.zcontours:
+			root.append( objectToElement(zcontour) )
+	else:
+		print 'No zcontours in', series.name
 	# Make tree and write
 	elemtree = ET.ElementTree(root)
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")

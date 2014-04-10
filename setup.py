@@ -20,6 +20,7 @@ setup(
                 'pyrecon.curationTool.gui',
 
                 'pyrecon.excelTool',
+                'pyrecon.excelTool.gui',
                 
                 'pyrecon.mergeTool',
                 'pyrecon.mergeTool.gui'

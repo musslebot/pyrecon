@@ -65,12 +65,15 @@ class pyreconMainWindow(QMainWindow):
         self.calibrationTool = calibrationToolStuff(self)
         self.calibSelector.setWidget( self.calibrationTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.calibSelector )
+    def loadExcelTool(self):
+        from pyrecon.excelTool.gui.excelGUI import excelToolWindow
+        # Left dockWidget
+        self.excelSelector = QDockWidget()
+        self.excelTool = excelToolWindow(self)
+        self.excelSelector.setWidget( self.excelTool )
+        self.addDockWidget( Qt.LeftDockWidgetArea, self.excelSelector)
 
-    def loadExcelTool(self): #===
-        msg = QMessageBox()
-        msg.setText('excelTool is currently in development!')
-        msg.exec_()
-    
+# Helper widgets
 class browseWidget(QWidget):
     '''Provides a QLineEdit and button for browsing through a file system. browseType can be directory, file or series but defaults to directory.'''
     def __init__(self, browseType='directory'):
