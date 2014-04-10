@@ -5,6 +5,7 @@ Version 2.1.X
 > 2.1.0
 ---
 * New GUI for pyrecon!
+* Restructured
 
 Version 2.0.X
 ===
@@ -34,6 +35,10 @@ Version 2.0.X
 > 2.0.3
 ---
 * Fixed README.md issue (kind of -- added a README.txt along with .md)
+
+> 2.0.4
+---
+* GUIs finished for tools
 
 Version 1.4.X
 ===
