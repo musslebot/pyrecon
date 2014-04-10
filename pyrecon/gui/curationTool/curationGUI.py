@@ -3,7 +3,7 @@ from PySide.QtGui import *
 
 from pyrecon.pyreconGUI import *
 from pyrecon.main import openSeries
-import pyrecon.curationTool
+import pyrecon.tools.curationTool
 
 class curationToolStuff(QWidget):
 	def __init__(self, parent=None):

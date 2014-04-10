@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-from pyrecon.excelTool import excelTool
+from pyrecon.tools.excelTool import excelTool
 from PySide.QtGui import *
 from PySide.QtCore import *
 

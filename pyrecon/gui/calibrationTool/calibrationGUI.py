@@ -3,7 +3,7 @@ from PySide.QtGui import *
 
 from pyrecon.pyreconGUI import *
 from pyrecon.main import openSeries
-import pyrecon.calibrationTool
+import pyrecon.tools.calibrationTool
 
 class calibrationToolStuff(QWidget):
 	def __init__(self, parent=None):

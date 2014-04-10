@@ -1,3 +1,3 @@
 import curationTool
-import gui
+import pyrecon.gui.curationTool
 from curationTool import main as main

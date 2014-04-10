@@ -4,7 +4,7 @@ from PySide.QtGui import *
 import pyrecon.handleXML as xml
 from pyrecon.pyreconGUI import *
 from pyrecon.main import openSeries
-from pyrecon.mergeTool.gui import sectionHandlers, seriesHandlers
+from pyrecon.gui.mergeTool import sectionHandlers, seriesHandlers
 
 class mergeSelection(QWidget):
     '''Select what section/series to look at.'''
