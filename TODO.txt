@@ -2,6 +2,8 @@ TODO LIST (in order of high -> low priority)
 --------------------------------------------
 * BUGS.txt
 
+* TEST REST OF RESTRUCTURE BRANCH
+
 * verbose option for print statements
 * Use threading for intensive computations (loading a series, etc.)
 	(http://redino.net/blog/2013/07/pyside-downloading-file-with-progress-bar/)
@@ -14,3 +16,6 @@ mergeTool
 curationTool
 * Ignore stamps in output (capital D, protrusion, etc.)?
 * change options into a QGroupBox?
+
+calibrationTool
+* rescale series option needs to say that the following directory is output directory

@@ -5,7 +5,7 @@ Version 2.1.X
 > 2.1.0
 ---
 * New GUI for pyrecon!
-* Restructured
+* Complete, more intuitive restructure of packages
 
 Version 2.0.X
 ===
