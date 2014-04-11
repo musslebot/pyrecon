@@ -1,11 +1,16 @@
+# PyRECONSTRUCT consists of 3 packages: classes, tools, gui
+#	classes allows data to be loaded into python objects and manipulated with its class functions
+#	tools allows higher-level manipulations on classes
+#	gui allows the use of a graphical user interfaces (GUI) for tools 
+'''Python packages for interacting with RECONSTRUCT data.'''
+
 __all__ = [
 	'classes',
 	'tools',
 	'gui',
 ]
-
-# Important functions/classes & xml handling
-from classes import Contour, Image, Section, Series, Transform, ZContour
+import main
 from main import openSeries, start
-import tools.handleXML as xml
-
+from classes import *
+from tools import *
+# No gui import here
