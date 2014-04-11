@@ -1,3 +1,3 @@
 import findCalFactor
 import reScale
-import pyrecon.gui.calibrationTool
+from reScale import main as main

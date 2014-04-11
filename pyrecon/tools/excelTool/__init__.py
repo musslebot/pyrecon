@@ -1,2 +1,2 @@
 import excelTool
-import pyrecon.gui.excelTool
+from excelTool import main as main

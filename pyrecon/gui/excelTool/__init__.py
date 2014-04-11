@@ -1,1 +1,3 @@
-import excelGUI
+__all__ = [
+			'excelGUI',
+]

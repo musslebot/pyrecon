@@ -1,1 +1,3 @@
-import curationGUI
+__all__ = [
+			'curationGUI',
+]

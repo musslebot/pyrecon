@@ -1,3 +1,5 @@
-import mergeGUI
-import sectionHandlers
-import seriesHandlers
+__all__ = [
+			'mergeGUI',
+			'sectionHandlers',
+			'seriesHandlers',
+]
