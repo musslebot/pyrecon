@@ -10,23 +10,15 @@ setup(
       author_email='mdmusslewhite@gmail.com',
       url='https://github.com/wtrdrnkr/pyrecon',
       packages=[
-                'pyrecon',
-                
-                'pyrecon.classes',
-                
-                'pyrecon.tools',
-                'pyrecon.tools.calibrationTool',
-                'pyrecon.tools.curationTool',
-                'pyrecon.tools.excelTool',
-                'pyrecon.tools.mergeTool',
-
-                'pyrecon.gui',
-                'pyrecon.gui.calibrationTool',
-                'pyrecon.gui.curationTool',
-                'pyrecon.gui.excelTool',
-                'pyrecon.gui.mergeTool',
-                
+                'classes',
+                'tools',
+                'gui'
                 ],
+      package_dir={
+                    'classes':'pyrecon/classes',
+                    'tools':'pyrecon/tools',
+                    'gui':'pyrecon/gui',
+                  },
       license='LICENSE.txt',
       description='Python tools for interacting with XML files associated with RECONSTRUCT',
       long_description = open('README.txt').read(),
