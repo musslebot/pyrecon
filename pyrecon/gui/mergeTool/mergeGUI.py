@@ -1,9 +1,9 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 
-import pyrecon.handleXML as xml
-from pyrecon.pyreconGUI import *
 from pyrecon.main import openSeries
+import pyrecon.tools.handleXML as xml
+from pyrecon.gui.main import *
 from pyrecon.gui.mergeTool import sectionHandlers, seriesHandlers
 
 class mergeSelection(QWidget):

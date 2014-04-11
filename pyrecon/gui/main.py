@@ -42,7 +42,7 @@ class pyreconMainWindow(QMainWindow):
         self.toolsMenu.addAction( excelAction )
         self.toolsMenu.addAction( curateAction )
     def loadMergeTool(self):
-        from pyrecon.mergeTool.gui.mergeGUI import mergeSelection
+        from pyrecon.gui.mergeTool.mergeGUI import mergeSelection
         self.mergeSelector = QDockWidget() # Left dockWidget
         mergeSel = mergeSelection(self)
         self.mergeSelector.setWidget( mergeSel )
@@ -51,7 +51,7 @@ class pyreconMainWindow(QMainWindow):
         self.resolutionStack = QStackedWidget()
         self.setCentralWidget( self.resolutionStack )
     def loadCurationTool(self):
-        from pyrecon.curationTool.gui.curationGUI import curationToolStuff
+        from pyrecon.gui.curationTool.curationGUI import curationToolStuff
         # Left dockWidget: load series/options
         self.curateSelector = QDockWidget()
         self.curationTool = curationToolStuff(self)
@@ -59,14 +59,14 @@ class pyreconMainWindow(QMainWindow):
         self.addDockWidget( Qt.LeftDockWidgetArea, self.curateSelector )
         self.setCentralWidget(self.curationTool.outputWidget)
     def loadCalibrationTool(self):
-        from pyrecon.calibrationTool.gui.calibrationGUI import calibrationToolStuff
+        from pyrecon.gui.calibrationTool.calibrationGUI import calibrationToolStuff
         # Left dockWidget: load series/options
         self.calibSelector = QDockWidget()
         self.calibrationTool = calibrationToolStuff(self)
         self.calibSelector.setWidget( self.calibrationTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.calibSelector )
     def loadExcelTool(self):
-        from pyrecon.excelTool.gui.excelGUI import excelToolWindow
+        from pyrecon.gui.excelTool.excelGUI import excelToolWindow
         # Left dockWidget
         self.excelSelector = QDockWidget()
         self.excelTool = excelToolWindow(self)

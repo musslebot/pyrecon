@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from pyrecon.main import openSeries
 from pyrecon.classes import Transform
-from pyrecon import handleXML as xml
+from pyrecon.tools import handleXML as xml
 import argparse
  
 def main(ser, newMag, outpath):

@@ -2,7 +2,7 @@
 #!/usr/bin/python
 from pyrecon.main import openSeries
 from pyrecon.classes import Section, Series
-import pyrecon.handleXML as xml
+from pyrecon.tools import handleXML as xml
 import argparse
 
 def main(series1, series2, directory, *args, **kwargs): #===

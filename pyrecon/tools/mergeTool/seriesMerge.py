@@ -1,7 +1,7 @@
 '''Driver for merging two series objects (as per .ser XML file). Does not take into account differences in the sections associated with this series -- refer to sectionMerge.py for merging sections.'''
 from pyrecon.classes import *
 import conflictResolution as handlers
-import pyrecon.gui.mergeTool.seriesHandlers as handlersGUI
+# gui handlers imported in graphicalMerge()
 
 # MAIN FUNCTIONS
 def main(series1, series2, graphical=False):
@@ -35,6 +35,7 @@ def nonGraphicalMerge(series1, series2): #=== medium priority
 	return Series(mergedContours, mergedZContours, mergedAttributes)
 def graphicalMerge(series1, series2):
 	from PySide.QtGui import QApplication
+	from pyrecon.gui.mergeTool import seriesHandlers as handlersGUI
 	# Merge 
 	app = QApplication.instance()
 	if app is None: # Create QApplication if doesn't exist

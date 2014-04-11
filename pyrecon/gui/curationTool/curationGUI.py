@@ -1,8 +1,8 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 
-from pyrecon.pyreconGUI import *
 from pyrecon.main import openSeries
+from pyrecon.gui.main import *
 import pyrecon.tools.curationTool
 
 class curationToolStuff(QWidget):

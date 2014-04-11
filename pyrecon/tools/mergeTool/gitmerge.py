@@ -1,7 +1,7 @@
 '''gitmerge.py handles input given by gitmerge.sh, which is called by the git merge function. This program assumes that the series/section files are stored in a folder with the same name as the series (e.g. BBCHZ.ser and its sections are in a folder called BBCHZ).'''
 import sys, os
-from pyrecon import handleXML as xml
-from pyrecon import mergeTool
+from pyrecon.tools import handleXML as xml
+from pyrecon.tools import mergeTool
 
 # Assign arguments to variables
 args = sys.argv

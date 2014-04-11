@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import sys
-from pyrecon.tools.excelTool import excelTool
 from PySide.QtGui import *
 from PySide.QtCore import *
+from pyrecon.tools.excelTool import excelTool
 
 class excelToolWindow(QWidget):
     def __init__(self, parent = None):
