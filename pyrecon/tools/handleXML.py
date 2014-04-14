@@ -437,7 +437,7 @@ def writeSeries(series, directory, outpath=None, sections=False, overwrite=False
     # - Raise error if this file already exists to prevent overwrite
 	if not overwrite and os.path.exists(outpath):
 		msg = 'CAUTION: Files already exist in ths directory: Do you want to overwrite them?'
-		try: # Graphical #=== Not working: 'must contstruct QApplication before QPaintDevice'
+		try: # Graphical
 			from PySide.QtCore import *
 			from PySide.QtGui import *
 			app = QApplication.instance()
@@ -451,7 +451,7 @@ def writeSeries(series, directory, outpath=None, sections=False, overwrite=False
 				a = 'yes'
 			else:
 				a = 'no'
-		except: # Terminal
+		except: # StdOut
 			a = raw_input(msg+' (y/n)')
 		overwrite = str(a).lower() in ['y','yes']
 		if not overwrite:
