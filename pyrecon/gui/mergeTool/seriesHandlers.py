@@ -112,6 +112,7 @@ class seriesAttributes(QWidget):
 		main.addLayout(ser2)
 		self.setLayout(main)
 	def checkEquiv(self):
+		'''Check if atts are equivalent. If so, automerge.'''
 		if self.atts1 == self.atts2:
 			self.output = self.atts1
 			self.pick1.setStyleSheet('background-color:lightgreen;')
@@ -183,6 +184,7 @@ class seriesContours(QWidget):
 		main.addLayout(ser2)
 		self.setLayout(main)
 	def checkEquiv(self):
+		'''Check if contours are equivalent. If so, automerge.'''
 		if self.conts1 == self.conts2:
 			self.output = self.conts1
 			self.pick1.setStyleSheet('background-color:lightgreen;')

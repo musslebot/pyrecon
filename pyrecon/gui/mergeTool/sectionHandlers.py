@@ -112,6 +112,7 @@ class sectionAttributes(QWidget):
 		main.addLayout(sec2)
 		self.setLayout(main)
 	def checkEquiv(self):
+		'''Check if atts are equivalent. If so, automerge'''
 		if self.atts1 == self.atts2:
 			self.output = self.atts1
 			self.pick1.setStyleSheet('background-color:lightgreen;')
@@ -196,6 +197,7 @@ class sectionImages(QWidget):
 		hbox.addLayout(vbox2)
 		self.setLayout(hbox)
 	def checkEquiv(self):
+		'''Check if images are equal. If so, automerge'''
 		if self.img1 == self.img2:
 			self.output = self.img1
 			self.pick1.setStyleSheet('background-color:lightgreen;')
@@ -236,7 +238,8 @@ class sectionContours(QWidget):
 		self.loadFunctions()
 		self.loadLayout()
 		self.checkEquiv()
-	def checkEquiv(self): #===
+	def checkEquiv(self):
+		'''Check if there are any unique contours. If not, call finish()'''
 		if (self.inUniqueA.count() == 0 and
 			self.inUniqueB.count() == 0 and
 			self.inOvlp.count() == 0):
