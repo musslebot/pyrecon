@@ -421,6 +421,9 @@ def writeSection(section, directory, outpath=None, overwrite=False):
 		root.append(transformElement)
 	# Make tree and write
 	elemtree = ET.ElementTree(root)
+	if os.path.exists(outpath) and not overwrite:
+		print('Section write aborted (%s) due to overwrite conflict.'%(section.name)) 
+		return
 	elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
 def writeSeries(series, directory, outpath=None, sections=False, overwrite=False):
 	'''Writes <series> to an XML file in directory'''
@@ -438,8 +441,7 @@ def writeSeries(series, directory, outpath=None, sections=False, overwrite=False
 	if not overwrite and os.path.exists(outpath):
 		msg = 'CAUTION: Files already exist in ths directory: Do you want to overwrite them?'
 		try: # Graphical
-			from PySide.QtCore import *
-			from PySide.QtGui import *
+			from PySide.QtGui import QApplication, QMessageBox
 			app = QApplication.instance()
 			if app == None:
 				app = QApplication([])
