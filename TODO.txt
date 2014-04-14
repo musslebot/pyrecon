@@ -4,6 +4,8 @@ TODO LIST (in order of high -> low priority)
 
 * Check out windows .exe prereqs... does license allow putting them in my code?
 
+* Images need interactability (click-drag scaling, ScrollArea)
+
 * verbose option for print statements
 * Use threading for intensive computations (loading a series, etc.)
 	(http://redino.net/blog/2013/07/pyside-downloading-file-with-progress-bar/)
