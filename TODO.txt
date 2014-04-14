@@ -16,3 +16,6 @@ mergeTool
 curationTool
 * Ignore stamps in output (capital D, protrusion, etc.)?
 * change options into a QGroupBox?
+
+calibrationTool
+* rescale series option needs to say that the following directory is output directory

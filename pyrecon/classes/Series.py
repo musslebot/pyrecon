@@ -113,7 +113,7 @@ class Series:
         for arg in args:
             # String argument
             if type(arg) == type(''): # Possible path to XML?
-                import pyrecon.handleXML as xml
+                import pyrecon.tools.handleXML as xml
                 try: # given full path to .ser file
                     self.update(*xml.process(arg))
                     self.path = arg
