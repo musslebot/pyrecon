@@ -104,10 +104,8 @@ class sectionAttributes(QWidget):
 		self.scrollLabel1.setWidget(self.attLabel1)
 		self.scrollLabel2.setWidget(self.attLabel2)
 		# Add widgets to layout
-		# sec1.addWidget(QLabel('Section 1 Attributes'))
 		sec1.addWidget(self.scrollLabel1)
 		sec1.addWidget(self.pick1)
-		# sec2.addWidget(QLabel('Section 2 Attributes'))
 		sec2.addWidget(self.scrollLabel2)
 		sec2.addWidget(self.pick2)
 		main.addLayout(sec1)
@@ -143,8 +141,6 @@ class sectionImages(QWidget):
 		self.loadLayout()
 		self.checkEquiv()
 	def loadObjects(self):
-		# self.img1label = QLabel(self)
-		# self.img2label = QLabel(self)
 		self.pix1 = QLabel(self)
 		self.pix2 = QLabel(self)
 		self.img1detail = QLabel(self)
@@ -154,10 +150,6 @@ class sectionImages(QWidget):
 		self.pick1.setMinimumHeight(50)
 		self.pick2.setMinimumHeight(50)
 	def loadFunctions(self, image1, image2):
-		# self.img1label.setText('Section A\'s Image\n'+'-'*17)
-		# self.img1label.setAlignment(Qt.AlignHCenter)
-		# self.img2label.setText('Section B\'s Image\n'+'-'*17)
-		# self.img2label.setAlignment(Qt.AlignHCenter)
 		self.img1detail.setText('\n'.join([(str(item)+':\t'+str(image1.__dict__[item])) for item in image1.__dict__ if item != 'transform']))
 		self.img2detail.setText('\n'.join([(str(item)+':\t'+str(image2.__dict__[item])) for item in image2.__dict__ if item != 'transform']))
 		# Load images
@@ -176,12 +168,8 @@ class sectionImages(QWidget):
 		self.pick2.clicked.connect( self.chooseImg )
 		# Adjust font/alignment
 		font = QFont('Arial',pointSize=18)
-		# self.img1label.setFont(font)
-		# self.img2label.setFont(font)
 		self.img1detail.setFont(font)
 		self.img2detail.setFont(font)
-		# self.img1label.setAlignment(Qt.AlignHCenter)
-		# self.img2label.setAlignment(Qt.AlignHCenter)
 		self.img1detail.setAlignment(Qt.AlignHCenter)
 		self.img2detail.setAlignment(Qt.AlignHCenter)
 		self.pix1.setFont(font)
