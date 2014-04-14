@@ -6,6 +6,7 @@ Version 2.1.X
 ---
 * New GUI for pyrecon!
 * Complete, more intuitive restructure of packages
+* More bug fixes
 
 Version 2.0.X
 ===
