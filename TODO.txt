@@ -4,14 +4,14 @@ TODO LIST (in order of high -> low priority)
 
 * Check out windows .exe prereqs... does license allow putting them in my code?
 
-* Images need interactability (click-drag scaling, ScrollArea)
-
 * verbose option for print statements
 * Use threading for intensive computations (loading a series, etc.)
 	(http://redino.net/blog/2013/07/pyside-downloading-file-with-progress-bar/)
 * Test if command-line versions still work
 
 mergeTool
+* Need better way to select multiple sections
+* Images need interactability (click-drag scaling, ScrollArea)
 * add note to loadSeries window that describes 1st series as default in cases of unresolved conflicts
 * Show contours on resolve images
 
