@@ -86,10 +86,10 @@ class browseWidget(QWidget):
         self.path = QLineEdit()
         if browseType == 'directory':
             title = 'Enter or browse path to directory'
-        elif browseType == 'file':
-            title = 'Enter or browse path to file'
-        else:
+        elif browseType == 'series':
             title = 'Enter or browse path'
+        else:
+            title = 'Enter or browse path to file'
         self.path.setText(title)
         # Browse button
         self.browseButton = QPushButton()
@@ -97,10 +97,10 @@ class browseWidget(QWidget):
     def loadFunctions(self, browseType):
         if browseType == 'directory':
             self.browseButton.clicked.connect( self.browseDir )
-        elif browseType == 'file':
-            self.browseButton.clicked.connect( self.browseFile )
         elif browseType == 'series':
             self.browseButton.clicked.connect( self.browseSeries )
+        else:
+            self.browseButton.clicked.connect( self.browseFile )
     def loadLayout(self):
         hbox = QHBoxLayout()
         hbox.addWidget(self.path)
@@ -111,10 +111,10 @@ class browseWidget(QWidget):
         self.path.setText( str(dirName) )
     def browseFile(self):
         fileName = QFileDialog.getOpenFileName(self, "Open File", "/home/")
-        self.path.setText( str(fileName[0]))
+        self.path.setText( str(fileName[0]) )
     def browseSeries(self):
         fileName = QFileDialog.getOpenFileName(self, "Open Series", "/home/", "Series File (*.ser)")
-        self.path.setText( str(fileName[0]))
+        self.path.setText( str(fileName[0]) )
 
 class singleSeriesLoad(QDialog):
     '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
@@ -161,7 +161,8 @@ class doubleSeriesLoad(QDialog):
         self.setLayout(vbox)
     def loadClose(self):
         # Add paths to self.output
-        self.output = ( str(self.series1.path.text()), str(self.series2.path.text()) )
+        self.output = ( str(self.series1.path.text()),
+                        str(self.series2.path.text()) )
         self.close()
 
 if __name__ == '__main__':
