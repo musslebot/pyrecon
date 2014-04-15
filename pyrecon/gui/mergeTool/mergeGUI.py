@@ -25,9 +25,9 @@ class mergeSelection(QWidget):
         self.finishedButton.setText('&Finish Merge') 
         self.finishedButton.clicked.connect( self.finishMerge )
         # What to do when an item is clicked
-        self.mergeSelect.setSelectionMode( QAbstractItemView.ExtendedSelection ) #===
+        self.mergeSelect.setSelectionMode( QAbstractItemView.ExtendedSelection )
         self.mergeSelect.itemClicked.connect( self.itemClicked )
-        self.mergeSelect.itemDoubleClicked.connect( self.itemDoubleClicked ) #===
+        self.mergeSelect.itemDoubleClicked.connect( self.itemDoubleClicked )
         # Hide list and finish button until series successfully loaded
         self.mergeSelect.hide()
         self.finishedButton.hide()
