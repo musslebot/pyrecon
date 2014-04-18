@@ -1,25 +1,5 @@
 '''Driver for merging two section objects (as per section XML file).'''
 from pyrecon.classes import *
-import conflictResolution as handlers
-# gui handlers imported in graphicalMerge()
-
-# MAIN FUNCTIONS
-def main(section1, section2, graphical=False):
-	# Check for type/index issues
-	if section1.__class__.__name__ != 'Section' or section2.__class__.__name__ != 'Section':
-		print('Incorrect data types for section1 and/or section2:\n\tMust both be a pyrecon.classes.Section object.')
-		return
-	elif section1.index != section2.index:
-		print('Section indices must match in order to use the mergeTool!')
-		return
-	print('Sections: '+str(section1.name)+', '+str(section2.name))
-	# GUI or not GUI?
-	if graphical: # GUI
-		mergedSection = graphicalMerge(section1, section2)
-	else: # Terminal
-		# Combine merged properties into a section object
-		mergedSection = nonGraphicalMerge(section1, section2)
-	return mergedSection
 def nonGraphicalMerge(section1, sections2):
 	mergedImage = mergeImages(section1, section2)
 	mergedContours = mergeContours(section1, section2)
@@ -56,10 +36,10 @@ def graphicalMerge(section1, section2):
 	return Section(mergedImage, mergedContours, mergedAttributes)
 # MERGE FUNCTIONS
 # - Image
-def mergeImages(sectionA, sectionB, handler=handlers.sectionImages, parent=None):
+def mergeImages(sectionA, sectionB, handler=sectionImages, parent=None):
 	return handler(sectionA.image, sectionB.image, parent=parent)
 # - Contours
-def mergeContours(sectionA, sectionB, handler=handlers.sectionContours, parent=None):
+def mergeContours(sectionA, sectionB, handler=sectionContours, parent=None):
 	'''Returns merged contours between two sections'''
 	# Populate shapely shapes
 	sectionA.popShapes()
@@ -129,7 +109,7 @@ def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName
 					confOvlps.append([contA, contB])
 	return compOvlps, confOvlps
 # - Attributes
-def mergeAttributes(sectionA, sectionB, handler=handlers.sectionAttributes, parent=None):
+def mergeAttributes(sectionA, sectionB, handler=sectionAttributes, parent=None):
 	# extract attributes from class dictionaries
 	attributes = ['name', 'index', 'thickness', 'alignLocked']
 	secAatts = {} 
