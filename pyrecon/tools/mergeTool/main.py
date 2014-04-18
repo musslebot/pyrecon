@@ -4,7 +4,54 @@ from pyrecon.main import openSeries
 from pyrecon.classes import Section, Series
 from pyrecon.tools import handleXML as xml
 import argparse
+from pyrecon.tools.mergeTool import sectionHandlers, seriesHandlers
 
+class MergeSeries:
+	'''MergeSeries contains the two series to be merged, handlers for how to merge the series, and functions for manipulating class data.'''
+	def __init__(self, *args, **kwargs):
+		# Series to be merged
+		self.series1 = None
+		self.series2 = None
+
+		# Series merge handlers
+		self.attributes_handler = None
+		self.contours_handler = None
+		self.zcontours_handler = None
+
+		# Merged stuff
+		self.attributes = None
+		self.contours = None
+		self.zcontours = None
+
+		self.processArguments(args, kwargs)
+
+	def processArguments(self, *args, **kwargs):
+		'''Process given arguments.'''
+		def processArgs(self, args):
+			for arg in args:
+				print arg
+		def processKwargs(self, kwargs):
+			for kwarg in kwargs:
+				print kwarg
+
+	def run(self):
+		'''Run mergeTool using designated handler functions.'''
+		return
+
+	def save(self):
+		'''Create and write series object to .'''
+		return
+
+	def set(self, attribute, newAttribute):
+		'''Set state of <attribute> to <newAttribute>'''
+		return
+
+	def get(self, attribute):
+		'''Return current state of <attribute>'''
+		return
+
+class MergeSection:
+	'''MergeSection contains the two sections to be merged, handlers for how to merge the sections, and functions for manipulating class data.'''
 def main(series1, series2, directory, *args, **kwargs): #===
 	'''Merge <series1> and <series2> together, and place the merged series into <directory>. For a graphical merge handler, also pass the 'graphical=True' argument.'''
 	# Are <series1/2> paths or Series objects?
