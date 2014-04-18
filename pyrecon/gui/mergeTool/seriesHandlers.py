@@ -3,12 +3,11 @@ from PySide.QtGui import *
 import pyrecon
 
 class seriesWrapper(QTabWidget):
-	'''seriesWrapper is a TabWidget. It contains multiple widgets that can be swapped bia their tabs.'''
-	def __init__(self, series1, series2, parent=None):
+	'''seriesWrapper is a TabWidget. It contains multiple widgets that can be swapped via tabs.'''
+	def __init__(self, mergeObject, parent=None):
 		QTabWidget.__init__(self)
 		self.parent = parent
-		self.series1 = series1
-		self.series2 = series2
+		self.mergeObject = mergeObject
 		self.loadObjects()
 	def loadObjects(self):
 		# Load widgets to be used as tabs
