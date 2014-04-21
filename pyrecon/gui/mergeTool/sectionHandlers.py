@@ -4,132 +4,182 @@ import pyrecon
 import numpy as np
 
 # SECTION RESOLUTION WRAPPER
-class sectionWrapper(QTabWidget):
-	'''sectionWrapper is a TabWidget. It contains multiple widgets that can be swapped via their tabs.'''
-	def __init__(self, section1, section2, parent=None):
-		QTabWidget.__init__(self)
-		self.parent = parent
-		self.section1 = section1
-		self.section2 = section2
-		self.loadObjects(section1, section2)
-	def loadObjects(self, section1, section2):
-		# Load widgest to be used as tabs
-		self.attributes = pyrecon.mergeTool.sectionMerge.mergeAttributes(section1, section2, handler=sectionAttributes, parent=self)
-		self.images = pyrecon.mergeTool.sectionMerge.mergeImages(
-			section1, section2, handler=sectionImages, parent=self)
-		self.contours = pyrecon.mergeTool.sectionMerge.mergeContours(section1, section2, handler=sectionContours, parent=self)
-		# Add widgets as tabs
-		# - Attributes
-		self.addTab(self.attributes, '&Attributes')
-		# - Images
-		self.addTab(self.images, '&Images')
-		# - Contours
-		self.addTab(self.contours, '&Contours')
-		# Check for lack of conflicts
-		self.isResolved()
-	def toObject(self):
-		'''Returns a section object from the output of each resolution tab.'''
-		'''Returns series object from the output of each resolution tab.'''
-		# Determine attributes
-		if self.attributes.output is None:
-			print('Section attributes default to section 1')
-			attributes = self.attributes.atts1
-		else:
-			attributes = self.attributes.output
-		# Determine image
-		if self.images.output is None:
-			print('Section image default to section 1')
-			image = self.images.img1
-		else:
-			image = self.images.output
-		# Determine contours
-		if self.contours.output is None:
-			print('Section contours default to section 1')
-			contours = self.contours.conts1
-		else:
-			contours = self.contours.output
+# class sectionWrapper(QTabWidget):
+# 	'''sectionWrapper is a TabWidget. It contains multiple widgets that can be swapped via their tabs.'''
+# 	def __init__(self, MergeSection=None, parent=None):
+# 		QTabWidget.__init__(self)
+# 		self.parent = parent
+# 		self.merge = MergeSection
+# 		self.loadObjects(MergeSection.section1, MergeSection.section2)
+# 	def loadObjects(self, section1, section2):
+# 		# Load widgest to be used as tabs
+# 		self.attributes = self.merge.mergeAttributes()
+# 		self.images = self.merge.mergeImages()
+# 		self.contours = self.merge.mergeContours()
+# 		# Add widgets as tabs
+# 		# - Attributes
+# 		self.addTab(self.attributes, '&Attributes')
+# 		# - Images
+# 		self.addTab(self.images, '&Images')
+# 		# - Contours
+# 		self.addTab(self.contours, '&Contours')
+# 		# Check for lack of conflicts
+# 		self.isResolved()
+# 	def toObject(self):
+# 		'''Returns a section object from the output of each resolution tab.'''
+# 		'''Returns series object from the output of each resolution tab.'''
+# 		# Determine attributes
+# 		if self.attributes.output is None:
+# 			print('Section attributes default to section 1')
+# 			attributes = self.attributes.atts1
+# 		else:
+# 			attributes = self.attributes.output
+# 		# Determine image
+# 		if self.images.output is None:
+# 			print('Section image default to section 1')
+# 			image = self.images.img1
+# 		else:
+# 			image = self.images.output
+# 		# Determine contours
+# 		if self.contours.output is None:
+# 			print('Section contours default to section 1')
+# 			contours = self.contours.conts1
+# 		else:
+# 			contours = self.contours.output
 		
-		# Create merged section object
-		return pyrecon.classes.Section(attributes,image,contours)
-	def isResolved(self):
-		'''Returns true if self.attributes/images/contours output attribute != None'''
-		resolved = (self.attributes.output is not None and
-					self.images.output is not None and
-					self.contours.output is not None)
-		# Check if parent is merge item and set bg to green
-		if resolved and self.parent.__class__.__name__ == 'mergeItem':
-			self.parent.setBackground(QColor('lightgreen'))
-		return resolved
+# 		# Create merged section object
+# 		return pyrecon.classes.Section(attributes,image,contours)
+# 	def isResolved(self):
+# 		'''Returns true if self.attributes/images/contours output attribute != None'''
+# 		resolved = (self.attributes.output is not None and
+# 					self.images.output is not None and
+# 					self.contours.output is not None)
+# 		# Check if parent is merge item and set bg to green
+# 		if resolved and self.parent.__class__.__name__ == 'mergeItem':
+# 			self.parent.setBackground(QColor('lightgreen'))
+# 		return resolved
 # - Attributes
-class sectionAttributes(QWidget):
-	def __init__(self, dictA, dictB, parent=None):
-		QWidget.__init__(self, parent)
-		self.parent = parent # parent different from parentWidget()
-		self.atts1 = {}
-		self.atts2 = {}
-		self.output = None
-		self.loadObjects(dictA,dictB)
+class SectionAttributeHandler(QWidget):
+	def __init__(self, mergeObject):
+		QWidget.__init__(self)
+		self.merge = mergeObject # MergeSection
+		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
-		self.checkEquiv()
-	def loadObjects(self,dictA,dictB):
-		# Extract relevant info to attribute dicts
-		for key in ['name', 'index', 'thickness', 'alignLocked']:
-			self.atts1[key] = dictA[key]
-			self.atts2[key] = dictB[key]
-		self.pick1 = QPushButton()
-		self.pick2 = QPushButton()
-		self.pick1.setText('Choose Section Attributes')
-		self.pick2.setText('Choose Section Attributes')
-		self.pick1.setMinimumHeight(50)
-		self.pick2.setMinimumHeight(50)
-		self.attLabel1 = QLabel()
-		self.attLabel2 = QLabel()
-		self.attLabel1.setText('\n'.join(str(key)+':\t'+str(self.atts1[key]) for key in self.atts1))
-		self.attLabel2.setText('\n'.join(str(key)+':\t'+str(self.atts2[key]) for key in self.atts2))
-		# Adjust font
+	def loadObjects(self):
+		# Buttons to resolve conflict
+		self.chooseLeft = QPushButton('Choose These Attributes')
+		self.chooseRight = QPushButton('Choose These Attributes')
+		# - Button looks
+		self.chooseLeft.setMinimumHeight(50)
+		self.chooseRight.setMinimumHeight(50)
+		# Labels for displaying attributes
+		self.leftLabel = QLabel()
+		self.rightLabel = QLabel()
+		# - Load text into labels
+		self.leftLabel.setText('\n'.join(str(key)+':\t'+str(self.merge.section1.attributes()[key]) for key in self.merge.section1.attributes()))
+		self.rightLabel.setText('\n'.join(str(key)+':\t'+str(self.merge.section2.attributes()[key]) for key in self.merge.section2.attributes()))
+		# - Adjust font
 		font = QFont("Arial", 14)
-		self.attLabel1.setFont(font)
-		self.attLabel2.setFont(font)
+		self.leftLabel.setFont(font)
+		self.rightLabel.setFont(font)
 	def loadFunctions(self):
-		self.pick1.clicked.connect( self.chooseAtt )
-		self.pick2.clicked.connect( self.chooseAtt )
+		# Button functions
+		self.chooseLeft.clicked.connect( self.choose )
+		self.chooseRight.clicked.connect( self.choose )
 	def loadLayout(self):
-		main = QHBoxLayout()
-		sec1 = QVBoxLayout()
-		sec2 = QVBoxLayout()
-		# Add attLabels to QScrollArea
-		self.scrollLabel1 = QScrollArea()
-		self.scrollLabel2 = QScrollArea()
-		self.scrollLabel1.setWidget(self.attLabel1)
-		self.scrollLabel2.setWidget(self.attLabel2)
-		# Add widgets to layout
-		sec1.addWidget(self.scrollLabel1)
-		sec1.addWidget(self.pick1)
-		sec2.addWidget(self.scrollLabel2)
-		sec2.addWidget(self.pick2)
-		main.addLayout(sec1)
-		main.addLayout(sec2)
-		self.setLayout(main)
-	def checkEquiv(self):
-		'''Check if atts are equivalent. If so, automerge'''
-		if self.atts1 == self.atts2:
-			self.output = self.atts1
-			self.pick1.setStyleSheet('background-color:lightgreen;')
-			self.pick2.setStyleSheet('background-color:lightgreen;')
-			self.pick1.setText('NO CONFLICT!')
-			self.pick2.setText('NO CONFLICT!')
-	def chooseAtt(self):
-		if self.sender() == self.pick1:
-			self.output = self.atts1
-			self.pick1.setStyleSheet('background-color:lightgreen;')
-			self.pick2.setStyleSheet(QWidget().styleSheet())
-		elif self.sender() == self.pick2:
-			self.output = self.atts2
-			self.pick2.setStyleSheet('background-color:lightgreen;')
-			self.pick1.setStyleSheet(QWidget().styleSheet())
-		self.parent.isResolved()
-# - Image
+		container = QHBoxLayout()
+		# Left half (section1)
+		leftHalf = QVBoxLayout()
+		leftHalf.addWidget( self.leftLabel )
+		leftHalf.addWidget( self.chooseLeft )
+		# Right half (section2)
+		rightHalf = QVBoxLayout()
+		rightHalf.addWidget( self.rightLabel )
+		rightHalf.addWidget( self.chooseRight )
+		# Add halves to container
+		container.addLayout( leftHalf )
+		container.addLayout( rightHalf )
+		self.setLayout( container ) 
+	def choose(self):
+		if self.sender() == self.chooseLeft:
+			self.merge.attributes = self.merge.section1.attributes()
+			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
+			self.chooseRight.setStyleSheet(QWidget().styleSheet())
+		elif self.sender() == self.chooseRight:
+			self.merge.attributes = self.merge.section2.attributes()
+			self.chooseLeft.setStyleSheet(QWidget().styleSheet())
+			self.chooseRight.setStyleSheet('background-color:lightgreen;')
+# - Images
+class SectionImageHandler(QWidget):
+	def __init__(self, MergeSection):
+		QWidget.__init__(self)
+		self.merge = MergeSection
+		self.loadObjects()
+		self.loadFunctions()
+		self.loadLayout()
+	def loadObjects(self):
+		# Pixmaps
+		self.pixmap1 = QPixmap(self.merge.section1.image._path+self.merge.section1.image.src)
+		self.pixmap2 = QPixmap(self.merge.section2.image._path+self.merge.section2.image.src)
+		# - Pixmaps must be displayed in QLabel
+		self.imgLabel1 = QLabel()
+		self.imgLabel1.setPixmap( self.pixmap1 )
+		self.imgLabel2 = QLabel()
+		self.imgLabel2.setPixmap( self.pixmap2 )
+		# Image details
+		self.details1 = QLabel()
+		self.details2 = QLabel()
+		# Buttons to resolve conflicts
+		self.chooseLeft = QPushButton('Choose This Image')
+		self.chooseLeft.setMinimumHeight(50)
+		self.chooseRight = QPushButton('Choose This Image')
+		self.chooseRight.setMinimumHeight(50)
+	def loadFunctions(self):
+		self.chooseLeft.clicked.connect( self.choose )
+		self.chooseRight.clicked.connect( self.choose )
+	def loadLayout(self):
+		container = QHBoxLayout()
+		
+		leftHalf = QVBoxLayout()
+		imageLabel1 = QLabel()
+		if self.pixmap1.isNull():
+			self.imgLabel1.setText('Image 1 not available.')
+			scrollableImage1 = self.imgLabel1
+		else:
+			imageLabel1.setPixmap(self.pixmap1)
+			scrollableImage1 = QScrollArea()
+			scrollableImage1.setWidget(imageLabel1)
+		leftHalf.addWidget(scrollableImage1)
+		leftHalf.addWidget(self.details1)
+		leftHalf.addWidget(self.chooseLeft)
+		
+		rightHalf = QVBoxLayout()
+		imageLabel2 = QLabel()
+		if self.pixmap2.isNull():
+			self.imgLabel2.setText('Image 2 not available.') #=== set a size
+			scrollableImage2 = self.imgLabel2
+		else:
+			imageLabel2.setPixmap(self.pixmap2)
+			scrollableImage2 = QScrollArea()
+			scrollableImage2.setWidget(imageLabel2)
+		rightHalf.addWidget(scrollableImage2)
+		rightHalf.addWidget(self.details2)
+		rightHalf.addWidget(self.chooseRight)
+		
+		container.addLayout(leftHalf)
+		container.addLayout(rightHalf)
+		self.setLayout(container)
+	def choose(self):
+		if self.sender() == self.chooseLeft:
+			self.merge.images = self.merge.section1.image
+			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
+			self.chooseRight.setStyleSheet(QWidget().styleSheet())
+		elif self.sender() == self.chooseRight:
+			self.merge.images = self.merge.section2.image
+			self.chooseLeft.setStyleSheet(QWidget().styleSheet())
+			self.chooseRight.setStyleSheet('background-color:lightgreen;')
+
 class sectionImages(QWidget):
 	def __init__(self, image1, image2, parent=None):
 		QWidget.__init__(self, parent)
