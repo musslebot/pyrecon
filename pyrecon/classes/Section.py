@@ -100,3 +100,43 @@ class Section:
 			return (self.image == other.image)
 		elif eqType.lower() in ['contours', 'contour']:
 			return (self.contours == other.contours)
+# mergeTool functions
+def getOverlappingContours(self, other, threshold=(1+2**(-17)), sameName=True, detailed=False):
+	'''Returns lists of mutually overlapping contours between two Section objects.'''
+	selfOvlps = [] # Self contours that have ovlps in other
+	otherOvlps = [] # Other contours that have ovlps in self
+	for contA in self.contours:
+		ovlpA = []
+		ovlpB = []
+		for contB in other.contours:
+			# If sameName: only check contours with the same name
+			if sameName and contA.name == contB.name and contA.overlaps(contB, threshold) != 0:
+				ovlpA.append(contA)
+				ovlpB.append(contB)
+			# If not sameName: check all contours, regardless of same name
+			elif not sameName and contA.overlaps(contB, threshold) != 0:
+				ovlpA.append(contA)
+				ovlpB.append(contB)
+		ovlpsA.extend(ovlpA)
+		ovlpsB.extend(ovlpB)
+	if not detailed:
+		return ovlpsA, ovlpsB
+	else:
+		return separateOverlappingContours(ovlpsA, ovlpsB, threshold, sameName)
+def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName=True):
+	'''Returns a list of completely overlapping pairs and a list of conflicting overlapping pairs.'''
+	compOvlps = [] # list of completely overlapping contour pairs
+	confOvlps = [] # list of conflicting overlapping contour pairs
+	for contA in ovlpsA:
+		for contB in ovlpsB:
+			overlap = contA.overlaps(contB, threshold)
+			if sameName and contA.name == contB.name:
+				if overlap == 1:
+					compOvlps.append([contA, contB])
+				elif overlap != 0 and overlap != 1:
+					confOvlps.append([contA, contB])
+			elif not sameName:
+				if overlap == 1:
+					compOvlps.append([contA, contB])
+				elif overlap != 0 and overlap != 1:
+					confOvlps.append([contA, contB])
