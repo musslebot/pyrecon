@@ -1,5 +1,36 @@
 '''Driver for merging two section objects (as per section XML file).'''
 from pyrecon.classes import *
+
+class MergeSection:
+	'''MergeSection contains the two sections to be merged, handlers for how to merge the sections, and functions for manipulating class data.'''
+	def __init__(self, *args, **kwargs):
+		# Sections to be merged
+		self.section1 = None
+		self.section2 = None
+		# Series merge handlers
+		self.handle_attributes = None
+		self.handle_images = None
+		self.handle_contours = None
+		# Merged stuff
+		self.attributes = None
+		self.images = None
+		self.contours = None
+		# Process arguments
+		self.processArguments(args, kwargs)
+	# Argument processing
+	def processArguments(self, *args, **kwargs):
+		'''Process given arguments.'''
+		def processArgs(self, args):
+			for arg in args:
+				print arg
+		def processKwargs(self, kwargs):
+			for kwarg in kwargs:
+				print kwarg
+	# Class methods
+	def run(self):
+		'''Run mergeTool using designated handler functions.'''
+		return
+
 def nonGraphicalMerge(section1, sections2):
 	mergedImage = mergeImages(section1, section2)
 	mergedContours = mergeContours(section1, section2)
@@ -119,16 +150,7 @@ def mergeAttributes(sectionA, sectionB, handler=sectionAttributes, parent=None):
 		secBatts[key] = sectionB.__dict__[key]
 	return handler(secAatts, secBatts, parent=parent)
 
-
-
-
-
-
-
-
-
-
-# SECTION
+# NON-GRAPHICAL SECTION MERGE FUNCTIONS
 # - Image
 def sectionImages(imageA, imageB):
 	if imageA == imageB:
