@@ -5,51 +5,52 @@ from pyrecon.main import openSeries
 import pyrecon.tools.handleXML as xml
 from pyrecon.gui.main import *
 from pyrecon.gui.mergeTool import sectionHandlers, seriesHandlers
+from pyrecon.tools.mergeTool.main import MergeSet
 
-class mergeSelection(QWidget):
-    '''Select what section/series to look at.'''
+class MergeWrapper(QWidget):
+    '''This class graphically manages a MergeSet object. It allows a user to easily change what is currently being merged.'''
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+
+class MergeSetHandler(QWidget):
+    '''This class provides '''
+    def __init__(self, parent=None, mergeSet=None):
+        QWidget.__init__(self, parent)
+        self.mergeSet = mergeSet
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
     def loadObjects(self):
         self.loadButton = QPushButton()
+        self.loadButton.setText('Load Series')
         self.loadButton.setMinimumHeight(50)
-        self.finishedButton = QPushButton()
-        self.finishedButton.setMinimumHeight(50)
-        self.mergeSelect = QListWidget()
+        
+        self.mergeList = MergeSetList()
+        
+        self.finishButton = QPushButton()
+        self.finishButton.setText('Finish')
+        self.finishButton.setMinimumHeight(50)
+
     def loadFunctions(self):
-        self.loadButton.setText('&Load Series')
-        self.loadButton.clicked.connect( self.loadSeries )
-        self.finishedButton.setText('&Finish Merge') 
-        self.finishedButton.clicked.connect( self.finishMerge )
-        # What to do when an item is clicked
-        self.mergeSelect.setSelectionMode( QAbstractItemView.ExtendedSelection )
-        self.mergeSelect.itemClicked.connect( self.itemClicked )
-        self.mergeSelect.itemDoubleClicked.connect( self.itemDoubleClicked )
-        # Hide list and finish button until series successfully loaded
-        self.mergeSelect.hide()
-        self.finishedButton.hide()
-    def loadLayout(self):
-        mainBox = QHBoxLayout()
-        #--- Select What you're looking at (series, section, attributes, images, contours)
-        selectBox = QVBoxLayout()
-        selectBox.addWidget( self.loadButton )
-        selectBox.addWidget( self.mergeSelect )
-        selectBox.addWidget( self.finishedButton )
-        #---
-        mainBox.addLayout( selectBox )
-        self.setLayout(mainBox)
-    def loadSeries(self):
+        self.loadButton.clicked.connect(self.loadMergeSet)
+        
+        self.mergeList.setSelectionMode( QAbstractItemView.ExtendedSelection )
+        self.mergeList.itemClicked.connect( self.itemClicked )
+        self.mergeList.itemDoubleClicked.connect( self.itemDoubleClicked )
+
+        self.finishButton.clicked.connect(self.finishMerge)
+
+    def loadMergeSet(self): #===
+        self.loadButton.setText('Change Series')
         # Open dialog for entering/browsing series paths
-        seriesDialog = doubleSeriesLoad()
-        seriesDialog.exec_()
-        # Process dialog arguments
-        self.series1 = openSeries(seriesDialog.output[0])
-        self.series2 = openSeries(seriesDialog.output[1])
+        if not self.mergeSet:
+            seriesDialog = doubleSeriesLoad()
+            seriesDialog.exec_()
+            # Process dialog arguments
+            self.mergeSet = openSeries(seriesDialog.output[0])
+            self.series2 = openSeries(seriesDialog.output[1])
         # Clear current series
-        self.mergeSelect.clear() # Delete contents currently in table
+        self.mergeList.clear() # Delete contents currently in table
         # Make new series item
         seriesItem = mergeItem(self.series1, self.series2)
         self.mergeSelect.addItem( seriesItem )
@@ -61,6 +62,16 @@ class mergeSelection(QWidget):
         # Display buttons
         self.mergeSelect.show() 
         self.finishedButton.show()
+    def finishMerge(self):
+        return
+
+class MergeSetList(QListWidget):
+    '''This class is a list that displays all the MergeObjects in a MergeSet and handles user interactions.'''
+    def __init__(self, parent=None):
+        QListWidget.__init__(self, parent)
+
+    def loadSeries(self):
+        
     def loadSections(self):
         for i in range( len(self.series1.sections) ):
             sectionItem = mergeItem( self.series1.sections[i], self.series2.sections[i] )
