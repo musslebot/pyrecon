@@ -100,6 +100,13 @@ class Section:
 			return (self.image == other.image)
 		elif eqType.lower() in ['contours', 'contour']:
 			return (self.contours == other.contours)
+	def attributes(self):
+		'''Returns a dict of this Section's attributes'''
+		return {'name':self.name,
+				'index':self.index,
+				'thickness':self.thickness,
+				'alignLocked':self.alignLocked
+			}
 # mergeTool functions
 def getOverlappingContours(self, other, threshold=(1+2**(-17)), sameName=True, detailed=False):
 	'''Returns lists of mutually overlapping contours between two Section objects.'''
