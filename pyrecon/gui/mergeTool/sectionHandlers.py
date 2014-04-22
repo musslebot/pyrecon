@@ -153,11 +153,11 @@ class SectionContourHandler(QWidget):
 	# (self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None, parent=None):
 		QWidget.__init__(self)
 		self.merge = MergeSection
-		self.conts1 = self.merge.section1.contours
-		self.conts2 = self.merge.section2.contours
-		# input
-		self.uniqueA, self.uniqueB = self.merge.section1.getUniqueContours( self.merge.section2 )
-		self.compOvlp, self.confOvlp = self.merge.section1.getOverlappingContours( self.merge.section2, separate=True )
+		# Contours
+		# - Unique contours from each section
+		self.uniqueA, self.uniqueB = self.merge.getUniqueContours()
+		# - Complete overlap, and conflicting overlap contours
+		self.compOvlp, self.confOvlp = self.merge.getOverlappingContours(separate=True)
 		# Load UI
 		self.loadObjects()
 		self.loadFunctions()
@@ -310,7 +310,6 @@ class SectionContourHandler(QWidget):
 				output.append(item.contour)
 		self.merge.contours = output
 		self.doneBut.setStyleSheet('background-color:lightgreen;') # Button to green
-
 class contourPixmap(QLabel):
 	'''QLabel that contains a contour drawn on its region in an image'''
 	def __init__(self, image, contour, pen=Qt.red):
