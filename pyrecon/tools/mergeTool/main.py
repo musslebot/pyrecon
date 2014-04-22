@@ -38,5 +38,6 @@ class MergeSet:
 		# Write series/sections
 		xml.writeSeries(mergedSeries, self.output_directory, sections=True)
 
-def main()
+def main():
+	return
 	

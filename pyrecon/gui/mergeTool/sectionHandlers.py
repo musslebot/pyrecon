@@ -120,16 +120,31 @@ class SectionImageHandler(QWidget):
 		self.loadLayout()
 	def loadObjects(self):
 		# Pixmaps
-		self.pixmap1 = QPixmap(self.merge.section1.image._path+self.merge.section1.image.src)
-		self.pixmap2 = QPixmap(self.merge.section2.image._path+self.merge.section2.image.src)
-		# - Pixmaps must be displayed in QLabel
+		self.pixmap1 = QPixmap(self.merge.section1.image._path+self.merge.section1.image.src).scaled(750,750,aspectMode=Qt.KeepAspectRatio)
+		self.pixmap2 = QPixmap(self.merge.section2.image._path+self.merge.section2.image.src).scaled(750,750,aspectMode=Qt.KeepAspectRatio)
+		if self.pixmap1.isNull() and not self.pixmap2.isNull():
+			self.pixmap1 = QPixmap(self.pixmap2.size().width(),self.pixmap2.size().height()) # empty pixmap, size to pixmap2
+		if self.pixmap2.isNull() and not self.pixmap1.isNull():
+			self.pixmap2 = QPixmap(self.pixmap1.size().width(),self.pixmap1.size().height()) # empty pixmap, size to pixmap1
+		#=== change fill color (def: black) -- looks too similar to normal
+		if self.pixmap1.isNull() and self.pixmap2.isNull():
+			self.pixmap1 = QPixmap(750,750)
+			self.pixmap2 = QPixmap(750,750)
+		# - Pixmaps must be placed in a QLabel
 		self.imgLabel1 = QLabel()
 		self.imgLabel1.setPixmap( self.pixmap1 )
 		self.imgLabel2 = QLabel()
 		self.imgLabel2.setPixmap( self.pixmap2 )
 		# Image details
-		self.details1 = QLabel()
-		self.details2 = QLabel()
+		img1atts = self.merge.section1.image.attributes()
+		img2atts = self.merge.section2.image.attributes()
+		self.details1 = QLabel('\n'.join([str(att).upper()+':\t'+str(img1atts[att]) for att in img1atts]))
+		self.details2 = QLabel('\n'.join([str(att).upper()+':\t'+str(img2atts[att]) for att in img2atts]))
+		font = QFont("Arial", 14)
+		self.details1.setFont(font)
+		self.details2.setFont(font)
+		self.details1.setWordWrap(True)
+		self.details2.setWordWrap(True)
 		# Buttons to resolve conflicts
 		self.chooseLeft = QPushButton('Choose This Image')
 		self.chooseLeft.setMinimumHeight(50)
@@ -140,33 +155,22 @@ class SectionImageHandler(QWidget):
 		self.chooseRight.clicked.connect( self.choose )
 	def loadLayout(self):
 		container = QHBoxLayout()
-		
+		# Section A's half
 		leftHalf = QVBoxLayout()
-		imageLabel1 = QLabel()
-		if self.pixmap1.isNull():
-			self.imgLabel1.setText('Image 1 not available.')
-			scrollableImage1 = self.imgLabel1
-		else:
-			imageLabel1.setPixmap(self.pixmap1)
-			scrollableImage1 = QScrollArea()
-			scrollableImage1.setWidget(imageLabel1)
-		leftHalf.addWidget(scrollableImage1)
+		leftScrollArea = QScrollArea() # QLabels containing the pixmaps should be placed in QScrollArea, to prevent the image from taking entire screen
+		leftScrollArea.setWidget(self.imgLabel1)
+		leftHalf.addWidget(leftScrollArea)
 		leftHalf.addWidget(self.details1)
 		leftHalf.addWidget(self.chooseLeft)
-		
+
+		# Section B's half
 		rightHalf = QVBoxLayout()
-		imageLabel2 = QLabel()
-		if self.pixmap2.isNull():
-			self.imgLabel2.setText('Image 2 not available.') #=== set a size
-			scrollableImage2 = self.imgLabel2
-		else:
-			imageLabel2.setPixmap(self.pixmap2)
-			scrollableImage2 = QScrollArea()
-			scrollableImage2.setWidget(imageLabel2)
-		rightHalf.addWidget(scrollableImage2)
+		rightScrollArea = QScrollArea()
+		rightScrollArea.setWidget(self.imgLabel2)
+		rightHalf.addWidget(rightScrollArea)
 		rightHalf.addWidget(self.details2)
 		rightHalf.addWidget(self.chooseRight)
-		
+
 		container.addLayout(leftHalf)
 		container.addLayout(rightHalf)
 		self.setLayout(container)
