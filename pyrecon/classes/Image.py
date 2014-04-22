@@ -48,3 +48,9 @@ class Image:
                 self.contrast == other.contrast)
     def __ne__(self, other):
         return not self.__eq__(other)
+    def attributes(self):
+        return {'src':self.src,
+                'mag':self.mag,
+                'contrast':self.contrast,
+                'brightness':self.brightness,
+                'path':('' if self._path is None else self._path)+self.src}
