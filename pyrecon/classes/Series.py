@@ -173,6 +173,14 @@ class Series:
                     self.sections = sorted(self.sections, key=lambda Section: Section.index)
                     print(' SUCCESS!')
 # ACCESSORS
+    def attributes(self):
+        '''Returns a dict of this Serie's attributes'''
+        not_attributes = ['name','path','contours','zcontours','sections']
+        attributes = {}
+        for att in self.__dict__:
+            if att not in not_attributes: # if att is considered a desired attribute
+                attributes[att] = self.__dict__[att]
+        return attributes
 # calibrationTool functions
     def zeroIdentity(self):
         '''Converts points for all sections in a series to identity transform'''
