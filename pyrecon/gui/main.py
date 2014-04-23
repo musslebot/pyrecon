@@ -116,6 +116,27 @@ class browseWidget(QWidget):
         fileName = QFileDialog.getOpenFileName(self, "Open Series", "/home/", "Series File (*.ser)")
         self.path.setText( str(fileName[0]) )
 
+class BrowseOutputDirectory(QDialog):
+    def __init__(self, parent=None):
+        QDialog.__init__(self, parent)
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def loadObjects(self):
+        self.path = browseWidget()
+        self.doneBut = QPushButton() 
+    def loadFunctions(self):
+        self.doneBut.setText('Write Series')
+        self.doneBut.clicked.connect( self.finish )
+    def loadLayout(self):
+        main = QVBoxLayout()
+        main.addWidget(self.path)
+        main.addWidget(self.doneBut)
+        self.setLayout(main)
+    def finish(self):
+        self.output = str(self.path.path.text())
+        self.close()
+
 class singleSeriesLoad(QDialog):
     '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
     def __init__(self, parent=None):
