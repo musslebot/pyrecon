@@ -3,7 +3,7 @@ from PySide.QtGui import *
 import pyrecon
 import numpy as np
 
-# SECTION RESOLUTION WRAPPER
+# SECTION CONFLICT RESOLUTION GUI WRAPPER
 class SectionMergeWrapper(QTabWidget):
 	'''sectionWrapper is a TabWidget. It contains multiple widgets that can be swapped via their tabs.'''
 	def __init__(self, MergeSection):
@@ -16,17 +16,14 @@ class SectionMergeWrapper(QTabWidget):
 		self.images = SectionImageHandler(self.merge)
 		self.contours = SectionContourHandler(self.merge)
 		# Add widgets as tabs
-		# - Attributes
 		self.addTab(self.attributes, '&Attributes')
-		# - Images
 		self.addTab(self.images, '&Images')
-		# - Contours
 		self.addTab(self.contours, '&Contours')
 # - Attributes
 class SectionAttributeHandler(QWidget):
-	def __init__(self, mergeObject):
+	def __init__(self, MergeSection):
 		QWidget.__init__(self)
-		self.merge = mergeObject # MergeSection
+		self.merge = MergeSection # MergeSection
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
@@ -469,4 +466,3 @@ class contourTableItem(QListWidgetItem):
 			print ('Invalid entry')
 			return
 		self.setBackground(QColor('lightgreen'))
-
