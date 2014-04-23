@@ -6,15 +6,20 @@ class MergeSet:
 		self.seriesMerge = None # MergeSeries object
 		self.sectionMerges = None # List of MergeSection objects
 		self.processArguments(args, kwargs)
+
 	# Argument processing
 	def processArguments(self, args, kwargs):
+		'''Process given arguments.'''
 		for arg in args:
 			if arg.__class__.__name__ == 'MergeSeries':
 				self.seriesMerge = arg
+				self.name = arg.name
 			elif type(arg) == type([]):
 				self.sectionMerges = arg
 			else:
 				print 'Cannot process argument:',arg
+		for kwarg in kwargs:
+			print kwarg+':',kwargs[kwarg] #===
 
 class MergeSection:
 	'''This class manages data about two Section objects that are undergoing a merge.'''
@@ -40,6 +45,7 @@ class MergeSection:
 			if arg.__class__.__name__ == 'Section':
 				if not self.section1:
 					self.section1 = arg
+					self.name = arg.name
 				elif not self.section2:
 					self.section2 = arg
 				else:
@@ -81,7 +87,7 @@ class MergeSection:
 			return OvlpsA, OvlpsB
 		else:
 			return MergeSection.separateOverlappingContours(OvlpsA, OvlpsB, threshold, sameName) #===
-
+	@staticmethod
 	def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName=True):
 		'''Returns a list of completely overlapping pairs and a list of conflicting overlapping pairs.'''
 		compOvlps = [] # list of completely overlapping contour pairs
@@ -100,7 +106,6 @@ class MergeSection:
 					elif overlap != 0 and overlap != 1:
 						confOvlps.append([contA, contB])
 		return compOvlps, confOvlps
-		
 
 class MergeSeries:
 	'''MergeSeries contains the two series to be merged, handlers for how to merge the series, and functions for manipulating class data.'''
@@ -125,6 +130,7 @@ class MergeSeries:
 			if arg.__class__.__name__ == 'Series':
 				if not self.series1:
 					self.series1 = arg
+					self.name = arg.name+'.ser'
 				elif not self.series2:
 					self.series2 = arg
 				else:
