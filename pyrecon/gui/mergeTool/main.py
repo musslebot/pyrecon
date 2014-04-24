@@ -8,7 +8,7 @@ from pyrecon.gui.mergeTool.seriesHandlers import SeriesMergeWrapper
 from pyrecon.tools.mergeTool.main import MergeSet
 
 class MergeSetWrapper(QWidget):
-    '''This class is a single widget that contains all necessary widgets for resolving conflicts in a MergeSet.'''
+    '''This class is a single widget that contains all necessary widgets for resolving conflicts in a MergeSet and handles the signal/slots between them.'''
     def __init__(self, MergeSet):
         QWidget.__init__(self)
         self.setWindowTitle('PyRECONSTRUCT mergeTool')
@@ -21,7 +21,7 @@ class MergeSetWrapper(QWidget):
         self.navigator = MergeSetNavigator(self.merge) # Buttons and list of MergeObjects
         self.resolutionStack = QStackedWidget() # Contains all of the resolution wrappers
     def loadFunctions(self):
-        # Show the clicked MergeSetListItem
+        # QStackedWidget needs to respond to setList.itemClicked
         self.navigator.setList.itemClicked.connect( self.updateCurrent )
     def loadLayout(self):
         container = QHBoxLayout()
@@ -30,14 +30,12 @@ class MergeSetWrapper(QWidget):
         self.setLayout(container)
     def loadResolutions(self):
         if self.merge is not None:
-            print 'loading resolutions into stack'
             for itemIndex in range( self.navigator.setList.count() ):
                 self.resolutionStack.addWidget( self.navigator.setList.item(itemIndex).resolution )
-            self.resolutionStack.setCurrentIndex(0)
-        else:
-            self.navigator.load() #===
+            self.navigator.setList.item(0).clicked() # Show MergeSeries
     def updateCurrent(self, item):
-        self.resolutionStack.setCurrentIndex( self.navigator.setList.indexFromItem(item).row() )
+        '''Updates currently shown resolution based on an item received from self.navigator.setList'''
+        self.resolutionStack.setCurrentIndex( self.navigator.setList.indexFromItem(item).row() ) # Get row that the item belongs to
 
 class MergeSetNavigator(QWidget):
     '''This class provides buttons for loading and saving MergeSets as well as a list for choosing current conflict to manage.'''
@@ -47,8 +45,9 @@ class MergeSetNavigator(QWidget):
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
+        #=== check if all resolved, if so call .save()
     def loadObjects(self):
-        self.loadButton = QPushButton('&Load')
+        self.loadButton = QPushButton('&Change MergeSet')
         self.loadButton.setMinimumHeight(50)
         self.setList = MergeSetList(self.merge)
         self.saveButton = QPushButton('&Save')
@@ -65,6 +64,8 @@ class MergeSetNavigator(QWidget):
     def load(self): #===
         print 'MergeSetNavigator.load()'
         # Load DoubleSeriesBrowse widget #===
+        # set self.setList.merge to loaded DoubleSeries
+        # Call MergeSetList.loadObjects with new mergeset
     def save(self): #===
         print 'MergeSetNavigator.save()'
         # Load BrowseOutputDir widget #===
@@ -91,7 +92,7 @@ class MergeSetList(QListWidget):
         self.itemDoubleClicked.connect( self.doubleClicked )
     def loadLayout(self):
         return
-    def clicked(self, item): #===
+    def clicked(self, item):
         item.clicked()
     def doubleClicked(self, item): # Take into account, clicked is also called when doubleClicked() #===
         item.doubleClicked()
@@ -106,12 +107,18 @@ class MergeSetListItem(QListWidgetItem):
     def loadDetails(self):
         self.setText(self.merge.name)
         self.setFont(QFont("Arial", 14))
+        # Resolution (type specific MergeWrapper)
         if self.merge.__class__.__name__ == 'MergeSection':
             self.resolution = SectionMergeWrapper(self.merge)
         elif self.merge.__class__.__name__ == 'MergeSeries':
             self.resolution = SeriesMergeWrapper(self.merge)
         else:
             print 'Unknown resolution type, could not make wrapper'
+        # Check status, choose color
+        if not self.merge.isDone():
+            self.setBackground(QColor('red'))
+        else:
+            self.setBackground(QColor('lightgreen'))
     def clicked(self):
         if self.merge.isDone():
             self.setBackground(QColor('lightgreen'))
