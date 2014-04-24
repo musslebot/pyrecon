@@ -40,7 +40,6 @@ class MergeSection:
 	def processArguments(self, args, kwargs):
 		'''Process given arguments.'''
 		for arg in args:
-			print arg #===
 			# Section object
 			if arg.__class__.__name__ == 'Section':
 				if not self.section1:
@@ -126,7 +125,6 @@ class MergeSeries:
 	def processArguments(self, args, kwargs):
 		'''Process given arguments.'''
 		for arg in args:
-			print arg #===
 			if arg.__class__.__name__ == 'Series':
 				if not self.series1:
 					self.series1 = arg
