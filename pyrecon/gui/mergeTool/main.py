@@ -17,13 +17,12 @@ class MergeSetWrapper(QWidget):
         self.loadFunctions()
         self.loadLayout()
         self.loadResolutions()
-        #=== create slot that links with MergeSetList to update current resolutionStack index
     def loadObjects(self):
         self.navigator = MergeSetNavigator(self.merge) # Buttons and list of MergeObjects
         self.resolutionStack = QStackedWidget() # Contains all of the resolution wrappers
     def loadFunctions(self):
-        #=== connect self.resolutionStack.setCurrent index to MergeSetList.itemClicked
-        return
+        # Show the clicked MergeSetListItem
+        self.navigator.setList.itemClicked.connect( self.updateCurrent )
     def loadLayout(self):
         container = QHBoxLayout()
         container.addWidget(self.navigator)
@@ -37,6 +36,8 @@ class MergeSetWrapper(QWidget):
             self.resolutionStack.setCurrentIndex(0)
         else:
             self.navigator.load() #===
+    def updateCurrent(self, item):
+        self.resolutionStack.setCurrentIndex( self.navigator.setList.indexFromItem(item).row() )
 
 class MergeSetNavigator(QWidget):
     '''This class provides buttons for loading and saving MergeSets as well as a list for choosing current conflict to manage.'''
@@ -67,6 +68,7 @@ class MergeSetNavigator(QWidget):
     def save(self): #===
         print 'MergeSetNavigator.save()'
         # Load BrowseOutputDir widget #===
+        # Go through all setList items and save to outputdir #===
 
 class MergeSetList(QListWidget):
     '''This class is a specialized QListWidget that contains MergeSetListItems.'''
@@ -76,18 +78,17 @@ class MergeSetList(QListWidget):
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
-        #=== make signal that connects to MergeSetWrapper to load new resolution window
     def loadObjects(self):
         # Load MergeObjects into list
         self.addItem( MergeSetListItem(self.merge.seriesMerge) ) # Load MergeSeries
         for MergeSection in self.merge.sectionMerges: # Load MergeSections
             self.addItem( MergeSetListItem(MergeSection) )
-    def loadFunctions(self): #===
+    def loadFunctions(self):
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         # What to do when item clicked?
-        self.itemClicked.connect( self.clicked ) #===
+        self.itemClicked.connect( self.clicked )
         # What to do when item doubleClicked?
-        self.itemDoubleClicked.connect( self.doubleClicked ) #===
+        self.itemDoubleClicked.connect( self.doubleClicked )
     def loadLayout(self):
         return
     def clicked(self, item): #===
@@ -112,11 +113,10 @@ class MergeSetListItem(QListWidgetItem):
         else:
             print 'Unknown resolution type, could not make wrapper'
     def clicked(self):
-        print 'MergeSetListItem.clicked()' #===
-        if not self.merge.isDone():
-            self.setBackground(QColor('yellow'))
-        else:
+        if self.merge.isDone():
             self.setBackground(QColor('lightgreen'))
+        else:
+            self.setBackground(QColor('yellow'))
     def doubleClicked(self):
         print 'MergeSetListItem.doubleClicked()'
         # Necessary? #===
