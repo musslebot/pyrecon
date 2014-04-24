@@ -27,6 +27,15 @@ class SectionAttributeHandler(QWidget):
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
+		self.checkEquivalency()
+	def checkEquivalency(self):
+		'''Checks to see if the MergeSections' checkConflicts() function automatically handled this. SHOULD ONLY BE RUN IN INIT'''
+		if self.merge.attributes is not None:
+			txt = 'Attributes are equivalent, automatically chosen.'
+			self.chooseLeft.setText(txt)
+			self.chooseRight.setText(txt)
+			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
+			self.chooseRight.setStyleSheet('background-color:lightgreen;')
 	def loadObjects(self):
 		# Buttons to resolve conflict
 		self.chooseLeft = QPushButton('Choose These Attributes')
@@ -79,6 +88,15 @@ class SectionImageHandler(QWidget):
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
+		self.checkEquivalency()
+	def checkEquivalency(self):
+		'''Checks to see if the MergeSections' checkConflicts() function automatically handled this. SHOULD ONLY BE RUN IN INIT'''
+		if self.merge.images is not None:
+			txt = 'Images are equivalent, automatically chosen.'
+			self.chooseLeft.setText(txt)
+			self.chooseRight.setText(txt)
+			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
+			self.chooseRight.setStyleSheet('background-color:lightgreen;')
 	def loadObjects(self):
 		# Pixmaps
 		self.pixmap1 = QPixmap(self.merge.section1.image._path+self.merge.section1.image.src).scaled(750,750,aspectMode=Qt.KeepAspectRatio)
@@ -159,6 +177,13 @@ class SectionContourHandler(QWidget):
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
+		self.checkEquivalency()
+	def checkEquivalency(self):
+		'''Checks to see if the MergeSections' checkConflicts() function automatically handled this. SHOULD ONLY BE RUN IN INIT'''
+		if self.merge.contours is not None:
+			txt = 'Contours are equivalent, automatically chosen.'
+			self.doneBut.setText(txt)
+			self.doneBut.setStyleSheet('background-color:lightgreen;')
 	def loadObjects(self):
 		# List contours in their appropriate listWidgets
 		self.inUniqueA = QListWidget(self)
@@ -179,7 +204,7 @@ class SectionContourHandler(QWidget):
 		for table in [self.inUniqueA, self.inUniqueB, self.inOvlp, self.outUniqueA, self.outUniqueB, self.outOvlp]:
 			table.setSelectionMode(QAbstractItemView.ExtendedSelection)
 			table.itemDoubleClicked.connect(self.doubleClickCheck)
-		self.doneBut.setText('Save')
+		self.doneBut.setText('Save Current Status')
 		self.doneBut.clicked.connect( self.finish )
 		self.doneBut.setMinimumHeight(50)
 		self.moveSelectedA.setText('Move Selected')

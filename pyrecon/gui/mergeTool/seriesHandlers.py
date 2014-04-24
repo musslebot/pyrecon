@@ -26,6 +26,14 @@ class SeriesAttributeHandler(QWidget):
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
+		self.checkEquivalency()
+	def checkEquivalency(self):
+		if self.merge.series1.attributes is not None:
+			txt = 'Attributes are equivalent, automatically chosen.'
+			self.chooseLeft.setText(txt)
+			self.chooseRight.setText(txt)
+			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
+			self.chooseRight.setStyleSheet('background-color:lightgreen;')
 	def loadObjects(self):
 		# Buttons to resolve conflict
 		self.chooseLeft = QPushButton('Choose These Attributes')
@@ -84,6 +92,14 @@ class SeriesContourHandler(QWidget):
 		self.loadObjects()
 		self.loadFunctions()
 		self.loadLayout()
+		self.checkEquivalency()
+	def checkEquivalency(self):
+		if self.merge.contours is not None:
+			txt = 'Contours are equivalent, automatically chosen.'
+			self.chooseLeft.setText(txt)
+			self.chooseRight.setText(txt)
+			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
+			self.chooseRight.setStyleSheet('background-color:lightgreen;')
 	def loadObjects(self):
 		# Buttons to resolve conflicts
 		self.chooseLeft = QPushButton('Choose These Contours')
@@ -156,5 +172,5 @@ class SeriesZContourHandler(QWidget):
 		self.setLayout(container)
 
 		# add leftover, unique zcontours to merged zcontour list
-		unique1, unique2, overlaps = self.merge.getZContours()
+		unique1, unique2, overlaps = self.merge.getCategorizedZContours()
 		self.merge.zcontours = unique1+unique2+overlaps

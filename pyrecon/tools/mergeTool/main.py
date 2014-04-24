@@ -1,5 +1,3 @@
-from pyrecon.tools import handleXML as xml
-
 class MergeSet:
 	'''This class takes in a MergeSeries object and a list(MergeSection objects).'''
 	def __init__(self, *args, **kwargs):
@@ -21,6 +19,14 @@ class MergeSet:
 		for kwarg in kwargs:
 			print kwarg+':',kwargs[kwarg] #===
 
+	def isDone(self):
+		sectionsDone = True
+		for section in self.sectionMerges:
+			if not section.isDone():
+				sectionsDone = False
+				break
+		return (self.seriesMerge.isDone() and sectionsDone)
+
 class MergeSection:
 	'''This class manages data about two Section objects that are undergoing a merge.'''
 	def __init__(self, *args, **kwargs):
@@ -35,6 +41,7 @@ class MergeSection:
 
 		# Process arguments
 		self.processArguments(args, kwargs)
+		self.checkConflicts()
 
 	# Argument processing
 	def processArguments(self, args, kwargs):
@@ -52,6 +59,20 @@ class MergeSection:
 		for kwarg in kwargs:
 			print kwarg+':',kwargs[kwarg] #===
 
+	def checkConflicts(self):
+		'''Automatically sets merged stuff if they are equivalent'''
+		# Are attributes equivalent?
+		if self.section1.attributes() == self.section2.attributes():
+			self.attributes = self.section1.attributes()
+		# Are images equivalent?
+		if self.section1.image == self.section2.image:
+			self.images = self.section1.image
+		# Are contours equivalent?
+		uniques = self.getUniqueContours()
+		ovlps = self.getOverlappingContours(separate=True)
+		if (len(uniques[0]+uniques[1]) == 0 and 
+			len(ovlps[1]) == 0):
+			self.contours = self.section1.contours
 	def isDone(self):
 		'''Boolean indicating status of merge.'''
 		return (self.attributes is not None and
@@ -85,7 +106,7 @@ class MergeSection:
 		if not separate:
 			return OvlpsA, OvlpsB
 		else:
-			return MergeSection.separateOverlappingContours(OvlpsA, OvlpsB, threshold, sameName) #===
+			return MergeSection.separateOverlappingContours(OvlpsA, OvlpsB, threshold, sameName)
 	@staticmethod
 	def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName=True):
 		'''Returns a list of completely overlapping pairs and a list of conflicting overlapping pairs.'''
@@ -120,6 +141,7 @@ class MergeSeries:
 
 		# Process arguments
 		self.processArguments(args, kwargs)
+		self.checkConflicts()
 
 	# Argument processing
 	def processArguments(self, args, kwargs):
@@ -135,7 +157,17 @@ class MergeSeries:
 					print 'MergeSeries already contains two Series...'
 		for kwarg in kwargs:
 			print kwarg+':',kwargs[kwarg]
-	
+	def checkConflicts(self):
+		'''Automatically set merged stuff for equivalent things.'''
+		# Are attributes equivalent?
+		if self.series1.attributes() == self.series2.attributes():
+			self.attributes = self.series1.attributes()
+		# Are contours equivalent?
+		if self.series1.contours == self.series2.contours:
+			self.contours = self.series1.contours
+		# Are zcontours equivalent?
+		if self.series1.zcontours == self.series2.zcontours:
+			self.zcontours = self.series1.zcontours
 	def isDone(self):
 		'''Boolean indicating status of merge.'''
 		return (self.attributes is not None and
@@ -143,7 +175,7 @@ class MergeSeries:
 				self.zcontours is not None)
 
 	# mergeTool functions
-	def getZContours(self):
+	def getCategorizedZContours(self, threshold=(1+2**(-17))):
 		'''Returns unique series1 zcontours, unique series2 zcontours, and overlapping contours.'''
 		copyConts1 = [cont for cont in self.series1.zcontours]
 		copyConts2 = [cont for cont in self.series2.zcontours]
