@@ -4,7 +4,7 @@ from PySide.QtGui import *
 import pyrecon
 # Pyrecon tool modules imported when called by their functions below
 
-class pyreconMainWindow(QMainWindow):
+class PyreconMainWindow(QMainWindow):
     '''Main PyRECONSTRUCT window.'''
     def __init__(self, *args, **kwargs):
         QMainWindow.__init__(self)
@@ -74,7 +74,7 @@ class pyreconMainWindow(QMainWindow):
         self.addDockWidget( Qt.LeftDockWidgetArea, self.excelSelector)
 
 # Helper widgets
-class browseWidget(QWidget):
+class BrowseWidget(QWidget):
     '''Provides a QLineEdit and button for browsing through a file system. browseType can be directory, file or series but defaults to directory.'''
     def __init__(self, browseType='directory'):
         QWidget.__init__(self)
@@ -117,13 +117,15 @@ class browseWidget(QWidget):
         self.path.setText( str(fileName[0]) )
 
 class BrowseOutputDirectory(QDialog):
+    '''Starts a popup dialog for choosing a directory in which to save a series'''
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
+        self.exec_()
     def loadObjects(self):
-        self.path = browseWidget()
+        self.path = BrowseWidget()
         self.doneBut = QPushButton() 
     def loadFunctions(self):
         self.doneBut.setText('Write Series')
@@ -137,15 +139,16 @@ class BrowseOutputDirectory(QDialog):
         self.output = str(self.path.path.text())
         self.close()
 
-class singleSeriesLoad(QDialog):
+class SingleSeriesLoad(QDialog):
     '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
+        self.exec_()
     def loadObjects(self):
-        self.series = browseWidget(browseType='series')
+        self.series = BrowseWidget(browseType='series')
         self.closeButton = QPushButton()
         self.closeButton.setText('Load Series')
     def loadFunctions(self):
@@ -160,16 +163,17 @@ class singleSeriesLoad(QDialog):
         self.output = str(self.series.path.text())
         self.close()
 
-class doubleSeriesLoad(QDialog):
+class DoubleSeriesLoad(QDialog):
     '''Dialog for loading series files into memory as pyrecon.classes.Series objects'''
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
+        self.exec_()
     def loadObjects(self):
-        self.series1 = browseWidget(browseType='series')
-        self.series2 = browseWidget(browseType='series')
+        self.series1 = BrowseWidget(browseType='series')
+        self.series2 = BrowseWidget(browseType='series')
         self.closeButton = QPushButton()
         self.closeButton.setText('Load Series')
     def loadFunctions(self):
