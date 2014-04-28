@@ -1,3 +1,5 @@
+from pyrecon.classes import Series, Section
+from pyrecon.tools import handleXML as xml
 class MergeSet:
 	'''This class takes in a MergeSeries object and a list(MergeSection objects).'''
 	def __init__(self, *args, **kwargs):
@@ -26,6 +28,14 @@ class MergeSet:
 				sectionsDone = False
 				break
 		return (self.seriesMerge.isDone() and sectionsDone)
+	def writeMergeSet(self, outpath): #===
+		'''Writes self.seriesMerge and self.sectionMerges to XML'''
+		mergedSeries = self.seriesMerge.toSeries()
+		mergedSeries.name = self.seriesMerge.name.replace('.ser','')
+		xml.writeSeries(mergedSeries,outpath)
+		for mergeSec in self.sectionMerges:
+			xml.writeSection(mergeSec.toSection(), outpath)
+		print 'Done!' #===
 
 class MergeSection:
 	'''This class manages data about two Section objects that are undergoing a merge.'''
@@ -126,6 +136,13 @@ class MergeSection:
 					elif overlap != 0 and overlap != 1:
 						confOvlps.append([contA, contB])
 		return compOvlps, confOvlps
+	def toSection(self):
+		'''Returns a section object from self.attributes, self.images, and self.contours. Defaults any of these items to the self.section1 version if they are None (not resolved).'''
+		return Section(
+			self.attributes if self.attributes is not None else self.section1.attributes(),
+			self.images if self.images is not None else self.section1.image,
+			self.contours if self.contours is not None else self.section1.contours
+			)
 
 class MergeSeries:
 	'''MergeSeries contains the two series to be merged, handlers for how to merge the series, and functions for manipulating class data.'''
@@ -188,3 +205,10 @@ class MergeSeries:
 					copyConts1.remove(contA)
 					copyConts2.remove(contB)
 		return copyConts1, copyConts2, overlaps
+	def toSeries(self):
+		'''Returns a series object from self.attributes, self.contours, and self.zcontours. Defaults any of these items to the self.series1 version if they are None (not resolved).'''
+		return Series(
+			self.attributes if self.attributes is not None else self.series1.attributes(),
+			self.contours if self.contours is not None else self.series1.contours,
+			self.zcontours if self.zcontours is not None else self.series1.zcontours
+			)
