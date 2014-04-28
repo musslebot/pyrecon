@@ -28,7 +28,8 @@ class SeriesAttributeHandler(QWidget):
 		self.loadLayout()
 		self.checkEquivalency()
 	def checkEquivalency(self):
-		if self.merge.series1.attributes is not None:
+		'''Checks to see if conflict already resolved. Should be run only during __init__'''
+		if self.merge.attributes is not None:
 			txt = 'Attributes are equivalent, automatically chosen.'
 			self.chooseLeft.setText(txt)
 			self.chooseRight.setText(txt)
@@ -94,6 +95,7 @@ class SeriesContourHandler(QWidget):
 		self.loadLayout()
 		self.checkEquivalency()
 	def checkEquivalency(self):
+		'''Checks to see if conflict already resolved. Should be run only during __init__'''
 		if self.merge.contours is not None:
 			txt = 'Contours are equivalent, automatically chosen.'
 			self.chooseLeft.setText(txt)
