@@ -2,10 +2,11 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 from pyrecon.main import openSeries
-import pyrecon.tools.handleXML as xml
+from pyrecon.tools.mergeTool.main import MergeSet, MergeSeries, MergeSection
+
+from pyrecon.gui.main import BrowseOutputDirectory, DoubleSeriesLoad
 from pyrecon.gui.mergeTool.sectionHandlers import SectionMergeWrapper
 from pyrecon.gui.mergeTool.seriesHandlers import SeriesMergeWrapper
-from pyrecon.tools.mergeTool.main import MergeSet
 
 class MergeSetWrapper(QWidget):
     '''This class is a single widget that contains all necessary widgets for resolving conflicts in a MergeSet and handles the signal/slots between them.'''
@@ -45,7 +46,6 @@ class MergeSetNavigator(QWidget):
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
-        #=== check if all resolved, if so call .save()
     def loadObjects(self):
         self.loadButton = QPushButton('&Change MergeSet')
         self.loadButton.setMinimumHeight(50)
@@ -61,15 +61,51 @@ class MergeSetNavigator(QWidget):
         container.addWidget( self.setList )
         container.addWidget( self.saveButton )
         self.setLayout(container)
-    def load(self): #===
-        print 'MergeSetNavigator.load()'
-        # Load DoubleSeriesBrowse widget #===
-        # set self.setList.merge to loaded DoubleSeries
-        # Call MergeSetList.loadObjects with new mergeset
-    def save(self): #===
-        print 'MergeSetNavigator.save()'
-        # Load BrowseOutputDir widget #===
-        # Go through all setList items and save to outputdir #===
+    def load(self):
+        # Load DoubleSeriesBrowse widget
+        loadDialog = DoubleSeriesLoad()
+        s1,s2 = openSeries(loadDialog.output[0]), openSeries(loadDialog.output[1]) # Create Series objects from path
+        # Make MergeSeries, MergeSection objects
+        mSeries = MergeSeries(s1,s2)
+        mSections = []
+        for i in range(len(s1.sections)):
+            mSections.append( MergeSection(s1.sections[i],s2.sections[i]) )
+        # Clear setList
+        self.setList.clear()
+        # Create setList with new MergeSet
+        self.setList.merge = MergeSet(mSeries, mSections)
+        #=== Could not figure out how to make new one from class, use functions instead
+        self.setList.loadObjects()
+        self.setList.loadFunctions()
+        self.setList.loadLayout()
+
+    def save(self):
+        # Check for conflicts
+        if self.checkConflicts():
+            a = BrowseOutputDirectory()
+            outpath = a.output
+            # Go through all setList items and save to outputdir
+            self.writeMergeObjects(outpath)
+    def checkConflicts(self):
+        unresolved_list = [] # list of unresolved conflict names
+        for i in range(self.setList.count()):
+            item = self.setList.item(i)
+            if item.isResolved():
+                continue
+            else:
+                unresolved_list.append(item.merge.name)
+        # Bring up dialog for unresolved conflicts
+        if len(unresolved_list) > 0:
+            msg = QMessageBox()
+            msg.setText('Not all conflicts were resolved (red/yellow):\n'+'\n'.join(unresolved_list))
+            msg.setInformativeText('Would you like to default unresolved conflicts to the first (left) series for these conflicts?')
+            msg.setStandardButtons( QMessageBox.Ok | QMessageBox.Cancel)
+            ret = msg.exec_()
+            return (ret == QMessageBox.Ok)
+        else:
+            return True
+    def writeMergeObjects(self, outpath):
+        self.merge.writeMergeSet(outpath)
 
 class MergeSetList(QListWidget):
     '''This class is a specialized QListWidget that contains MergeSetListItems.'''
@@ -94,7 +130,8 @@ class MergeSetList(QListWidget):
         return
     def clicked(self, item):
         item.clicked()
-    def doubleClicked(self, item): # Take into account, clicked is also called when doubleClicked() #===
+    def doubleClicked(self, item): # Clicked is also called when doubleClicked()
+        #=== quickmerge
         item.doubleClicked()
 
 class MergeSetListItem(QListWidgetItem):
@@ -127,3 +164,6 @@ class MergeSetListItem(QListWidgetItem):
     def doubleClicked(self):
         print 'MergeSetListItem.doubleClicked()'
         # Necessary? #===
+    def isResolved(self): #===
+        '''Returns true if merge conflicts are resolved.'''
+        return self.resolution.merge.isDone()
