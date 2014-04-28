@@ -1,6 +1,14 @@
 from pyrecon.classes import Series, Section
 from pyrecon.tools import handleXML as xml
 
+def createMergeSet(series1, series2):
+	'''This function takes in two Series objects and returns a MergeSet to be used for the mergeTool'''
+	mSer = MergeSeries(series1, series2)
+	mSecs = []
+	for i in range( len(series1.sections) ):
+		mSecs.append( MergeSection(series1.sections[i],series2.sections[i]) )
+	return MergeSet( mSer, mSecs )
+
 class MergeSet:
 	'''This class takes in a MergeSeries object and a list(MergeSection objects).'''
 	def __init__(self, *args, **kwargs):
