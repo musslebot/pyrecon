@@ -1,5 +1,6 @@
 from pyrecon.classes import Series, Section
 from pyrecon.tools import handleXML as xml
+
 class MergeSet:
 	'''This class takes in a MergeSeries object and a list(MergeSection objects).'''
 	def __init__(self, *args, **kwargs):
@@ -36,7 +37,6 @@ class MergeSet:
 		for mergeSec in self.sectionMerges:
 			xml.writeSection(mergeSec.toSection(), outpath)
 		print 'Done!' #===
-
 class MergeSection:
 	'''This class manages data about two Section objects that are undergoing a merge.'''
 	def __init__(self, *args, **kwargs):
@@ -143,7 +143,6 @@ class MergeSection:
 			self.images if self.images is not None else self.section1.image,
 			self.contours if self.contours is not None else self.section1.contours
 			)
-
 class MergeSeries:
 	'''MergeSeries contains the two series to be merged, handlers for how to merge the series, and functions for manipulating class data.'''
 	def __init__(self, *args, **kwargs):
