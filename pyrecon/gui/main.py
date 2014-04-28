@@ -1,7 +1,8 @@
 '''Contains graphical components of PyRECONSTRUCT that are used accross multple tools.'''
 from PySide.QtCore import *
 from PySide.QtGui import *
-import pyrecon
+
+from pyrecon.main import openSeries
 # Pyrecon tool modules imported when called by their functions below
 
 class PyreconMainWindow(QMainWindow):
@@ -41,15 +42,17 @@ class PyreconMainWindow(QMainWindow):
         self.toolsMenu.addAction( calibAction )
         self.toolsMenu.addAction( excelAction )
         self.toolsMenu.addAction( curateAction )
-    def loadMergeTool(self):
-        from pyrecon.gui.mergeTool.mergeGUI import mergeSelection
-        self.mergeSelector = QDockWidget() # Left dockWidget
-        mergeSel = mergeSelection(self)
-        self.mergeSelector.setWidget( mergeSel )
-        self.addDockWidget( Qt.LeftDockWidgetArea, self.mergeSelector )
-        # stackedWidget contains each mergeItem's resolution wrapper
-        self.resolutionStack = QStackedWidget()
-        self.setCentralWidget( self.resolutionStack )
+    def loadMergeTool(self): #===
+        from pyrecon.tools.mergeTool.main import MergeSeries, MergeSection, MergeSet
+        from pyrecon.gui.mergeTool.main import MergeSetWrapper
+        loadDialog = DoubleSeriesLoad() # User locates 2 series
+        #=== eventually make the MergeSet creation a function in mergeTool.main
+        s1, s2 = openSeries(loadDialog.output[0]), openSeries(loadDialog.output[1])
+        mSer = MergeSeries( s1, s2 )
+        mSections = []
+        for i in range(len(s1.sections)):
+            mSections.append( MergeSection(s1.sections[i], s2.sections[i]) )
+        self.setCentralWidget( MergeSetWrapper(MergeSet(mSer,mSections)) )
     def loadCurationTool(self):
         from pyrecon.gui.curationTool.curationGUI import curationToolStuff
         # Left dockWidget: load series/options
