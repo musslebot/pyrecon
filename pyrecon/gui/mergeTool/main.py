@@ -141,26 +141,63 @@ class MergeSetList(QListWidget):
             self.quickMergeABContsA(items)
         elif action == quickmerge.selABContsActionB:
             self.quickMergeABContsB(items)
-    def quickMergeA(self, items): #===
-        '''Selects A version for all conflicts in items.'''
+    def quickMergeA(self, items):
+        '''Selects A (left) version for all conflicts in items.'''
         for item in items:
-            #=== perform quickmerge function
-            return
-    def quickMergeB(self, items): #===
-        '''Selects B version for all conflicts in items.'''
+            if item.merge.__class__.__name__ == 'MergeSection':
+                self.merge.attributes = self.merge.section1.attributes()
+                self.merge.images = self.merge.section1.image
+                self.merge.contours = self.merge.section1.contours
+            elif item.merge.__class__.__name__ == 'MergeSeries':
+                self.merge.attributes = self.merge.series1.attributes()
+                self.merge.contours = self.merge.series1.contours
+                self.merge.zcontours = self.merge.series1.zcontours #===
+            item.refresh()
+    def quickMergeB(self, items):
+        '''Selects B (right) version for all conflicts in items.'''
         for item in items:
-            #=== perform quickmerge function
-            return
+            if item.merge.__class__.__name__ == 'MergeSection':
+                self.merge.attributes = self.merge.section2.attributes()
+                self.merge.images = self.merge.section2.image
+                self.merge.contours = self.merge.section2.contours
+            elif item.merge.__class__.__name__ == 'MergeSeries':
+                self.merge.attributes = self.merge.series2.attributes()
+                self.merge.contours = self.merge.series2.contours
+                self.merge.zcontours = self.merge.series2.zcontours #===
+            item.refresh()
     def quickMergeABContsA(self, items): #===
-        '''This completes the merge resolution by selecting the A version of non-contour conflicts. For contour conflicts, this selects BOTH for overlaps and also includes uniques from A and B.'''
+        '''This completes the merge resolution by selecting the A (left) version of non-contour conflicts (attributes & images). For contour conflicts, this selects BOTH (left & right) for overlaps and uniques.'''
         for item in items:
-            #=== perform quickmerge function
-            return
+            if item.merge.__class__.__name__ == 'MergeSection':
+                self.merge.attributes = self.merge.section1.attributes()
+                self.merge.images = self.merge.section1.image
+                # contours
+                uniqueA, uniqueB = self.merge.getUniqueContours()
+                complete, conflicting = self.merge.getOverlappingContours(separate=True)
+                self.merge.contours = uniqueA+uniqueB+[comp[0] for comp in complete]+[conf[0] for conf in conflicting]+[conf[1] for conf in conflicting]
+            elif item.merge.__class__.__name__ == 'MergeSeries':
+                self.merge.attributes = self.merge.series1.attributes()
+                self.merge.contours = self.merge.series1.contours
+                # zconts
+                uniqueA, uniqueB, ovlps = self.merge.getCategorizedZContours()
+                self.merge.zcontours = uniqueA+uniqueB+overlaps
+            item.refresh()
     def quickMergeABContsB(self, items): #===
-        '''This completes the merge resolution by selection the B version of non-contour conflicts. For contour conflicts, this selects BOTH for overlaps and also includes uniques from A and B.'''
+        '''This completes the merge resolution by selection the B (right) version of non-contour conflicts (attributes & images). For contour conflicts, this selects BOTH (left & right) for overlaps and uniques.'''
         for item in items:
-            #=== perform quickmerge function
-            return
+            if item.merge.__class__.__name__ == 'MergeSection':
+                self.merge.attributes = self.merge.section2.attributes()
+                self.merge.images = self.merge.section2.image
+                # contours
+                uniqueA, uniqueB = self.merge.getUniqueContours()
+                complete, conflicting = self.merge.getOverlappingContours(separate=True)
+                self.merge.contours = uniqueA+uniqueB+[comp[0] for comp in complete]+[conf[0] for conf in conflicting]+[conf[1] for conf in conflicting]
+            elif item.merge.__class__.__name__ == 'MergeSeries':
+                self.merge.attributes = self.merge.series2.attributes()
+                # zconts
+                uniqueA, uniqueB, ovlps = self.merge.getCategorizedZContours()
+                self.merge.zcontours = uniqueA+uniqueB+overlaps
+            item.refresh()
 
 class MergeSetListItem(QListWidgetItem):
     '''This is a specialized QListWidgetItem that contains either a MergeSection or MergeSeries object and the widget used for its resolution'''
@@ -199,6 +236,10 @@ class MergeSetListItem(QListWidgetItem):
         '''Update colors'''
         if self.isResolved():
             self.setBackground(QColor('lightgreen'))
+        elif self.resolution.doneCount > 0:
+            self.setBackground(QColor('yellow'))
+        else:
+            self.setBackground(QColor('red'))
 
 class QuickMergeMenu(QMenu):
     def __init__(self, parent=None):
