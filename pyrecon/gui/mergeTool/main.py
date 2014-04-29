@@ -113,7 +113,6 @@ class MergeSetList(QListWidget):
         self.merge = MergeSet
         self.loadObjects()
         self.loadFunctions()
-        self.loadLayout()
     def loadObjects(self):
         # Load MergeObjects into list
         self.addItem( MergeSetListItem(self.merge.seriesMerge) ) # Load MergeSeries
@@ -125,35 +124,13 @@ class MergeSetList(QListWidget):
         self.itemClicked.connect( self.clicked )
         # What to do when item doubleClicked?
         self.itemDoubleClicked.connect( self.doubleClicked )
-    def loadLayout(self):
-        return
     def clicked(self, item):
         item.clicked()
-    #=== COPY/PASTE FROM PREVIOUS
-    def itemDoubleClicked(self, item):
+    def doubleClicked(self, item):
         '''double-clicking a mergeItem displays a small menu allowing the user to use quick merge options.'''
-        items = self.mergeSelect.selectedItems()
-        # Make menu
-        dcMenu = QMenu()
-        # - Options for when doubleClicked
-        selAAction = QAction(QIcon(), 'select A all', self) # Select the A versions of all
-        selBAction = QAction(QIcon(), 'select B all', self) # Select the B versions of all
-        selABContsActionA = QAction(QIcon(), 'select both contours, rest A', self) # Select both for contour conflicts, A for rest
-        selABContsActionB = QAction(QIcon(), 'select both contours, rest B', self) # Select both for contour conflicts, B for rest
-        # - ToolTips
-        selAAction.setToolTip('Select the A version of everything for this item(s)')
-        selBAction.setToolTip('Select the B version of everything for this item(s)')
-        selABContsActionA.setToolTip('Select A&&B contours, A for everything else')
-        selABContsActionB.setToolTip('Select A&&B contours, B for everything else')
-        # - Add options to menu
-        dcMenu.addAction(selAAction)
-        dcMenu.addAction(selBAction)
-        dcMenu.addAction(selABContsActionA)
-        dcMenu.addAction(selABContsActionB)
-
+        items = self.selectedItems()
         # Pop open menu for user selection
-        action = dcMenu.exec_( QCursor.pos() )
-
+        action = QuickMergeMenu.exec_( QCursor.pos() )
         # Perform selected action
         if action == selAAction:
             self.quickMergeA(items)
@@ -343,3 +320,27 @@ class MergeSetListItem(QListWidgetItem):
         '''Update colors'''
         if self.isResolved():
             self.setBackground(QColor('lightgreen'))
+
+class QuickMergeMenu(QMenu):
+    def __init__(self, parent=None):
+        QMenu.__init__(self, parent)
+        self.setTitle('Quick-merge')
+        self.createActions()
+        self.addActions()
+    def createActions(self):
+        # - Options for when doubleClicked
+        self.selAAction = QAction(QIcon(), 'Select all left', self) # Select the A versions of all
+        self.selBAction = QAction(QIcon(), 'Select all right', self) # Select the B versions of all
+        self.selABContsActionA = QAction(QIcon(), 'Select both contours, left atts and images', self) # Select both for contour conflicts, A for rest
+        self.selABContsActionB = QAction(QIcon(), 'Select both contours, right atts and images', self) # Select both for contour conflicts, B for rest
+        # - ToolTips
+        self.selAAction.setToolTip('Select the left version of everything for this item(s)')
+        self.selBAction.setToolTip('Select the right version of everything for this item(s)')
+        self.selABContsActionA.setToolTip('Select left&&right contours, left for images and attributes')
+        self.selABContsActionB.setToolTip('Select left&&right contours, right for images and attributes')
+    def addActions(self):
+        # - Add options to menu
+        self.addAction(self.selAAction)
+        self.addAction(self.selBAction)
+        self.addAction(self.selABContsActionA)
+        self.addAction(self.selABContsActionB)
