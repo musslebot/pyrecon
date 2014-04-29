@@ -130,15 +130,16 @@ class MergeSetList(QListWidget):
         '''double-clicking a mergeItem displays a small menu allowing the user to use quick merge options.'''
         items = self.selectedItems()
         # Pop open menu for user selection
-        action = QuickMergeMenu.exec_( QCursor.pos() )
+        quickmerge = QuickMergeMenu()
+        action = quickmerge.exec_( QCursor.pos() )
         # Perform selected action
-        if action == selAAction:
+        if action == quickmerge.selAAction:
             self.quickMergeA(items)
-        elif action == selBAction:
+        elif action == quickmerge.selBAction:
             self.quickMergeB(items)
-        elif action == selABContsActionA:
+        elif action == quickmerge.selABContsActionA:
             self.quickMergeABContsA(items)
-        elif action == selABContsActionB:
+        elif action == quickmerge.selABContsActionB:
             self.quickMergeABContsB(items)
     def quickMergeA(self, items): #===
         '''Selects A version for all conflicts in items.'''
