@@ -140,148 +140,26 @@ class MergeSetList(QListWidget):
             self.quickMergeABContsA(items)
         elif action == selABContsActionB:
             self.quickMergeABContsB(items)
-    def quickMergeA(self, items):
+    def quickMergeA(self, items): #===
         '''Selects A version for all conflicts in items.'''
         for item in items:
-            if item.object1.__class__.__name__ == 'Section':
-                # Select section A's attributes/image
-                item.resolution.attributes.pick1.click()
-                item.resolution.images.pick1.click()
-                # Contours
-                # - Select & Move uniqueA contours to output
-                item.resolution.contours.inUniqueA.selectAll()
-                item.resolution.contours.moveSelectedA.click()
-                # - Resolve conflicts (choose A)
-                item.resolution.contours.inOvlp.selectAll()
-                conflicts = item.resolution.contours.inOvlp.selectedItems()
-                for conflict in conflicts:
-                    conflict.forceResolution(1) # Choose contour A
-                # - - Move to output
-                item.resolution.contours.moveSelectedO.click()
-                # Move any uniqueB's in output back to input
-                item.resolution.contours.outUniqueB.selectAll()
-                item.resolution.contours.moveSelectedB.click()
-                # Resolve conflicts that may be in output as A
-                item.resolution.contours.outOvlp.selectAll()
-                outConflicts = item.resolution.contours.outOvlp.selectedItems()
-                for conflict in outConflicts:
-                    if conflict.background() == QColor('red') or conflict.background() == QColor('lightgreen'):
-                        conflict.forceResolution(1)
-                item.resolution.contours.outOvlp.clearSelection()
-                # Click merge button (conflicts resolved)
-                item.resolution.contours.finish()
-            elif item.object1.__class__.__name__ == 'Series':
-                item.resolution.attributes.pick1.click()
-                item.resolution.contours.pick1.click()
-                # ZContours
-                item.resolution.zcontours.output = item.resolution.zcontours.uniqueA+item.resolution.zcontours.merged
-                # - update lab
-                item.resolution.zcontours.lab.setText('Only section A\'s zcontours were kept, as per the quickmerge option.')
-    def quickMergeB(self, items):
+            #=== perform quickmerge function
+            return
+    def quickMergeB(self, items): #===
         '''Selects B version for all conflicts in items.'''
         for item in items:
-            if item.object1.__class__.__name__ == 'Section':
-                # Select section B's attributes/image
-                item.resolution.attributes.pick2.click()
-                item.resolution.images.pick2.click() 
-                # Contours
-                # - Select & Move uniqueB contours to output
-                item.resolution.contours.inUniqueB.selectAll()
-                item.resolution.contours.moveSelectedB.click()
-                # - Resolve conflicts (choose B)
-                item.resolution.contours.inOvlp.selectAll()
-                conflicts = item.resolution.contours.inOvlp.selectedItems()
-                for conflict in conflicts:
-                    conflict.forceResolution(2) # Choose contour B
-                # - - Move to output
-                item.resolution.contours.moveSelectedO.click()
-                # Move any uniqueA's in output back to input
-                item.resolution.contours.outUniqueA.selectAll()
-                item.resolution.contours.moveSelectedA.click()
-                # Resolve conflicts that may be in output as B
-                item.resolution.contours.outOvlp.selectAll()
-                outConflicts = item.resolution.contours.outOvlp.selectedItems()
-                for conflict in outConflicts:
-                    if conflict.background() == QColor('red') or conflict.background() == QColor('lightgreen'):
-                        conflict.forceResolution(2)
-                item.resolution.contours.outOvlp.clearSelection()
-                # Click merge button (conflicts resolved)
-                item.resolution.contours.finish()
-            elif item.object1.__class__.__name__ == 'Series':
-                item.resolution.attributes.pick2.click()
-                item.resolution.contours.pick2.click()
-                # ZContours... all but A
-                item.resolution.zcontours.output = item.resolution.zcontours.uniqueA+item.resolution.zcontours.merged
-                # - update lab
-                item.resolution.zcontours.lab.setText('Only section B\'s zcontours were kept, as per the quickmerge option.')
-    def quickMergeABContsA(self, items):
+            #=== perform quickmerge function
+            return
+    def quickMergeABContsA(self, items): #===
         '''This completes the merge resolution by selecting the A version of non-contour conflicts. For contour conflicts, this selects BOTH for overlaps and also includes uniques from A and B.'''
         for item in items:
-            if item.object1.__class__.__name__ == 'Section':
-                # Select section A's attributes/image
-                item.resolution.attributes.pick1.click()
-                item.resolution.images.pick1.click() 
-                # Contours
-                # - Select & Move uniqueA contours to output
-                item.resolution.contours.inUniqueA.selectAll()
-                item.resolution.contours.moveSelectedA.click()
-                # - Select & Move uniqueB contours to output
-                item.resolution.contours.inUniqueB.selectAll()
-                item.resolution.contours.moveSelectedB.click()
-                # - Resolve conflicts (choose BOTH)
-                item.resolution.contours.inOvlp.selectAll()
-                conflicts = item.resolution.contours.inOvlp.selectedItems()
-                for conflict in conflicts:
-                    conflict.forceResolution(3) # Choose BOTH contours
-                # - - Move to output
-                item.resolution.contours.moveSelectedO.click()
-                # Resolve conflicts that may be in output as BOTH
-                item.resolution.contours.outOvlp.selectAll()
-                outConflicts = item.resolution.contours.outOvlp.selectedItems()
-                for conflict in outConflicts:
-                    if conflict.background() == QColor('red') or conflict.background() == QColor('lightgreen'):
-                        conflict.forceResolution(3)
-                item.resolution.contours.outOvlp.clearSelection()
-                # Click merge button (conflicts resolved)
-                item.resolution.contours.finish()
-            elif item.object1.__class__.__name__ == 'Series':
-                item.resolution.attributes.pick1.click()
-                item.resolution.contours.pick1.click()
-                # ZContours are default
-    def quickMergeABContsB(self, items):
+            #=== perform quickmerge function
+            return
+    def quickMergeABContsB(self, items): #===
         '''This completes the merge resolution by selection the B version of non-contour conflicts. For contour conflicts, this selects BOTH for overlaps and also includes uniques from A and B.'''
         for item in items:
-            if item.object1.__class__.__name__ == 'Section':
-                item.resolution.attributes.pick2.click()
-                item.resolution.images.pick2.click() 
-                # Contours
-                # - Select & Move uniqueA contours to output
-                item.resolution.contours.inUniqueA.selectAll()
-                item.resolution.contours.moveSelectedA.click()
-                # - Select & Move uniqueB contours to output
-                item.resolution.contours.inUniqueB.selectAll()
-                item.resolution.contours.moveSelectedB.click()
-                # - Resolve conflicts (choose BOTH)
-                item.resolution.contours.inOvlp.selectAll()
-                conflicts = item.resolution.contours.inOvlp.selectedItems()
-                for conflict in conflicts:
-                    conflict.forceResolution(3) # Choose BOTH contours
-                # - - Move to output
-                item.resolution.contours.moveSelectedO.click()
-                # Resolve conflicts that may be in output as BOTH
-                item.resolution.contours.outOvlp.selectAll()
-                outConflicts = item.resolution.contours.outOvlp.selectedItems()
-                for conflict in outConflicts:
-                    if conflict.background() == QColor('red') or conflict.background() == QColor('lightgreen'):
-                        conflict.forceResolution(3)
-                item.resolution.contours.outOvlp.clearSelection()
-                # Click merge button (conflicts resolved)
-                item.resolution.contours.finish()
-            elif item.object1.__class__.__name__ == 'Series':
-                item.resolution.attributes.pick2.click()
-                item.resolution.contours.pick2.click()
-                # ZContours are default
-    #=== END COPY/PASTE
+            #=== perform quickmerge function
+            return
 
 class MergeSetListItem(QListWidgetItem):
     '''This is a specialized QListWidgetItem that contains either a MergeSection or MergeSeries object and the widget used for its resolution'''
