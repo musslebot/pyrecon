@@ -96,6 +96,12 @@ class MergeSection:
 		return (self.attributes is not None and
 				self.images is not None and
 				self.contours is not None)
+	def doneCount(self):
+		'''Number of resolved issues'''
+		return (self.attributes is not None,
+				self.images is not None,
+				self.contours is not None).count(True)
+
 		
 	# mergeTool functions
 	def getUniqueContours(self):
@@ -197,6 +203,11 @@ class MergeSeries:
 		return (self.attributes is not None and
 				self.contours is not None and
 				self.zcontours is not None)
+	def doneCount(self):
+		'''Number of resolved issues'''
+		return (self.attributes is not None,
+				self.contours is not None,
+				self.zcontours is not None).count(True)
 
 	# mergeTool functions
 	def getCategorizedZContours(self, threshold=(1+2**(-17))):
