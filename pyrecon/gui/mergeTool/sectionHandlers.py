@@ -31,7 +31,7 @@ class SectionAttributeHandler(QWidget):
 	def checkEquivalency(self):
 		'''Checks to see if the MergeSections' checkConflicts() function automatically handled this. SHOULD ONLY BE RUN IN INIT'''
 		if self.merge.attributes is not None:
-			txt = 'Attributes are equivalent, automatically chosen.'
+			txt = 'Attributes are equivalent, no conflict.'
 			self.chooseLeft.setText(txt)
 			self.chooseRight.setText(txt)
 			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
@@ -92,7 +92,7 @@ class SectionImageHandler(QWidget):
 	def checkEquivalency(self):
 		'''Checks to see if the MergeSections' checkConflicts() function automatically handled this. SHOULD ONLY BE RUN IN INIT'''
 		if self.merge.images is not None:
-			txt = 'Images are equivalent, automatically chosen.'
+			txt = 'Images are equivalent, no conflict.'
 			self.chooseLeft.setText(txt)
 			self.chooseRight.setText(txt)
 			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
@@ -181,7 +181,7 @@ class SectionContourHandler(QWidget):
 	def checkEquivalency(self):
 		'''Checks to see if the MergeSections' checkConflicts() function automatically handled this. SHOULD ONLY BE RUN IN INIT'''
 		if self.merge.contours is not None:
-			txt = 'Contours are equivalent, automatically chosen.'
+			txt = 'Contours are equivalent, no conflict.'
 			self.doneBut.setText(txt)
 			self.doneBut.setStyleSheet('background-color:lightgreen;')
 	def loadObjects(self):
