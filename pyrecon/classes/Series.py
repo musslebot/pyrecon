@@ -181,6 +181,16 @@ class Series:
             if att not in not_attributes: # if att is considered a desired attribute
                 attributes[att] = self.__dict__[att]
         return attributes
+    def deleteTraces(self, exceptions=[]):
+        '''Deletes all traces except the regex found in exceptions list'''
+        for section in self.sections:
+            for contour in section.contours:
+                for regex in exceptions:
+                    if re.compile(regex).match(contour.name):
+                        pass
+                    else:
+                        print 'Removing:', contour.name
+                        section.contours.remove(contour)
 # calibrationTool functions
     def zeroIdentity(self):
         '''Converts points for all sections in a series to identity transform'''
