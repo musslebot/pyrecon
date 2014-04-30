@@ -126,6 +126,11 @@ class MergeSetList(QListWidget):
         self.itemDoubleClicked.connect( self.doubleClicked )
     def clicked(self, item):
         item.clicked()
+        self.refreshAll()
+    def refreshAll(self): #=== may freeze with higher num items?
+        '''Refreshes (item.refresh()) all items in the list'''
+        for i in range( self.count() ):
+            self.item(i).refresh()
     def doubleClicked(self, item):
         '''double-clicking a mergeItem displays a small menu allowing the user to use quick merge options.'''
         items = self.selectedItems()
@@ -206,6 +211,7 @@ class MergeSetListItem(QListWidgetItem):
         self.merge = MergeObject
         self.resolution = None
         self.loadDetails()
+        self.refresh() # update colors
     def loadDetails(self):
         self.setText(self.merge.name)
         self.setFont(QFont("Arial", 14))
@@ -216,16 +222,13 @@ class MergeSetListItem(QListWidgetItem):
             self.resolution = SeriesMergeWrapper(self.merge)
         else:
             print 'Unknown resolution type, could not make wrapper'
-        # Check status, choose color
-        if not self.merge.isDone():
-            self.setBackground(QColor('red'))
-        else:
-            self.setBackground(QColor('lightgreen'))
     def clicked(self):
         if self.merge.isDone():
             self.setBackground(QColor('lightgreen'))
-        else:
+        elif self.merge.doneCount() > 0:
             self.setBackground(QColor('yellow'))
+        else:
+            self.setBackground(QColor('red'))
     def doubleClicked(self):
         print 'MergeSetListItem.doubleClicked()'
         # Necessary? #===
@@ -236,7 +239,7 @@ class MergeSetListItem(QListWidgetItem):
         '''Update colors'''
         if self.isResolved():
             self.setBackground(QColor('lightgreen'))
-        elif self.resolution.doneCount > 0:
+        elif self.resolution.doneCount() > 0:
             self.setBackground(QColor('yellow'))
         else:
             self.setBackground(QColor('red'))
