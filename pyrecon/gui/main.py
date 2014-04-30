@@ -43,8 +43,10 @@ class PyreconMainWindow(QMainWindow):
         self.toolsMenu.addAction( excelAction )
         self.toolsMenu.addAction( curateAction )
     def loadMergeTool(self):
+        print 'begin loading mergeTool stuff' #===
         from pyrecon.tools.mergeTool.main import createMergeSet
         from pyrecon.gui.mergeTool.main import MergeSetWrapper
+        print 'Done' #===
         loadDialog = DoubleSeriesLoad() # User locates 2 series
         mSet = createMergeSet( openSeries(loadDialog.output[0]),openSeries(loadDialog.output[1]) )
         self.setCentralWidget( MergeSetWrapper(mSet) )

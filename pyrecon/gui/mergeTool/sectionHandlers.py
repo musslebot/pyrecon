@@ -3,6 +3,8 @@ from PySide.QtGui import *
 import pyrecon
 import numpy as np
 
+import time #===
+
 # SECTION CONFLICT RESOLUTION GUI WRAPPER
 class SectionMergeWrapper(QTabWidget):
 	'''sectionWrapper is a TabWidget. It contains multiple widgets that can be swapped via their tabs.'''
@@ -85,12 +87,26 @@ class SectionAttributeHandler(QWidget):
 # - Images
 class SectionImageHandler(QWidget):
 	def __init__(self, MergeSection):
+		print 'SectionImageHandler()'
 		QWidget.__init__(self)
+		print '\tinit done' #===
 		self.merge = MergeSection
+		
+		b = time.clock()
 		self.loadObjects()
+		print '\tobjects loaded', time.clock()-b #===
+		
+		b = time.clock()
 		self.loadFunctions()
+		print '\tfunctions loaded', time.clock()-b #===
+		
+		b = time.clock()
 		self.loadLayout()
+		print '\tlayout loaded', time.clock()-b #===
+		
+		b = time.clock()
 		self.checkEquivalency()
+		print '\tequivalency checked', time.clock()-b #===
 	def checkEquivalency(self):
 		'''Checks to see if the MergeSections' checkConflicts() function automatically handled this. SHOULD ONLY BE RUN IN INIT'''
 		if self.merge.images is not None:
