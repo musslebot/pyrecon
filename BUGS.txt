@@ -13,4 +13,5 @@ LIST OF BUGS (in order of high -> low priority)
 
 * mergeTool:
  > overlapping contours are written out using the first (left) series stuff (border, fill, etc.)
+ > overwriting doesnt work with sections
  > quickMerge functions dont update GUI
