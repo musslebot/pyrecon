@@ -18,6 +18,8 @@ class SeriesMergeWrapper(QTabWidget):
 		self.addTab(self.attributes, '&Attributes')
 		self.addTab(self.contours, '&Contours')
 		self.addTab(self.zcontours, '&ZContours')
+	def doneCount(self):
+		return self.merge.doneCount()
 # - Attributes
 class SeriesAttributeHandler(QWidget):
 	def __init__(self, MergeSeries):

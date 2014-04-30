@@ -19,6 +19,8 @@ class SectionMergeWrapper(QTabWidget):
 		self.addTab(self.attributes, '&Attributes')
 		self.addTab(self.images, '&Images')
 		self.addTab(self.contours, '&Contours')
+	def doneCount(self):
+		return self.merge.doneCount()
 # - Attributes
 class SectionAttributeHandler(QWidget):
 	def __init__(self, MergeSection):
