@@ -13,7 +13,9 @@ LIST OF BUGS (in order of high -> low priority)
 
 * mergeTool:
  > loading large series into mergeTool takes INCREDIBLY LONG TIME
+ 	> MergeSection.checkConflicts() takes long time -- CONTOURS!!!
  > overwriting doesnt work with sections
  > quickMerge functions dont update GUI (just contours)
  > overlapping contours are written out using the first (left) series stuff (border, fill, etc.)
+
 
