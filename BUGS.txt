@@ -10,3 +10,7 @@ LIST OF BUGS (in order of high -> low priority)
 
 * excelTool:
  > problems when writing over excel workbook with same name
+
+* mergeTool:
+ > overlapping contours are written out using the first (left) series stuff (border, fill, etc.)
+ > quickMerge functions dont update GUI
