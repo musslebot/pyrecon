@@ -42,7 +42,7 @@ class MergeSet:
 		'''Writes self.seriesMerge and self.sectionMerges to XML'''
 		mergedSeries = self.seriesMerge.toSeries()
 		mergedSeries.name = self.seriesMerge.name.replace('.ser','')
-		for mergeSec in self.sectionMerges:
+		for mergeSec in self.sectionMerges: #===
 			mergedSeries.sections.append(mergeSec.toSection())
 		xml.writeSeries(mergedSeries, outpath, sections=True)
 		print 'Done!' #===
