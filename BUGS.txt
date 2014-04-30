@@ -12,6 +12,8 @@ LIST OF BUGS (in order of high -> low priority)
  > problems when writing over excel workbook with same name
 
 * mergeTool:
- > overlapping contours are written out using the first (left) series stuff (border, fill, etc.)
+ > loading large series into mergeTool takes INCREDIBLY LONG TIME
  > overwriting doesnt work with sections
- > quickMerge functions dont update GUI
+ > quickMerge functions dont update GUI (just contours)
+ > overlapping contours are written out using the first (left) series stuff (border, fill, etc.)
+
