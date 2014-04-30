@@ -1,20 +1,13 @@
 from pyrecon.classes import Series, Section
 from pyrecon.tools import handleXML as xml
 
-import time #===
-
 def createMergeSet(series1, series2):
 	'''This function takes in two Series objects and returns a MergeSet to be used for the mergeTool'''
-
-	print 'createMergeSet()' #===
-	b = time.clock() #===
 
 	mSer = MergeSeries(series1, series2)
 	mSecs = []
 	for i in range( len(series1.sections) ):
-		print 'MergeSection', i #===
 		mSecs.append( MergeSection(series1.sections[i],series2.sections[i]) )
-	print '\tDone', time.clock()-b #===
 	return MergeSet( mSer, mSecs )
 
 class MergeSet:
@@ -66,15 +59,8 @@ class MergeSection:
 		self.contours = None
 
 		# Process arguments
-		print '\tprocessArguments()', #===
-		b = time.clock() #===
 		self.processArguments(args, kwargs)
-		print time.clock()-b #===
-
-		print '\tcheckConflicts()', #===
-		b = time.clock() #===
 		self.checkConflicts()
-		print time.clock()-b #===
 
 	# Argument processing
 	def processArguments(self, args, kwargs):
@@ -95,23 +81,17 @@ class MergeSection:
 	def checkConflicts(self):
 		'''Automatically sets merged stuff if they are equivalent'''
 		# Are attributes equivalent?
-		b = time.clock() #===
 		if self.section1.attributes() == self.section2.attributes():
 			self.attributes = self.section1.attributes()
-		print '\t\tattributes', time.clock()-b #===
 		# Are images equivalent?
-		b = time.clock() #===
 		if self.section1.image == self.section2.image:
 			self.images = self.section1.image
-		print '\t\timage', time.clock()-b #===
 		# Are contours equivalent?
-		b = time.clock() #===
 		uniques = self.getUniqueContours()
 		ovlps = self.getOverlappingContours(separate=True)
 		if (len(uniques[0]+uniques[1]) == 0 and 
 			len(ovlps[1]) == 0):
 			self.contours = self.section1.contours
-		print '\t\tcontours', time.clock()-b #===
 	def isDone(self):
 		'''Boolean indicating status of merge.'''
 		return (self.attributes is not None and

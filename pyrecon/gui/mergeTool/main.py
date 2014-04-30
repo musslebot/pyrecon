@@ -11,7 +11,6 @@ from pyrecon.gui.mergeTool.seriesHandlers import SeriesMergeWrapper
 class MergeSetWrapper(QWidget):
     '''This class is a single widget that contains all necessary widgets for resolving conflicts in a MergeSet and handles the signal/slots between them.'''
     def __init__(self, MergeSet):
-        print 'begin creating MergeSetWrapper' #===
         QWidget.__init__(self)
         self.setWindowTitle('PyRECONSTRUCT mergeTool')
         self.merge = MergeSet
@@ -19,7 +18,6 @@ class MergeSetWrapper(QWidget):
         self.loadFunctions()
         self.loadLayout()
         self.loadResolutions()
-        print '\t MergeSetWrapper done' #===
     def loadObjects(self):
         self.navigator = MergeSetNavigator(self.merge) # Buttons and list of MergeObjects
         self.resolutionStack = QStackedWidget() # Contains all of the resolution wrappers
