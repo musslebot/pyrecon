@@ -3,8 +3,6 @@ from PySide.QtGui import *
 import pyrecon
 import numpy as np
 
-import time #===
-
 # SECTION CONFLICT RESOLUTION GUI WRAPPER
 class SectionMergeWrapper(QTabWidget):
 	'''sectionWrapper is a TabWidget. It contains multiple widgets that can be swapped via their tabs.'''
@@ -266,7 +264,8 @@ class SectionContourHandler(QWidget):
 					if item in self.confOvlp: # Conflicting ovlping contour
 						listItem.setBackground(QColor('red'))
 					elif item in self.compOvlp: # Completely ovlping contour
-						listItem.contour = listItem.contour1 # set chosen contour to cont1 since they're the same
+						listItem.contour = listItem.contour1 #=== set chosen contour to cont1 since they're the same
+						listItem.setBackground(QColor('lightgreen'))
 						self.outOvlp.addItem(listItem)
 						continue
 				table.addItem(listItem)
@@ -298,24 +297,6 @@ class SectionContourHandler(QWidget):
 		outTable.clearSelection()
 		self.doneBut.setStyleSheet(QWidget().styleSheet()) # Button not green, indicates lack of save
 		self.merge.contours = None # Reset MergeSection.contours
-	def allUniqueA(self): #===
-		'''moves all unique A contours to output'''
-		for i in range(self.inUniqueA.count()):
-			self.inUniqueA.item(i).setSelected(True)
-		self.moveSelectedA.click()
-	def allUniqueB(self): #===
-		'''moves all unique B contours to output'''
-		for i in range(self.inUniqueB.count()):
-			self.inUniqueB.item(i).setSelected(True)
-		self.moveSelectedB.click()
-	def noUniqueA(self): #===
-		for i in range(self.outUniqueA.count()):
-			self.outUniqueA.item(i).setSelected(True)
-		self.moveSelectedA.click()
-	def noUniqueB(self): #===
-		for i in range(self.outUniqueB.count()):
-			self.outUniqueB.item(i).setSelected(True)
-		self.moveSelectedB.click()
 	def finish(self):
 		# Check ovlp table for unresolved conflicts (red)
 		numItems = self.outOvlp.count()
@@ -353,7 +334,63 @@ class SectionContourHandler(QWidget):
 				output.append(item.contour)
 		self.merge.contours = output
 		self.doneBut.setStyleSheet('background-color:lightgreen;') # Button to green
-		
+	# Quick merge functions
+	def onlyAContours(self): #===
+		self.allUniqueA()
+		self.noUniqueB()
+		# move all ovlps to outOvlps
+		for i in range(self.inOvlp.count()):
+			self.inOvlp.item(i).setSelected(True)
+		self.moveSelectedO.click()
+		# Select A versions for ovlps
+		for i in range(self.outOvlp.count()):
+			self.outOvlp.item(i).forceResolution(1)
+		self.doneBut.click()
+	def onlyBContours(self): #===
+		self.allUniqueB()
+		self.noUniqueA()
+		# move all ovlps to outOvlps
+		for i in range(self.inOvlp.count()):
+			self.inOvlp.item(i).setSelected(True)
+		self.moveSelectedO.click()
+		# Select A versions for ovlps
+		for i in range(self.outOvlp.count()):
+			self.outOvlp.item(i).forceResolution(2)
+		self.doneBut.click()
+	def allContours(self): #===
+		'''choose both contours for all conflicts and move everything to output'''
+		self.allUniqueA()
+		self.allUniqueB()
+		self.allOvlps()
+		self.doneBut.click()
+	def allOvlps(self):
+		'''Select both versions of all overlaps and move to output'''
+		for i in range(self.inOvlp.count()):
+			self.inOvlp.item(i).setSelected(True)
+		self.moveSelectedO.click()
+		for i in range(self.outOvlp.count()):
+			self.outOvlp.item(i).forceResolution(3)
+	def allUniqueA(self):
+		'''moves all unique A contours to output'''
+		for i in range(self.inUniqueA.count()):
+			self.inUniqueA.item(i).setSelected(True)
+		self.moveSelectedA.click()
+	def allUniqueB(self):
+		'''moves all unique B contours to output'''
+		for i in range(self.inUniqueB.count()):
+			self.inUniqueB.item(i).setSelected(True)
+		self.moveSelectedB.click()
+	def noUniqueA(self):
+		'''returns all outUniqueA items to inUniqueA'''
+		for i in range(self.outUniqueA.count()):
+			self.outUniqueA.item(i).setSelected(True)
+		self.moveSelectedA.click()
+	def noUniqueB(self):
+		'''returns all outUniqueB items to inUniqueB'''
+		for i in range(self.outUniqueB.count()):
+			self.outUniqueB.item(i).setSelected(True)
+		self.moveSelectedB.click()
+
 class contourPixmap(QLabel):
 	'''QLabel that contains a contour drawn on its region in an image'''
 	def __init__(self, image, contour, pen=Qt.red):
@@ -478,11 +515,11 @@ class contourTableItem(QListWidgetItem):
 	'''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
 	def __init__(self, contour, images):
 		QListWidgetItem.__init__(self)
-		if type(contour) == type([]):
+		if type(contour) == type([]): # Overlapping contours are in pairs
 			self.contour = None
 			self.contour1 = contour[0]
 			self.contour2 = contour[1]
-			if type(images) == type([]):
+			if type(images) == type([]): # Images for conflict resolution
 				self.image1 = images[0]
 				self.image2 = images[1]
 			self.setText(self.contour1.name)

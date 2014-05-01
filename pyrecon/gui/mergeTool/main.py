@@ -151,19 +151,20 @@ class MergeSetList(QListWidget):
             if item.merge.__class__.__name__ == 'MergeSection':
                 item.resolution.attributes.chooseLeft.click()
                 item.resolution.images.chooseLeft.click()
-                item.merge.contours = item.merge.section1.contours
+                item.resolution.contours.onlyAContours()
             elif item.merge.__class__.__name__ == 'MergeSeries':
                 item.resolution.attributes.chooseLeft.click()
                 item.resolution.contours.chooseLeft.click()
                 item.merge.zcontours = item.merge.series1.zcontours #===
             item.refresh()
+
     def quickMergeB(self, items):
         '''Selects B (right) version for all conflicts in items.'''
         for item in items:
             if item.merge.__class__.__name__ == 'MergeSection':
                 item.resolution.attributes.chooseRight.click()
                 item.resolution.images.chooseRight.click()
-                item.merge.contours = item.merge.section2.contours
+                item.resolution.contours.onlyBContours()
             elif item.merge.__class__.__name__ == 'MergeSeries':
                 item.resolution.attributes.chooseRight.click()
                 item.resolution.contours.chooseRight.click()
@@ -175,10 +176,7 @@ class MergeSetList(QListWidget):
             if item.merge.__class__.__name__ == 'MergeSection':
                 item.resolution.attributes.chooseLeft.click()
                 item.resolution.images.chooseLeft.click()
-                # contours
-                uniqueA, uniqueB = item.merge.getUniqueContours()
-                complete, conflicting = item.merge.getOverlappingContours(separate=True)
-                item.merge.contours = uniqueA+uniqueB+[comp[0] for comp in complete]+[conf[0] for conf in conflicting]+[conf[1] for conf in conflicting]
+                item.resolution.contours.allContours()
             elif item.merge.__class__.__name__ == 'MergeSeries':
                 item.resolution.attributes.chooseLeft.click()
                 item.resolution.contours.chooseLeft.click()
@@ -192,10 +190,7 @@ class MergeSetList(QListWidget):
             if item.merge.__class__.__name__ == 'MergeSection':
                 item.resolution.attributes.chooseRight.click()
                 item.resolution.images.chooseRight.click()
-                # contours
-                uniqueA, uniqueB = item.merge.getUniqueContours()
-                complete, conflicting = item.merge.getOverlappingContours(separate=True)
-                item.merge.contours = uniqueA+uniqueB+[comp[0] for comp in complete]+[conf[0] for conf in conflicting]+[conf[1] for conf in conflicting]
+                item.resolution.contours.allContours()
             elif item.merge.__class__.__name__ == 'MergeSeries':
                 item.resolution.attributes.chooseRight.click()
                 item.resolution.contours.chooseRight.click()
