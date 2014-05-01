@@ -87,26 +87,12 @@ class SectionAttributeHandler(QWidget):
 # - Images
 class SectionImageHandler(QWidget):
 	def __init__(self, MergeSection):
-		print 'SectionImageHandler()'
 		QWidget.__init__(self)
-		print '\tinit done' #===
 		self.merge = MergeSection
-		
-		b = time.clock()
 		self.loadObjects()
-		print '\tobjects loaded', time.clock()-b #===
-		
-		b = time.clock()
 		self.loadFunctions()
-		print '\tfunctions loaded', time.clock()-b #===
-		
-		b = time.clock()
 		self.loadLayout()
-		print '\tlayout loaded', time.clock()-b #===
-		
-		b = time.clock()
 		self.checkEquivalency()
-		print '\tequivalency checked', time.clock()-b #===
 	def checkEquivalency(self):
 		'''Checks to see if the MergeSections' checkConflicts() function automatically handled this. SHOULD ONLY BE RUN IN INIT'''
 		if self.merge.images is not None:
@@ -183,7 +169,6 @@ class SectionImageHandler(QWidget):
 # - Contours
 class SectionContourHandler(QWidget):
 	def __init__(self, MergeSection):
-	# (self, uniqueA, compOvlp, confOvlp, uniqueB, sections=None, parent=None):
 		QWidget.__init__(self)
 		self.merge = MergeSection
 		# Contours
@@ -313,6 +298,24 @@ class SectionContourHandler(QWidget):
 		outTable.clearSelection()
 		self.doneBut.setStyleSheet(QWidget().styleSheet()) # Button not green, indicates lack of save
 		self.merge.contours = None # Reset MergeSection.contours
+	def allUniqueA(self): #===
+		'''moves all unique A contours to output'''
+		for i in range(self.inUniqueA.count()):
+			self.inUniqueA.item(i).setSelected(True)
+		self.moveSelectedA.click()
+	def allUniqueB(self): #===
+		'''moves all unique B contours to output'''
+		for i in range(self.inUniqueB.count()):
+			self.inUniqueB.item(i).setSelected(True)
+		self.moveSelectedB.click()
+	def noUniqueA(self): #===
+		for i in range(self.outUniqueA.count()):
+			self.outUniqueA.item(i).setSelected(True)
+		self.moveSelectedA.click()
+	def noUniqueB(self): #===
+		for i in range(self.outUniqueB.count()):
+			self.outUniqueB.item(i).setSelected(True)
+		self.moveSelectedB.click()
 	def finish(self):
 		# Check ovlp table for unresolved conflicts (red)
 		numItems = self.outOvlp.count()
@@ -350,6 +353,7 @@ class SectionContourHandler(QWidget):
 				output.append(item.contour)
 		self.merge.contours = output
 		self.doneBut.setStyleSheet('background-color:lightgreen;') # Button to green
+		
 class contourPixmap(QLabel):
 	'''QLabel that contains a contour drawn on its region in an image'''
 	def __init__(self, image, contour, pen=Qt.red):
