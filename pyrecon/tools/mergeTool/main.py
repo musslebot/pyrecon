@@ -1,6 +1,8 @@
 from pyrecon.classes import Series, Section
 from pyrecon.tools import handleXML as xml
 
+import time #===
+
 def createMergeSet(series1, series2):
 	'''This function takes in two Series objects and returns a MergeSet to be used for the mergeTool'''
 
@@ -66,7 +68,10 @@ class MergeSection:
 
 		# Process arguments
 		self.processArguments(args, kwargs)
+		print('Checking MergeSection conflicts (%s):')%self.name, #===
+		a = time.clock() #===
 		self.checkConflicts()
+		print time.clock()-a #===
 
 	# Argument processing
 	def processArguments(self, args, kwargs):
@@ -179,7 +184,10 @@ class MergeSeries:
 
 		# Process arguments
 		self.processArguments(args, kwargs)
+		print('Checking MergeSeries conflicts (%s):')%self.name, #===
+		a = time.clock() #===
 		self.checkConflicts()
+		print time.clock()-a #===
 
 	# Argument processing
 	def processArguments(self, args, kwargs):
