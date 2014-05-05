@@ -68,14 +68,14 @@ class Contour:
             return 'Already in biological coordinate system -- abort.'
         self.points = self.transform.worldpts(self.points, mag)
         self.coordSys = 'bio'
-        self.popShape()
+        self.popShape() # repopulate shape
     def convertToPixCoords(self, mag):
         '''Converts points to pixel coordinate system and performs appropraite updates to shape.'''
         if self.coordSys == 'pix':
             return 'Already in pixel coordinate system -- abort.'
         self.points = self.transform.imagepts(self.points, mag)
         self.coordSys = 'pix'
-        self.popShape()
+        self.popShape() # repopulate shape
     def popShape(self):
         '''Adds polygon object (shapely) to self._shape'''
         # Closed trace
@@ -113,7 +113,7 @@ class Contour:
                          return 1 otherwise'''
         if self.shape == None:self.popShape()
         if other.shape == None:other.popShape()
-        # Check bounding box
+        # Check bounding box (reduces comp. time for non-overlapping contours)
         if (not self.box().intersects(other.box()) and
             not self.box().touches(other.box()) ):
             return 0
@@ -126,7 +126,7 @@ class Contour:
             AoI = self.shape.intersection( other.shape ).area
             if AoI == 0:
                 return 0
-            elif AoU/AoI > threshold:
+            elif AoU/AoI >= threshold: #===
                 return AoU/AoI # Returns actual value, not 0 or 1
             elif AoU/AoI < threshold:
                 return 1
