@@ -58,6 +58,12 @@ class MergeSection:
 		self.images = None
 		self.contours = None
 
+		# Contours conflict resolution stuff
+		self.uniqueA = None
+		self.uniqueB = None
+		self.compOvlps = None
+		self.confOvlps = None
+
 		# Process arguments
 		self.processArguments(args, kwargs)
 		self.checkConflicts()
@@ -87,10 +93,13 @@ class MergeSection:
 		if self.section1.image == self.section2.image:
 			self.images = self.section1.image
 		# Are contours equivalent?
-		uniques = self.getUniqueContours()
-		ovlps = self.getOverlappingContours(separate=True)
-		if (len(uniques[0]+uniques[1]) == 0 and 
-			len(ovlps[1]) == 0):
+		separatedConts = self.getCategorizedContours(overlaps=True)
+		self.uniqueA = separatedConts[0]
+		self.uniqueB = separatedConts[1]
+		self.compOvlps = separatedConts[2]
+		self.confOvlps = separatedConts[3]
+		if (len(self.uniqueA+self.uniqueB) == 0 and 
+			len(self.confOvlps) == 0):
 			self.contours = self.section1.contours
 	def isDone(self):
 		'''Boolean indicating status of merge.'''
@@ -102,55 +111,53 @@ class MergeSection:
 		return (self.attributes is not None,
 				self.images is not None,
 				self.contours is not None).count(True)
-
 		
 	# mergeTool functions
-	def getUniqueContours(self):
-		ovlpsA, ovlpsB = self.getOverlappingContours()
-		uniqueA = [cont for cont in self.section1.contours if cont not in ovlpsA]
-		uniqueB = [cont for cont in self.section2.contours if cont not in ovlpsB]
-		return uniqueA, uniqueB
-	def getOverlappingContours(self, threshold=(1+2**(-17)), sameName=True, separate=False):
+	def getCategorizedContours(self, threshold=(1+2**(-17)), sameName=True, overlaps=False):
 		'''Returns lists of mutually overlapping contours between two Section objects.'''
+		compOvlps = [] # Pairs of completely (within threshold) overlapping contours 
+		confOvlps = [] # Pairs of incompletely overlapping contours
+
+		# Compute overlaps
 		OvlpsA = [] # Section1 contours that have ovlps in section2
 		OvlpsB = [] # Section2 contours that have ovlps in section1
 		for contA in self.section1.contours:
 			ovlpA = []
 			ovlpB = []
 			for contB in self.section2.contours:
+				overlap = contA.overlaps(contB, threshold)
 				# If sameName: only check contours with the same name
-				if sameName and contA.name == contB.name and contA.overlaps(contB, threshold) != 0:
+				if (sameName and
+					contA.name == contB.name and
+					overlap != 0):
 					ovlpA.append(contA)
 					ovlpB.append(contB)
+					if overlaps:
+						if overlap == 1:
+							compOvlps.append([contA,contB])
+						elif overlap > 0: # Conflicting (non-100%) overlap
+							confOvlps.append([contA,contB])
 				# If not sameName: check all contours, regardless of same name
-				elif not sameName and contA.overlaps(contB, threshold) != 0:
+				elif not sameName and overlap != 0:
 					ovlpA.append(contA)
 					ovlpB.append(contB)
+					if overlaps:
+						if overlap:
+							compOvlps.append([contA,contB])
+						elif overlap > 0: # Conflicting (non-100%) overlap
+							confOvlps.append([contA,contB])
 			OvlpsA.extend(ovlpA)
 			OvlpsB.extend(ovlpB)
-		if not separate:
-			return OvlpsA, OvlpsB
+
+		if overlaps:
+			# Return unique conts from section1, unique conts from section2, completely overlapping contours, and incompletely overlapping contours
+			return (
+				[cont for cont in self.section1.contours if cont not in OvlpsA],
+				[cont for cont in self.section2.contours if cont not in OvlpsB],
+				compOvlps, confOvlps )
 		else:
-			return MergeSection.separateOverlappingContours(OvlpsA, OvlpsB, threshold, sameName)
-	@staticmethod
-	def separateOverlappingContours(ovlpsA, ovlpsB, threshold=(1+2**(-17)), sameName=True):
-		'''Returns a list of completely overlapping pairs and a list of conflicting overlapping pairs.'''
-		compOvlps = [] # list of completely overlapping contour pairs
-		confOvlps = [] # list of conflicting overlapping contour pairs
-		for contA in ovlpsA:
-			for contB in ovlpsB:
-				overlap = contA.overlaps(contB, threshold)
-				if sameName and contA.name == contB.name:
-					if overlap == 1:
-						compOvlps.append([contA, contB])
-					elif overlap != 0 and overlap != 1:
-						confOvlps.append([contA, contB])
-				elif not sameName:
-					if overlap == 1:
-						compOvlps.append([contA, contB])
-					elif overlap != 0 and overlap != 1:
-						confOvlps.append([contA, contB])
-		return compOvlps, confOvlps
+			return ([cont for cont in self.section1.contours if cont not in OvlpsA],
+				[cont for cont in self.section2.contours if cont not in OvlpsB])
 	def toSection(self):
 		'''Returns a section object from self.attributes, self.images, and self.contours. Defaults any of these items to the self.section1 version if they are None (not resolved).'''
 		return Section(
