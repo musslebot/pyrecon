@@ -39,34 +39,12 @@ To start graphical tool loader, use commands in python shell:
 * Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from its parent folder
 
 ### Windows
-* Download and install [Python2.7](http://www.python.org/download/releases/2.7.6/)
-* Download and install [python-setuptools](http://python-distribute.org/distribute_setup.py)
-* Download and install the following:
-    * [lxml](http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
-    * [Cython](http://www.lfd.uci.edu/~gohlke/pythonlibs/#cython)
-    * [Scipy-stack](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy-stack)
-    * [scikit-image](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-image)
-    * [scipy](http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy)
-    * [shapely](http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely)
-* Install PyRECONSTRUCT:
-    * **Method 1:** 
-        * Download [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT)
-        * Run `python setup.py install` from parent folder
-    * **Method 2:**
-        * Install [PIP](http://www.pip-installer.org/en/latest/installing.html)
-            * you may also need to add `C:\Python27\Scripts;` to your Windows user environment variable: Path
-        * Run `pip install PyRECONSTRUCT` in windows command line (cmd.exe)
+* COMING SOON
+* Download this repository
+* Run 'PyRECONSTRUCT Installer.exe'
+* No other files/folders in the repository are necessary... feel free to remove them 
 
-### PyRECONSTRUCT + Git Installation
-* 1) Add the following lines to your Series' repository's `.git/config` file, replacing PATH_TO_gitmerge.py appropriately:
-<pre>
-[merge "pymerge"]
-        name = pyrecon mergetool driver
-        driver = PATH_TO_gitmerge.py %A %B
-</pre>
-
-* 2) Add the following line to your Series' repository's `.git/info/attributes` file:
-<pre>
-`* merge=pymerge`
+### PyRECONSTRUCT + Git
+* IN DEVELOPMENT...
 
 
