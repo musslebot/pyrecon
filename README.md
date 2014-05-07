@@ -39,7 +39,7 @@ To start graphical tool loader, use commands in python shell:
 * Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from its parent folder
 
 ### Windows
-* Download and run 'PyRECONSTRUCT Windows Installer.exe' (no other files necessary)
+* Send me a message for the PyRECONSTRUCT Windows Installer.exe -- filesize is too large to keep in GitHub
 
 ### PyRECONSTRUCT + Git
 * IN DEVELOPMENT...
