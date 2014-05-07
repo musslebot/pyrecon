@@ -1,4 +1,4 @@
-[PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT)
+![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/icon.ico "PyRECONSTRUCT Icon")[PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT)
 =============
 Authors: Michael Musslewhite, Larry Lindsey<br>
 Date Created: 3/7/2013<br>
