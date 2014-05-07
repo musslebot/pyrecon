@@ -12,8 +12,7 @@ LIST OF BUGS (in order of high -> low priority)
  > problems when writing over excel workbook with same name
 
 * mergeTool:
- > loading large series into mergeTool takes INCREDIBLY LONG TIME
- 	> MergeSection.checkConflicts() takes long time -- CONTOURS!!!
+ > need optimization for overlap checking
  > overwriting doesnt work with sections
  > overlapping contours are written out using the first (left) series stuff (border, fill, etc.)
 
