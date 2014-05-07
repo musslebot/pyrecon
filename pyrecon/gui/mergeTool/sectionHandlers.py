@@ -171,9 +171,9 @@ class SectionContourHandler(QWidget):
 		self.merge = MergeSection
 		# Contours
 		# - Unique contours from each section
-		self.uniqueA, self.uniqueB = self.merge.getUniqueContours()
+		self.uniqueA, self.uniqueB = self.merge.uniqueA, self.merge.uniqueB
 		# - Complete overlap, and conflicting overlap contours
-		self.compOvlp, self.confOvlp = self.merge.getOverlappingContours(separate=True)
+		self.compOvlp, self.confOvlp = self.merge.compOvlps, self.merge.confOvlps
 		# Load UI
 		self.loadObjects()
 		self.loadFunctions()
