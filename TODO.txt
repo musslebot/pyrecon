@@ -2,7 +2,7 @@ TODO LIST (in order of high -> low priority)
 --------------------------------------------
 * BUGS.txt
 
-* Check out windows .exe prereqs... does license allow putting them in my code?
+* Multithreading!
 
 * verbose option for print statements
 * Use threading for intensive computations (loading a series, etc.)
