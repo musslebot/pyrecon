@@ -30,7 +30,4 @@ def start():
 	app.exec_() # Start event-loop
 
 if __name__ == "__main__":
-	try:
-		start()
-	except:
-		print 'Error running start() from main.py -- Did PySide import correctly?'
+	start()
