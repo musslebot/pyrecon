@@ -1,17 +1,56 @@
 import re
 from collections import OrderedDict
 from pyrecon.main import openSeries
+
+
+class Dendrite(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+        
+class Axon(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+
+class Spine(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+
+class SER(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+
+class CFA(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+
+class C(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+
 class MultiSectionContour:
     '''Object with data representing a Contour that spans multiple sections. Example data includes: start, end, count, surface area, flat area, volume, etc. and depends on the type of object loaded into MultiSectionContour.'''
     def __init__(self, name=None, series=None):
-        self.name = None
-        self.series = None
+        self.name = None # Name of object
+        self.series = None # Series to which this object belongs
         
-        self.protrusion = None
-        self.dendrite = None
-        
-        self.rType = None
-        self.data = None 
         self.start = None
         self.end = None
         self.count = None
