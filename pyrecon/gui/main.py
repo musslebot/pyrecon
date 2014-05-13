@@ -73,6 +73,32 @@ class PyreconMainWindow(QMainWindow):
         self.excelSelector.setWidget( self.excelTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.excelSelector)
 
+class SectionView(QWidget):
+    def __init__(self, section):
+        QWidget.__init__(self)
+        self.section = section
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def loadObjects(self):
+        self.pix = QPixmap(self.section.image._path+self.section.image.src)
+        return
+    def loadFunctions(self):
+        return
+    def loadLayout(self):
+        # This sections image
+        pixmap = QLabel()
+        pixmap.setPixmap( self.pix )
+        scrollablePixmap = QScrollArea()
+        scrollablePixmap.setWidget(pixmap)
+
+        # Main container
+        container = QHBoxLayout()
+        container.addWidget(scrollablePixmap)
+        self.setLayout(container)
+        return
+
+
 # Helper widgets
 class BrowseWidget(QWidget):
     '''Provides a QLineEdit and button for browsing through a file system. browseType can be directory, file or series but defaults to directory.'''
