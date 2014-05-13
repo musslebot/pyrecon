@@ -73,7 +73,7 @@ class PyreconMainWindow(QMainWindow):
         self.excelSelector.setWidget( self.excelTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.excelSelector)
 
-class SectionView(QWidget):
+class SectionView(QWidget): #===
     def __init__(self, section):
         QWidget.__init__(self)
         self.section = section
@@ -97,7 +97,6 @@ class SectionView(QWidget):
         container.addWidget(scrollablePixmap)
         self.setLayout(container)
         return
-
 
 # Helper widgets
 class BrowseWidget(QWidget):
