@@ -14,8 +14,10 @@ class RepositoryViewer(QWidget):
         self.loadFunctions()
         self.loadLayout()
     def loadObjects(self):
-        self.branches = BranchList( [branch for branch in self.repository.heads] )
+        self.branches = BranchList( [self.repository.head.ref]+[branch for branch in self.repository.heads if branch != self.repository.head.ref] )
+        self.branches.item(0).setBackground(QColor('lightgreen'))
         self.commits = CommitList( [commit for commit in self.repository.iter_commits()] )
+        self.commits.item(0).setBackground(QColor('lightgreen'))
         self.pickBranch = QPushButton('Checkout this branch')
         self.pickBranch.setMinimumHeight(50)
         self.pickCommit = QPushButton('Checkout this commit')
@@ -34,11 +36,11 @@ class RepositoryViewer(QWidget):
         self.commits.item(0).setBackground(QColor('lightgreen')) #=== should this be default? Assumes that the latest commit is the one that will be in the repository when branch is switched
         self.branches.loadColors()
         item.setBackground(QColor('lightgreen'))
-    def checkoutCommit(self): #===
+    def checkoutCommit(self):
         item = self.commits.selectedItems().pop()
         commit = item.commit
         print 'Checkout commit: '+str(commit)
-        self.repository.head.reset(commit.hexsha)
+        self.repository.head.reset(commit) # reset head to commit
         self.commits.loadColors()
         item.setBackground(QColor('lightgreen'))
     def loadLayout(self):
