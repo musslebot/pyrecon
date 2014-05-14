@@ -8,6 +8,7 @@ class RepositoryViewer(QWidget):
     def __init__(self, repository):
         QWidget.__init__(self)
         self.repository = repository
+        print('Current head: '+str(self.repository.head.reference)) #===
         self.setWindowTitle('Repository - '+str(self.repository.working_dir))
         self.loadObjects()
         self.loadFunctions()
@@ -15,18 +16,24 @@ class RepositoryViewer(QWidget):
     def loadObjects(self):
         self.branches = BranchList( [branch for branch in self.repository.heads] )
         self.commits = CommitList( [commit for commit in self.repository.iter_commits()] )
+        self.pickBranch = QPushButton('Checkout this branch')
+        self.pickCommit = QPushButton('Checkout this commit')
         self.functions = QWidget()
         self.view = QWidget()
     def loadFunctions(self):
-        # change repository button?
-        # if branch is clicked, load commitsList
-        self.branches.itemClicked.connect( self.branchClicked )
-        # if commit is clicked, load functions/view
-        return
-    def branchClicked(self, item): #===
-        print 'Branch clicked: '+str(item)
+        self.pickBranch.clicked.connect( self.checkoutBranch )
+        self.pickCommit.clicked.connect( self.checkoutCommit )
+    def checkoutBranch(self):
+        branch = self.branches.selectedItems().pop().branch
+        print 'Checkout branch: '+str(branch)
+        branch.checkout()
         self.commits.update( [commit for commit in self.repository.iter_commits()] )
-        self.commits.setWindowTitle( 'Commits - '+str(item.name))
+
+    def checkoutCommit(self):
+        commit = self.commits.selectedItems().pop().commit
+        print 'Checkout commit: '+item.commit
+        commit.checkout()
+
     def loadLayout(self):
         # BranchList and CommitList
         branchesAndCommits = QVBoxLayout()
@@ -34,6 +41,7 @@ class RepositoryViewer(QWidget):
         branchesLabel.setAlignment( Qt.AlignHCenter )
         branchesAndCommits.addWidget( branchesLabel )
         branchesAndCommits.addWidget(self.branches)
+        branchesAndCommits.addWidget(self.pickBranch)
         commitsLabel = QLabel('Commits')
         commitsLabel.setAlignment( Qt.AlignHCenter )
         branchesAndCommits.addWidget( commitsLabel )
@@ -68,7 +76,8 @@ class BranchListItem(QListWidgetItem):
         QListWidgetItem.__init__(self)
         self.branch = branch
         self.formatData()
-        self.setText('Name:\t'+self.name) #===
+        self.setText(self.name) #===
+        self.setTextAlignment(Qt.AlignHCenter)
     def formatData(self):
         self.name = str(self.branch.name)
 
@@ -96,8 +105,8 @@ class CommitListItem(QListWidgetItem):
         QListWidgetItem.__init__(self)
         self.commit = commit # GitPython commit object
         self.formatData()
-        self.setText('Date:\t'+self.date+'\n'+'Author:\t'+self.author)
-        self.setToolTip('Hexsha: '+self.hexsha+'\n'+'Commit message:\n\t'+self.message)
+        self.setText('Date:\n    '+self.date+'\n'+'Commit message:\n    '+self.message)
+        self.setToolTip('Hexsha: '+self.hexsha+'\n'+'Author:\t'+self.author)
     def formatData(self):
         # Format info to be displayed as item text
         self.date = str(time.asctime(time.gmtime(self.commit.committed_date)))
