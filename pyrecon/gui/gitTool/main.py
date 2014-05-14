@@ -33,7 +33,7 @@ class RepositoryViewer(QWidget):
         branch.checkout()
         # Refresh commitList with commits from new branch
         self.commits.refresh( [commit for commit in self.repository.iter_commits()] )
-        self.commits.item(0).setBackground(QColor('lightgreen')) #=== should this be default? Assumes that the latest commit is the one that will be in the repository when branch is switched
+        self.commits.item(0).setBackground(QColor('lightgreen')) #=== should this be default? Assumes that the latest commit is the one that will be in the repository when branch is switched. i.e. modified working dirs dont have a commit!!!!
         self.branches.loadColors()
         item.setBackground(QColor('lightgreen'))
     def checkoutCommit(self):
