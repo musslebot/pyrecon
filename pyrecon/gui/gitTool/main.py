@@ -17,23 +17,30 @@ class RepositoryViewer(QWidget):
         self.branches = BranchList( [branch for branch in self.repository.heads] )
         self.commits = CommitList( [commit for commit in self.repository.iter_commits()] )
         self.pickBranch = QPushButton('Checkout this branch')
+        self.pickBranch.setMinimumHeight(50)
         self.pickCommit = QPushButton('Checkout this commit')
+        self.pickCommit.setMinimumHeight(50)
         self.functions = QWidget()
         self.view = QWidget()
     def loadFunctions(self):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
     def checkoutBranch(self):
-        branch = self.branches.selectedItems().pop().branch
-        print 'Checkout branch: '+str(branch)
+        item = self.branches.selectedItems().pop()
+        branch = item.branch
         branch.checkout()
-        self.commits.update( [commit for commit in self.repository.iter_commits()] )
-
-    def checkoutCommit(self):
-        commit = self.commits.selectedItems().pop().commit
-        print 'Checkout commit: '+item.commit
-        commit.checkout()
-
+        # Refresh commitList with commits from new branch
+        self.commits.refresh( [commit for commit in self.repository.iter_commits()] )
+        self.commits.item(0).setBackground(QColor('lightgreen')) #=== should this be default? Assumes that the latest commit is the one that will be in the repository when branch is switched
+        self.branches.loadColors()
+        item.setBackground(QColor('lightgreen'))
+    def checkoutCommit(self): #===
+        item = self.commits.selectedItems().pop()
+        commit = item.commit
+        print 'Checkout commit: '+str(commit)
+        self.repository.head.reset(commit.hexsha)
+        self.commits.loadColors()
+        item.setBackground(QColor('lightgreen'))
     def loadLayout(self):
         # BranchList and CommitList
         branchesAndCommits = QVBoxLayout()
@@ -46,6 +53,7 @@ class RepositoryViewer(QWidget):
         commitsLabel.setAlignment( Qt.AlignHCenter )
         branchesAndCommits.addWidget( commitsLabel )
         branchesAndCommits.addWidget(self.commits)
+        branchesAndCommits.addWidget(self.pickCommit)
         # Functions and View
         functionsAndView = QVBoxLayout()
         functionsAndView.addWidget(self.functions)
@@ -62,24 +70,33 @@ class BranchList(QListWidget):
         self.setWindowTitle('Branches [*]')
         self.branches = branchList
         self.loadBranches()
+        self.loadColors()
     def loadBranches(self):
-        count = 0
         for branch in self.branches:
             item = BranchListItem(branch)
+            self.addItem(item)
+    def loadColors(self):
+        count = 0
+        for i in range(self.count()):
+            item = self.item(i)
             if count%2 == 0:
                 item.setBackground(QColor('lightgray'))
-            self.addItem(item)
+            else:
+                item.setBackground(QColor('white'))
             count+=1
+    def refresh(self, newBranchList=None):
+        if newBranchList is not None:
+            self.branches = newBranchList
+        self.clear()
+        self.loadBranches()
 
 class BranchListItem(QListWidgetItem):
     def __init__(self, branch):
         QListWidgetItem.__init__(self)
         self.branch = branch
-        self.formatData()
-        self.setText(self.name) #===
+        self.setText(self.branch.name) #===
         self.setTextAlignment(Qt.AlignHCenter)
-    def formatData(self):
-        self.name = str(self.branch.name)
+        self.setSizeHint(QSize(self.sizeHint().width(), 30))
 
 class CommitList(QListWidget):
     def __init__(self, commitList):
@@ -87,26 +104,36 @@ class CommitList(QListWidget):
         self.setWindowTitle('Commit History [*]')
         self.commits = commitList
         self.loadCommits()
+        self.loadColors()
+        self.setWordWrap(True)
     def loadCommits(self):
-        count = 0
         for commit in self.commits:
             item = CommitListItem(commit)
+            self.addItem(item)
+    def loadColors(self):
+        count = 0
+        for i in range(self.count()):
+            item = self.item(i)
             if count%2 == 0:
                 item.setBackground(QColor('lightgray'))
-            self.addItem(item)
+            else:
+                item.setBackground(QColor('white'))
             count+=1
-    def update(self, commitList):
-        self.commits = commitList
+    def refresh(self, newCommitList=None):
+        if newCommitList is not None:
+            self.commits = newCommitList
         self.clear()
         self.loadCommits()
+        self.loadColors()
     
 class CommitListItem(QListWidgetItem):
     def __init__(self, commit):
         QListWidgetItem.__init__(self)
         self.commit = commit # GitPython commit object
         self.formatData()
-        self.setText('Date:\n    '+self.date+'\n'+'Commit message:\n    '+self.message)
+        self.setText(self.date+'\n'+self.message)
         self.setToolTip('Hexsha: '+self.hexsha+'\n'+'Author:\t'+self.author)
+        self.setTextAlignment(Qt.AlignHCenter)
     def formatData(self):
         # Format info to be displayed as item text
         self.date = str(time.asctime(time.gmtime(self.commit.committed_date)))
