@@ -36,10 +36,14 @@ class RepositoryViewer(QWidget):
         # Retrieve branch object
         item = self.branches.selectedItems().pop()
         branch = item.branch
-        branch.checkout() # Checkout branch
-        # Refresh commitList with commits from new branch
-        self.branches.refresh()
-        self.commits.refresh()
+        try:
+            branch.checkout() # Checkout branch
+            # Refresh commitList with commits from new branch
+            self.branches.refresh()
+            self.commits.refresh()
+        except GitCommandError:
+            if self.repository.is_dirty():
+                print 'dirty repository: develop handler' #=== handle dirty working directory
     def checkoutCommit(self):
         '''Reset HEAD to commit and refresh() lists'''
         # Retrive commit object
@@ -152,7 +156,33 @@ class CommitListItem(QListWidgetItem):
         self.hexsha = str(self.commit.hexsha)
         self.message = str(self.commit.message)
 
+class DirtyHandler(QWidget): #===
+    '''Class for handling a dirty repository.'''
+    def __init__(self, repository):
+        QWidget.__init__(self)
+        self.repository = repository
+        # Untracked files
+        self.untracked = self.repository.untracked_files
+        self.diff = self.repository.head.commit.diff(None)# Diff rel to working dir
+        self.checkStatus()
+    def checkStatus(self):
+        if (self.repository.is_dirty() and 
+            len(self.untracked) == 0 and 
+            'up-to-date' in self.repository.git.pull()):
+            print 'Files in the repository have been modified'
+            #=== show changes
+            #=== ask to stash or push
+            return
+        elif (self.repository.is_dirty() and
+            len(self.untracked) > 0 and
+            'up-to-date' in self.repository.git.pull()):
+            print 'Files have been modified and there are untracked files.'
+            #=== show changes
+            #=== what to do with untracked files? add, rm
+            #=== ask to stash or push
+            return
 def main(repository):
+    '''Pass in a path to git repository... return populated RepositoryViewer object'''
     repo = Repo(repository) # Open repository as GitPython Repo object
     return RepositoryViewer(repo)
 
