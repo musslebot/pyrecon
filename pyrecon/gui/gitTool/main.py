@@ -77,6 +77,11 @@ class RepositoryViewer(QWidget):
         # container.addLayout(functionsAndView)
         self.setLayout(container)
 
+class FunctionsBar(QWidget): #===
+    def __init__(self, repository):
+        QWidget.__init__(self)
+        self.repository = repository
+
 class BranchList(QListWidget):
     def __init__(self, repository):
         QListWidget.__init__(self)
