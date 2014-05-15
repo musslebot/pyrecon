@@ -47,7 +47,8 @@ class RepositoryViewer(QWidget):
         commit = item.commit
         self.repository.head.reset(commit) # Reset head to commit
         self.branches.refresh()
-        self.commits.refresh()
+        # self.commits.refresh() # removes more recent commits
+        self.commits.loadColors()
     def loadLayout(self):
         # BranchList and CommitList
         branchesAndCommits = QVBoxLayout()
