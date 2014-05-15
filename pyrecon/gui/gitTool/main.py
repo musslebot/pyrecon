@@ -17,8 +17,8 @@ class RepositoryViewer(QWidget):
         self.branches = BranchList( self.repository )
         # List of commits for the currently selected branch
         self.commits = CommitList( self.repository )
-        self.refresh = QPushButton('Refresh')
-        self.refresh.setToolTip('Click this if you\'ve made changes in the repository outside of this tool')
+        self.refreshBut = QPushButton('Refresh')
+        self.refreshBut.setToolTip('Click this if you\'ve made changes in the repository outside of this tool')
         self.pickBranch = QPushButton('Checkout this branch')
         self.pickBranch.setMinimumHeight(50)
         self.pickCommit = QPushButton('Checkout this commit')
@@ -26,7 +26,7 @@ class RepositoryViewer(QWidget):
     def loadFunctions(self):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
-        self.refresh.clicked.connect( self.refresh )
+        self.refreshBut.clicked.connect( self.refresh )
     def refresh(self):
         '''Refresh lists to match current repository status'''
         self.branches.refresh()
@@ -54,7 +54,7 @@ class RepositoryViewer(QWidget):
         branchesLabel = QLabel('Branches')
         branchesLabelandRef = QHBoxLayout()
         branchesLabelandRef.addWidget(branchesLabel)
-        branchesLabelandRef.addWidget(self.refresh)
+        branchesLabelandRef.addWidget(self.refreshBut)
         branchesAndCommits.addLayout( branchesLabelandRef )
         branchesAndCommits.addWidget(self.branches)
         branchesAndCommits.addWidget(self.pickBranch)
