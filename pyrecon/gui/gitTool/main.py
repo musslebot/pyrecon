@@ -7,123 +7,131 @@ class RepositoryViewer(QWidget):
     '''Provides a GUI for interacting with a GitPython repository'''
     def __init__(self, repository):
         QWidget.__init__(self)
-        self.repository = repository
-        print('Current head: '+str(self.repository.head.reference)) #===
+        self.repository = repository # The repository being used
         self.setWindowTitle('Repository - '+str(self.repository.working_dir))
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
     def loadObjects(self):
-        self.branches = BranchList( [self.repository.head.ref]+[branch for branch in self.repository.heads if branch != self.repository.head.ref] )
-        self.branches.item(0).setBackground(QColor('lightgreen'))
-        self.commits = CommitList( [commit for commit in self.repository.iter_commits()] )
-        self.commits.item(0).setBackground(QColor('lightgreen'))
+        # List of branches in the repository
+        self.branches = BranchList( self.repository )
+        # List of commits for the currently selected branch
+        self.commits = CommitList( self.repository )
+        self.refresh = QPushButton('Refresh')
+        self.refresh.setToolTip('Click this if you\'ve made changes in the repository outside of this tool')
         self.pickBranch = QPushButton('Checkout this branch')
         self.pickBranch.setMinimumHeight(50)
         self.pickCommit = QPushButton('Checkout this commit')
         self.pickCommit.setMinimumHeight(50)
-        self.functions = QWidget()
-        self.view = QWidget()
     def loadFunctions(self):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
+        self.refresh.clicked.connect( self.refresh )
+    def refresh(self):
+        '''Refresh lists to match current repository status'''
+        self.branches.refresh()
+        self.commits.refresh()
     def checkoutBranch(self):
+        '''Checkout branch and refresh() lists'''
+        # Retrieve branch object
         item = self.branches.selectedItems().pop()
         branch = item.branch
-        branch.checkout()
+        branch.checkout() # Checkout branch
         # Refresh commitList with commits from new branch
-        self.commits.refresh( [commit for commit in self.repository.iter_commits()] )
-        self.commits.item(0).setBackground(QColor('lightgreen')) #=== should this be default? Assumes that the latest commit is the one that will be in the repository when branch is switched. i.e. modified working dirs dont have a commit!!!!
-        self.branches.loadColors()
-        item.setBackground(QColor('lightgreen'))
+        self.branches.refresh()
+        self.commits.refresh()
     def checkoutCommit(self):
+        '''Reset HEAD to commit and refresh() lists'''
+        # Retrive commit object
         item = self.commits.selectedItems().pop()
         commit = item.commit
-        print 'Checkout commit: '+str(commit)
-        self.repository.head.reset(commit) # reset head to commit
-        self.commits.loadColors()
-        item.setBackground(QColor('lightgreen'))
+        self.repository.head.reset(commit) # Reset head to commit
+        self.branches.refresh()
+        self.commits.refresh()
     def loadLayout(self):
         # BranchList and CommitList
         branchesAndCommits = QVBoxLayout()
         branchesLabel = QLabel('Branches')
-        branchesLabel.setAlignment( Qt.AlignHCenter )
-        branchesAndCommits.addWidget( branchesLabel )
+        branchesLabelandRef = QHBoxLayout()
+        branchesLabelandRef.addWidget(branchesLabel)
+        branchesLabelandRef.addWidget(self.refresh)
+        branchesAndCommits.addLayout( branchesLabelandRef )
         branchesAndCommits.addWidget(self.branches)
         branchesAndCommits.addWidget(self.pickBranch)
         commitsLabel = QLabel('Commits')
-        commitsLabel.setAlignment( Qt.AlignHCenter )
         branchesAndCommits.addWidget( commitsLabel )
         branchesAndCommits.addWidget(self.commits)
         branchesAndCommits.addWidget(self.pickCommit)
         # Functions and View
-        functionsAndView = QVBoxLayout()
-        functionsAndView.addWidget(self.functions)
-        functionsAndView.addWidget(self.view)
+        # functionsAndView = QVBoxLayout()
+        # functionsAndView.addWidget(self.functions)
+        # functionsAndView.addWidget(self.view)
         # Main container
         container = QHBoxLayout()
         container.addLayout(branchesAndCommits)
-        container.addLayout(functionsAndView)
+        # container.addLayout(functionsAndView)
         self.setLayout(container)
 
 class BranchList(QListWidget):
-    def __init__(self, branchList):
+    def __init__(self, repository):
         QListWidget.__init__(self)
-        self.setWindowTitle('Branches [*]')
-        self.branches = branchList
+        self.setWindowTitle('Branches')
+        self.repository = repository
         self.loadBranches()
         self.loadColors()
     def loadBranches(self):
-        for branch in self.branches:
+        for branch in self.repository.heads:
             item = BranchListItem(branch)
             self.addItem(item)
     def loadColors(self):
+        '''Alternates lightgray and white with green for the current HEAD'''
         count = 0
         for i in range(self.count()):
             item = self.item(i)
-            if count%2 == 0:
+            if item.branch == self.repository.head.ref:
+                item.setBackground(QColor('lightgreen'))
+            elif count%2 == 0:
                 item.setBackground(QColor('lightgray'))
             else:
                 item.setBackground(QColor('white'))
             count+=1
-    def refresh(self, newBranchList=None):
-        if newBranchList is not None:
-            self.branches = newBranchList
+    def refresh(self):
         self.clear()
         self.loadBranches()
+        self.loadColors()
 
 class BranchListItem(QListWidgetItem):
     def __init__(self, branch):
         QListWidgetItem.__init__(self)
         self.branch = branch
-        self.setText(self.branch.name) #===
+        self.setText(self.branch.name)
         self.setTextAlignment(Qt.AlignHCenter)
         self.setSizeHint(QSize(self.sizeHint().width(), 30))
 
 class CommitList(QListWidget):
-    def __init__(self, commitList):
+    def __init__(self, repository):
         QListWidget.__init__(self)
-        self.setWindowTitle('Commit History [*]')
-        self.commits = commitList
+        self.setWindowTitle('Commit History')
+        self.repository = repository
         self.loadCommits()
         self.loadColors()
         self.setWordWrap(True)
     def loadCommits(self):
-        for commit in self.commits:
+        for commit in self.repository.iter_commits(): #=== Get commits from branch, not repository... otherwise will remove commits greater than currently selected date
             item = CommitListItem(commit)
             self.addItem(item)
     def loadColors(self):
         count = 0
         for i in range(self.count()):
             item = self.item(i)
-            if count%2 == 0:
+            if item.commit == self.repository.head.ref.commit: #===
+                item.setBackground(QColor('lightgreen'))
+            elif count%2 == 0:
                 item.setBackground(QColor('lightgray'))
             else:
                 item.setBackground(QColor('white'))
             count+=1
-    def refresh(self, newCommitList=None):
-        if newCommitList is not None:
-            self.commits = newCommitList
+    def refresh(self):
         self.clear()
         self.loadCommits()
         self.loadColors()
