@@ -23,6 +23,7 @@ class RepositoryViewer(QWidget):
         self.pickBranch.setMinimumHeight(50)
         self.pickCommit = QPushButton('Checkout this commit')
         self.pickCommit.setMinimumHeight(50)
+        self.functions = FunctionsBar( self.repository )
     def loadFunctions(self):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
@@ -68,19 +69,45 @@ class RepositoryViewer(QWidget):
         branchesAndCommits.addWidget(self.commits)
         branchesAndCommits.addWidget(self.pickCommit)
         # Functions and View
-        # functionsAndView = QVBoxLayout()
-        # functionsAndView.addWidget(self.functions)
+        functionsAndView = QVBoxLayout()
+        functionsAndView.addWidget(self.functions)
         # functionsAndView.addWidget(self.view)
         # Main container
         container = QHBoxLayout()
         container.addLayout(branchesAndCommits)
-        # container.addLayout(functionsAndView)
+        container.addLayout(functionsAndView)
         self.setLayout(container)
 
 class FunctionsBar(QWidget): #===
     def __init__(self, repository):
         QWidget.__init__(self)
         self.repository = repository
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def loadObjects(self):
+        self.log = QPushButton('Log')
+        self.log.setToolTip('View the log of git commands')
+        self.console = QPushButton('Console')
+        self.console.setToolTip('Open the console to run more sophisticated git commands')
+        self.merge = QPushButton('Merge Tool')
+        self.merge.setToolTip('Begin the process of merging a commit into the current status')
+    def loadFunctions(self): #===
+        self.log.clicked.connect( self.clickLog )
+        self.console.clicked.connect( self.clickConsole )
+        self.merge.clicked.connect( self.clickMerge )
+    def loadLayout(self):
+        container = QHBoxLayout()
+        container.addWidget(self.log)
+        container.addWidget(self.console)
+        container.addWidget(self.merge)
+        self.setLayout(container)
+    def clickLog(self): #===
+        print 'log clicked'
+    def clickConsole(self): #===
+        print 'console clicked'
+    def clickMerge(self): #===
+        print 'merge clicked'
 
 class BranchList(QListWidget):
     def __init__(self, repository):
