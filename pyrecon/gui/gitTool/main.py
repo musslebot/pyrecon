@@ -157,7 +157,7 @@ class CommitListItem(QListWidgetItem):
         self.message = str(self.commit.message)
 
 class DirtyHandler(QWidget): #===
-    '''Class for handling a dirty repository.'''
+    '''Class for handling a dirty repository. Display modified/untracked files and allow user to handle them for a stash or push.'''
     def __init__(self, repository):
         QWidget.__init__(self)
         self.repository = repository
