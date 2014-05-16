@@ -1,4 +1,4 @@
-import pyrecon, time, subprocess, os
+import pyrecon, time, subprocess, os, sys
 from git import *
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -108,7 +108,7 @@ class FunctionsBar(QWidget): #===
         self.functionView.addWidget( CommandConsole(self.repository) ) # 1st index: Console
         # self.functionView.addWidget() # 2nd index: Merge #===
         # self.functionView.addWidget() # 3rd index: Branch #===
-    def loadFunctions(self): #===
+    def loadFunctions(self):
         self.log.clicked.connect( self.clickLog )
         self.console.clicked.connect( self.clickConsole )
         self.merge.clicked.connect( self.clickMerge )
@@ -125,11 +125,11 @@ class FunctionsBar(QWidget): #===
         container.addLayout(buttons)
         container.addWidget(self.functionView)
         self.setLayout(container)
-    def clickLog(self): #===
+    def clickLog(self):
         ret = subprocess.check_output(['git', 'log'])
         self.functionView.widget(0).setText(ret)
         self.functionView.setCurrentIndex(0)
-    def clickConsole(self): #===
+    def clickConsole(self):
         ret = subprocess.check_output(['git', 'status'])
         self.functionView.widget(1).output.setText(ret)
         self.functionView.setCurrentIndex(1)
@@ -267,13 +267,14 @@ class CommandConsole(QWidget):
         container.addLayout(inputBox)
         container.addLayout(outputBox)
         self.setLayout(container)
-    def subprocessCommand(self): #===
+    def subprocessCommand(self):
         cmdList = self.inputLine.text().split(' ')
-        print 'run command', cmdList
         try:
             rets = subprocess.check_output( cmdList )
-        except CalledProcessError:
-            rets = str(CalledProcessError)
+        except subprocess.CalledProcessError:
+            rets = 'Error running command: '+str(cmdList)+'\n'+str(subprocess.CalledProcessError)
+        except Exception, e:
+            rets = 'Error running command: '+str(cmdList)+'\n'+str(e)+'\n'+e.__doc__+'\n'+e.message
         self.output.setText( rets )
 
 def main(repository=None):
