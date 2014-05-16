@@ -9,6 +9,7 @@ class RepositoryViewer(QWidget):
         QWidget.__init__(self)
         self.repository = repository # The repository being used
         self.setWindowTitle('Repository - '+str(self.repository.working_dir))
+        os.chdir(self.repository.working_dir) # Switch directory to repository's directory
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
@@ -24,7 +25,7 @@ class RepositoryViewer(QWidget):
         self.pickCommit = QPushButton('Checkout this commit')
         self.pickCommit.setMinimumHeight(50)
         self.functions = FunctionsBar( self.repository )
-        self.view = QWidget() #=== placeholder
+        self.view = QStackedWidget() #===
     def loadFunctions(self):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
@@ -32,7 +33,7 @@ class RepositoryViewer(QWidget):
     def refresh(self):
         '''Refresh lists to match current repository status'''
         self.branches.refresh()
-        self.commits.refresh()
+        self.commits.refresh() #=== will remove commits more recent than the one currently checkedout
     def checkoutBranch(self):
         '''Checkout branch and refresh() lists'''
         # Retrieve branch object
@@ -46,6 +47,7 @@ class RepositoryViewer(QWidget):
         except GitCommandError:
             if self.repository.is_dirty():
                 print 'dirty repository: develop handler' #=== handle dirty working directory
+        self.functions.clickConsole()
     def checkoutCommit(self):
         '''Reset HEAD to commit and refresh() lists'''
         # Retrive commit object
@@ -55,6 +57,8 @@ class RepositoryViewer(QWidget):
         self.branches.refresh()
         # self.commits.refresh() # removes commits more recent than the one being checkedout
         self.commits.loadColors()
+        # Display console
+        self.functions.clickConsole()
     def loadLayout(self):
         # BranchList and CommitList
         branchesAndCommits = QVBoxLayout()
@@ -71,8 +75,8 @@ class RepositoryViewer(QWidget):
         branchesAndCommits.addWidget(self.pickCommit)
         # Functions and View
         functionsAndView = QVBoxLayout()
-        functionsAndView.addWidget(self.functions)
         functionsAndView.addWidget(self.view)
+        functionsAndView.addWidget(self.functions)
         # Main container
         container = QHBoxLayout()
         container.addLayout(branchesAndCommits)
@@ -95,7 +99,12 @@ class FunctionsBar(QWidget): #===
         self.merge.setToolTip('Begin the process of merging a commit into the current status')
         self.branch = QPushButton('New Branch')
         self.branch.setToolTip('Create a new branch from the currently selected commit')
-        self.functionView = QStackedWidget() #=== place holder for displaying function-related widgets
+        self.functionView = QStackedWidget()
+        # Load functions into QStackedWidget()
+        self.functionView.addWidget( QTextEdit() ) # 0th index: Log
+        self.functionView.addWidget( CommandConsole(self.repository) ) # 1st index: Console
+        # self.functionView.addWidget() # 2nd index: Merge #===
+        # self.functionView.addWidget() # 3rd index: Branch #===
     def loadFunctions(self): #===
         self.log.clicked.connect( self.clickLog )
         self.console.clicked.connect( self.clickConsole )
@@ -112,11 +121,13 @@ class FunctionsBar(QWidget): #===
         container.addWidget(self.functionView)
         self.setLayout(container)
     def clickLog(self): #===
-        print 'log clicked'
+        ret = subprocess.check_output(['git', 'log'])
+        self.functionView.widget(0).setText(ret)
+        self.functionView.setCurrentIndex(0)
     def clickConsole(self): #===
-        print 'console clicked'
-        console = CommandConsole(self.repository)
-        self.functionView.addWidget(console)
+        ret = subprocess.check_output(['git', 'status'])
+        self.functionView.widget(1).output.setText(ret)
+        self.functionView.setCurrentIndex(1)
     def clickMerge(self): #===
         print 'merge clicked'
     def clickBranch(self): #===
@@ -234,31 +245,29 @@ class CommandConsole(QWidget):
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
-        print self.repository.working_dir #===
-        os.chdir(self.repository.working_dir)
+        self.subprocessCommand() # Run the default command
     def loadObjects(self):
-        self.inputLine = QLineEdit('Enter commands here, then press enter!')
+        self.inputLine = QLineEdit('git status')
         self.output = QTextEdit()
     def loadFunctions(self):
         self.inputLine.returnPressed.connect( self.subprocessCommand )
     def loadLayout(self):
         inputBox = QHBoxLayout()
         inputBox.addWidget( self.inputLine )
-        
         outputBox = QHBoxLayout()
         outputBox.addWidget( self.output )
-        
         container = QVBoxLayout()
         container.addLayout(inputBox)
         container.addLayout(outputBox)
         self.setLayout(container)
     def subprocessCommand(self): #===
-        print 'run command',
         cmdList = self.inputLine.text().split(' ')
-        print cmdList
-        rets = subprocess.check_output( cmdList )
+        print 'run command', cmdList
+        try:
+            rets = subprocess.check_output( cmdList )
+        except CalledProcessError:
+            rets = str(CalledProcessError)
         self.output.setText( rets )
-
 
 def main(repository=None):
     '''Pass in a path to git repository... return populated RepositoryViewer object'''
