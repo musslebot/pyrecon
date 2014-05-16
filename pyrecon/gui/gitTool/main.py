@@ -1,4 +1,4 @@
-import pyrecon, time
+import pyrecon, time, subprocess
 from git import *
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -24,6 +24,7 @@ class RepositoryViewer(QWidget):
         self.pickCommit = QPushButton('Checkout this commit')
         self.pickCommit.setMinimumHeight(50)
         self.functions = FunctionsBar( self.repository )
+        self.view = QWidget() #=== placeholder
     def loadFunctions(self):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
@@ -52,7 +53,7 @@ class RepositoryViewer(QWidget):
         commit = item.commit
         self.repository.head.reset(commit) # Reset head to commit
         self.branches.refresh()
-        # self.commits.refresh() # removes more recent commits
+        # self.commits.refresh() # removes commits more recent than the one being checkedout
         self.commits.loadColors()
     def loadLayout(self):
         # BranchList and CommitList
@@ -71,7 +72,7 @@ class RepositoryViewer(QWidget):
         # Functions and View
         functionsAndView = QVBoxLayout()
         functionsAndView.addWidget(self.functions)
-        # functionsAndView.addWidget(self.view)
+        functionsAndView.addWidget(self.view)
         # Main container
         container = QHBoxLayout()
         container.addLayout(branchesAndCommits)
@@ -92,22 +93,34 @@ class FunctionsBar(QWidget): #===
         self.console.setToolTip('Open the console to run more sophisticated git commands')
         self.merge = QPushButton('Merge Tool')
         self.merge.setToolTip('Begin the process of merging a commit into the current status')
+        self.branch = QPushButton('New Branch')
+        self.branch.setToolTip('Create a new branch from the currently selected commit')
+        self.functionView = QStackedWidget() #=== place holder for displaying function-related widgets
     def loadFunctions(self): #===
         self.log.clicked.connect( self.clickLog )
         self.console.clicked.connect( self.clickConsole )
         self.merge.clicked.connect( self.clickMerge )
+        self.branch.clicked.connect( self.clickBranch )
     def loadLayout(self):
-        container = QHBoxLayout()
-        container.addWidget(self.log)
-        container.addWidget(self.console)
-        container.addWidget(self.merge)
+        container = QVBoxLayout()
+        buttons = QHBoxLayout()
+        buttons.addWidget(self.log)
+        buttons.addWidget(self.console)
+        buttons.addWidget(self.merge)
+        buttons.addWidget(self.branch)
+        container.addLayout(buttons)
+        container.addWidget(self.functionView)
         self.setLayout(container)
     def clickLog(self): #===
         print 'log clicked'
     def clickConsole(self): #===
         print 'console clicked'
+        console = CommandConsole(self.repository)
+        self.functionView.addWidget(console)
     def clickMerge(self): #===
         print 'merge clicked'
+    def clickBranch(self): #===
+        print 'branch clicked'
 
 class BranchList(QListWidget):
     def __init__(self, repository):
@@ -198,7 +211,7 @@ class DirtyHandler(QWidget): #===
         self.diff = self.repository.head.commit.diff(None)# Diff rel to working dir
         self.checkStatus()
     def checkStatus(self):
-        if (self.repository.is_dirty() and 
+        if (self.repository.is_dirty() and
             len(self.untracked) == 0 and 
             'up-to-date' in self.repository.git.pull()):
             print 'Files in the repository have been modified'
@@ -213,9 +226,50 @@ class DirtyHandler(QWidget): #===
             #=== what to do with untracked files? add, rm
             #=== ask to stash or push
             return
-def main(repository):
+
+class CommandConsole(QWidget):
+    def __init__(self, repository):
+        QWidget.__init__(self)
+        self.repository = repository
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def loadObjects(self):
+        self.inputLine = QLineEdit('Enter commands here, then press enter!')
+        self.output = QLabel()
+    def loadFunctions(self):
+        self.inputLine.returnPressed.connect( self.subprocessCommand )
+    def loadLayout(self):
+        inputBox = QHBoxLayout()
+        inputBox.addWidget( self.inputLine )
+        
+        outputBox = QHBoxLayout()
+        outputBox.addWidget( self.output )
+        
+        container = QVBoxLayout()
+        container.addLayout(inputBox)
+        container.addLayout(outputBox)
+        self.setLayout(container)
+    def subprocessCommand(self): #===
+        print 'run command'
+        cmdList = self.inputLine.text().split(' ')
+        print cmdList
+        rets = subprocess.check_output( cmdList )
+        self.output.setText( rets )
+
+
+def main(repository=None):
     '''Pass in a path to git repository... return populated RepositoryViewer object'''
+    if repository is None:
+        #=== Ask to init repository
+        print 'None as repository, open search or init'
+        return
+    # Open repository for gitTool
     repo = Repo(repository) # Open repository as GitPython Repo object
+    if repo.is_dirty():
+        #=== DirtyHandler()
+        print 'repository is dirty ;)'
+        return
     return RepositoryViewer(repo)
 
 #=== TEST SCRIPT
