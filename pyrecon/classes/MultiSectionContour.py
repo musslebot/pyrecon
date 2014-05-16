@@ -2,49 +2,6 @@ import re
 from collections import OrderedDict
 from pyrecon.main import openSeries
 
-
-class Dendrite(MultiSectionContour):
-    def __init__(self, name=None, series=None):
-        MultiSectionContour.__init__(self, name, series)
-        data = {}
-    def loadData(self):
-        return
-        
-class Axon(MultiSectionContour):
-    def __init__(self, name=None, series=None):
-        MultiSectionContour.__init__(self, name, series)
-        data = {}
-    def loadData(self):
-        return
-
-class Spine(MultiSectionContour):
-    def __init__(self, name=None, series=None):
-        MultiSectionContour.__init__(self, name, series)
-        data = {}
-    def loadData(self):
-        return
-
-class SER(MultiSectionContour):
-    def __init__(self, name=None, series=None):
-        MultiSectionContour.__init__(self, name, series)
-        data = {}
-    def loadData(self):
-        return
-
-class CFA(MultiSectionContour):
-    def __init__(self, name=None, series=None):
-        MultiSectionContour.__init__(self, name, series)
-        data = {}
-    def loadData(self):
-        return
-
-class C(MultiSectionContour):
-    def __init__(self, name=None, series=None):
-        MultiSectionContour.__init__(self, name, series)
-        data = {}
-    def loadData(self):
-        return
-
 class MultiSectionContour:
     '''Object with data representing a Contour that spans multiple sections. Example data includes: start, end, count, surface area, flat area, volume, etc. and depends on the type of object loaded into MultiSectionContour.'''
     def __init__(self, name=None, series=None):
@@ -153,3 +110,45 @@ class MultiSectionContour:
             return max([len(self.children[child]) for child in self.children])-1
         except:
             return 0
+
+class Dendrite(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+        
+class Axon(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+
+class Spine(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+
+class SER(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+
+class CFA(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
+
+class C(MultiSectionContour):
+    def __init__(self, name=None, series=None):
+        MultiSectionContour.__init__(self, name, series)
+        data = {}
+    def loadData(self):
+        return
