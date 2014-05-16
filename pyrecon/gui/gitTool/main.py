@@ -90,6 +90,7 @@ class FunctionsBar(QWidget): #===
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
+        self.clickConsole()
     def loadObjects(self):
         self.log = QPushButton('Log')
         self.log.setToolTip('View the log of git commands')
@@ -99,6 +100,8 @@ class FunctionsBar(QWidget): #===
         self.merge.setToolTip('Begin the process of merging a commit into the current status')
         self.branch = QPushButton('New Branch')
         self.branch.setToolTip('Create a new branch from the currently selected commit')
+        self.push = QPushButton('Push new commit')
+        self.push.setToolTip('Create a new commit for the current status and push to the chosen branch')
         self.functionView = QStackedWidget()
         # Load functions into QStackedWidget()
         self.functionView.addWidget( QTextEdit() ) # 0th index: Log
@@ -110,6 +113,7 @@ class FunctionsBar(QWidget): #===
         self.console.clicked.connect( self.clickConsole )
         self.merge.clicked.connect( self.clickMerge )
         self.branch.clicked.connect( self.clickBranch )
+        self.push.clicked.connect( self.clickPush )
     def loadLayout(self):
         container = QVBoxLayout()
         buttons = QHBoxLayout()
@@ -117,6 +121,7 @@ class FunctionsBar(QWidget): #===
         buttons.addWidget(self.console)
         buttons.addWidget(self.merge)
         buttons.addWidget(self.branch)
+        buttons.addWidget(self.push)
         container.addLayout(buttons)
         container.addWidget(self.functionView)
         self.setLayout(container)
@@ -132,6 +137,8 @@ class FunctionsBar(QWidget): #===
         print 'merge clicked'
     def clickBranch(self): #===
         print 'branch clicked'
+    def clickPush(self): #===
+        print 'push clicked'
 
 class BranchList(QListWidget):
     def __init__(self, repository):
