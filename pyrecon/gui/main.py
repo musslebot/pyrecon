@@ -21,6 +21,10 @@ class PyreconMainWindow(QMainWindow):
         self.helpMenu = self.menuBar().addMenu("&Help")
     def loadToolsMenu(self):
         # 1) Create Actions
+        # - gitTool
+        gitAction = QAction( QIcon(), 'gitTool', self)
+        gitAction.triggered.connect( self.loadGitTool )
+        gitAction.setStatusTip( 'Open git widget' )
         # - mergeTool
         mergeAction = QAction( QIcon(), 'mergeTool', self ) #QIcon() is null, but necessary for Action creation
         mergeAction.triggered.connect( self.loadMergeTool )
@@ -38,6 +42,7 @@ class PyreconMainWindow(QMainWindow):
         curateAction.triggered.connect( self.loadCurationTool )
         curateAction.setStatusTip( 'Open curation widget' )
         # 2) Add actions to toolbars
+        self.toolsMenu.addAction( gitAction )
         self.toolsMenu.addAction( mergeAction )
         self.toolsMenu.addAction( calibAction )
         self.toolsMenu.addAction( excelAction )
@@ -72,6 +77,9 @@ class PyreconMainWindow(QMainWindow):
         self.excelTool = excelToolWindow(self)
         self.excelSelector.setWidget( self.excelTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.excelSelector)
+    def loadGitTool(self):
+        from pyrecon.gui.gitTool.main import main as gitMain
+        self.setCentralWidget( gitMain() ) 
 
 class SectionView(QWidget): #===
     def __init__(self, section):
@@ -219,5 +227,5 @@ if __name__ == '__main__':
     app = QApplication.instance()
     if app == None:
         app = QApplication([])
-    a = pyreconMainWindow()
+    a = PyreconMainWindow()
     app.exec_()
