@@ -268,6 +268,7 @@ class CommandConsole(QWidget):
         container.addLayout(outputBox)
         self.setLayout(container)
     def subprocessCommand(self):
+        '''Perform the command in self.inputLine and display the results'''
         cmdList = self.inputLine.text().split(' ')
         try:
             rets = subprocess.check_output( cmdList )
@@ -287,7 +288,7 @@ def main(repository=None):
     repo = Repo(repository) # Open repository as GitPython Repo object
     if repo.is_dirty():
         #=== DirtyHandler()
-        print 'repository is dirty ;)'
+        print 'repository is dirty, so dirty ;)'
         return
     return RepositoryViewer(repo)
 
