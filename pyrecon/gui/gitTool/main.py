@@ -1,4 +1,4 @@
-import pyrecon, time, subprocess
+import pyrecon, time, subprocess, os
 from git import *
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -234,9 +234,11 @@ class CommandConsole(QWidget):
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
+        print self.repository.working_dir #===
+        os.chdir(self.repository.working_dir)
     def loadObjects(self):
         self.inputLine = QLineEdit('Enter commands here, then press enter!')
-        self.output = QLabel()
+        self.output = QTextEdit()
     def loadFunctions(self):
         self.inputLine.returnPressed.connect( self.subprocessCommand )
     def loadLayout(self):
@@ -251,7 +253,7 @@ class CommandConsole(QWidget):
         container.addLayout(outputBox)
         self.setLayout(container)
     def subprocessCommand(self): #===
-        print 'run command'
+        print 'run command',
         cmdList = self.inputLine.text().split(' ')
         print cmdList
         rets = subprocess.check_output( cmdList )
