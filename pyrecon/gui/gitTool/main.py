@@ -33,12 +33,16 @@ class RepositoryViewer(QWidget):
     def refresh(self):
         '''Refresh lists to match current repository status'''
         self.branches.refresh()
-        self.commits.refresh() #=== will remove commits more recent than the one currently checkedout
-    def checkoutBranch(self):
+        self.commits.refresh() #=== will remove commits more recent than the one currently checkedout commit
+    def checkoutBranch(self, newBranch=None):
         '''Checkout branch and refresh() lists'''
-        # Retrieve branch object
-        item = self.branches.selectedItems().pop()
-        branch = item.branch
+        if not newBranch:
+            # Retrieve branch object
+            item = self.branches.selectedItems().pop()
+            branch = item.branch
+        else:
+            # Create branch
+            branch = repo.create_head(newBranch)
         try:
             branch.checkout() # Checkout branch
             # Refresh commitList with commits from new branch
@@ -46,8 +50,9 @@ class RepositoryViewer(QWidget):
             self.commits.refresh()
         except GitCommandError:
             if self.repository.is_dirty():
-                print 'dirty repository: develop handler' #=== handle dirty working directory
-        self.functions.clickConsole()
+                #=== handle dirty working directory
+                print 'dirty repository: develop handler'
+        self.functions.clickConsole() # Show new repo status
     def checkoutCommit(self):
         '''Reset HEAD to commit and refresh() lists'''
         # Retrive commit object
@@ -97,7 +102,7 @@ class FunctionsBar(QWidget): #===
         self.console = QPushButton('Console')
         self.console.setToolTip('Open the console to run more sophisticated git commands')
         self.merge = QPushButton('Merge Tool')
-        self.merge.setToolTip('Begin the process of merging a commit into the current status')
+        self.merge.setToolTip('Begin the process of merging two repository states')
         self.branch = QPushButton('New Branch')
         self.branch.setToolTip('Create a new branch from the currently selected commit')
         self.push = QPushButton('Push new commit')
