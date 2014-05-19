@@ -2,6 +2,7 @@ import pyrecon, time, subprocess, os, sys
 from git import *
 from PySide.QtCore import *
 from PySide.QtGui import *
+from dialogs import *
 
 class RepositoryViewer(QWidget):
     '''Provides a GUI for interacting with a GitPython repository'''
@@ -37,10 +38,14 @@ class RepositoryViewer(QWidget):
         self.commits.refresh() # will remove commits more recent than the one currently checkedout commit
     def checkoutBranch(self):
         '''Checkout branch and refresh() lists'''
-        if self.sender() == self.functions.branch: # Called from functionBar's branch button
-            # Create branch
-            branch = self.repository.create_head( NewBranchDialog(self.repository).branchName.text() )
-        else:
+        # Called from functionBar's new branch button
+        if self.sender() == self.functions.branch:
+            # Create branch via NewBranchDialog
+            branchDialog = NewBranchDialog(self.repository)
+            branchName = branchDialog.branchName.text()
+            branch = self.repository.create_head( branchName )
+        # Called from checkout branch button    
+        else: 
             # Retrieve branch object
             item = self.branches.selectedItems().pop()
             branch = item.branch
@@ -105,9 +110,9 @@ class FunctionsBar(QWidget): #===
         self.merge.setToolTip('Begin the process of merging two repository states')
         self.branch = QPushButton('New Branch')
         self.branch.setToolTip('Create a new branch from the currently selected commit')
-        self.pull = QPushButton('Pull latest version')
+        self.pull = QPushButton('Pull From Repository')
         self.pull.setToolTip('Pulls the most current version into the local repository')
-        self.push = QPushButton('Push new version')
+        self.push = QPushButton('Push To Repository')
         self.push.setToolTip('Create a new commit for the current status and push to the chosen branch')
         self.functionView = QStackedWidget()
         # Load functions into QStackedWidget()
@@ -144,8 +149,9 @@ class FunctionsBar(QWidget): #===
         self.functionView.setCurrentIndex(1)
     def clickMerge(self): #===
         print 'merge clicked'
-    def clickBranch(self): #===
-        print 'branch clicked'
+    def clickBranch(self):
+        # See RepositoryViewer.checkoutBranch()
+        return
     def clickPull(self): #===
         print 'pull clicked'
     def clickPush(self): #===
@@ -230,58 +236,6 @@ class CommitListItem(QListWidgetItem):
         self.hexsha = str(self.commit.hexsha)
         self.message = str(self.commit.message)
 
-class DirtyHandler(QDialog): #===
-    '''Class for handling a dirty repository. Display modified/untracked files and allow user to handle them for a stash or push.'''
-    def __init__(self, repository):
-        QDialog.__init__(self)
-        self.repository = repository
-        # Untracked files
-        self.untracked = self.repository.untracked_files
-        self.diff = self.repository.head.commit.diff(None)# Diff rel to working dir
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-        self.checkStatus()
-        self.exec_()
-    def loadObjects(self):
-        self.info = QTextEdit() # Where "dirty" issues are displayed to user
-        self.stashButton = QPushButton('Stash the current state')
-        self.stashButton.setToolTip('This will save the current state into the stash, which can be retrieved at a later time.')
-        self.cleanButton = QPushButton('Discard the current state')
-        self.cleanButton.setToolTip('This will revert the current state into the most recent commit. Data can NOT be retrieved.')
-        self.cancelButton = QPushButton('Cancel')
-    def loadFunctions(self):
-        self.stashButton.clicked.connect( self.stash )
-        self.cleanButton.clicked.connect( self.clean )
-    def loadLayout(self):
-        container = QVBoxLayout()
-        container.addWidget(self.info)
-        container.addWidget(self.stashButton)
-        container.addWidget(self.cleanButton)
-        self.setLayout(container)
-    def stash(self): #===
-        '''Stash the current state'''
-        print ('stashed')
-    def clean(self): #===
-        '''Remove modified/untracked files'''
-        print ('cleaned')
-    def checkStatus(self):
-        if (self.repository.is_dirty() and
-            len(self.untracked) == 0 and 
-            'up-to-date' in self.repository.git.pull()):
-            print 'Files in the repository have been modified'
-            #=== show changes
-            #=== ask to stash or push
-            return
-        elif (self.repository.is_dirty() and
-            len(self.untracked) > 0 and
-            'up-to-date' in self.repository.git.pull()):
-            print 'Files have been modified and there are untracked files.'
-            #=== show changes
-            #=== what to do with untracked files? add, rm
-            #=== ask to stash or push
-            return
-
 class CommandConsole(QWidget):
     def __init__(self, repository):
         QWidget.__init__(self)
@@ -315,56 +269,23 @@ class CommandConsole(QWidget):
             rets = 'Error running command: '+str(cmdList)+'\n'+str(e)+'\n'+e.__doc__+'\n'+e.message
         self.output.setText( rets )
 
-class NewBranchDialog(QDialog): #===
-    '''Dialog for creating a new branch.'''
-    def __init__(self, repository):
-        QDialog.__init__(self)
-        self.setWindowTitle('Create New Branch')
-        self.repository = repository
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-        self.exec_()
-    def loadObjects(self):
-        self.textLabel1 = QLabel('This will create a new branch named:')
-        self.branchName = QTextEdit('<enter new branch name>')
-        self.textLabel2 = QLabel('from the current state of the repository:\n'+self.repository.head.commit.hexsha)
-        self.acceptBut = QPushButton('Make new branch')
-        self.cancelBut = QPushButton('Cancel')
-    def loadFunctions(self):
-        self.acceptBut.clicked.connect( self.userAccept )
-        self.cancelBut.clicked.connect( self.userReject )
-    def loadLayout(self):
-        info = QVBoxLayout()
-        info.addWidget(self.textLabel1)
-        info.addWidget(self.branchName)
-        info.addWidget(self.textLabel2)
-        buttons = QHBoxLayout()
-        buttons.addWidget(self.cancelBut)
-        buttons.addWidget(self.acceptBut)
-        container = QVBoxLayout()
-        container.addLayout(info)
-        container.addLayout(buttons)
-        self.setLayout(container)
-    def userAccept(self):
-        self.accept()
-        self.done()
-    def userReject(self):
-        self.reject()
-        self.done()
-
 def main(repository=None):
     '''Pass in a path to git repository... return populated RepositoryViewer object'''
-    if repository is None:
-        #=== Ask to init repository
-        print 'None as repository, open search or init'
+    if repository is None: #===
+        # Browse for folder 
+        print 'None as repository' #===
+    
+    try: # Open repository for gitTool
+        repo = Repo(repository)
+    except InvalidGitRepositoryError: #===
+        InvalidRepoHandler(repository)
+        #=== set up remote repo?
+        repo = Repo(repository)
+    except: #===
+        print 'Problem loading repository, quitting...' #===
         return
-    # Open repository for gitTool
-    repo = Repo(repository) # Open repository as GitPython Repo object
-    if repo.is_dirty():
-        #=== DirtyHandler()
-        print 'repository is dirty, so dirty ;)'
-        return
+    if repo.is_dirty(untracked_files=True): #=== should check for untracked_files as well?
+        a = DirtyHandler(repo)
     return RepositoryViewer(repo)
 
 #=== TEST SCRIPT
@@ -372,6 +293,6 @@ if __name__ == '__main__':
     app = QApplication.instance()
     if app == None:
         app = QApplication([])
-    a = main('~/Documents/pyreconGitTesting')
+    a = main('/home/michaelm/Documents/cheese')
     a.show()
     app.exec_()
