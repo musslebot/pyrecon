@@ -30,19 +30,20 @@ class RepositoryViewer(QWidget):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
         self.refreshBut.clicked.connect( self.refresh )
+        self.functions.branch.clicked.connect( self.checkoutBranch )
     def refresh(self):
         '''Refresh lists to match current repository status'''
         self.branches.refresh()
-        self.commits.refresh() #=== will remove commits more recent than the one currently checkedout commit
-    def checkoutBranch(self, newBranch=None):
+        self.commits.refresh() # will remove commits more recent than the one currently checkedout commit
+    def checkoutBranch(self):
         '''Checkout branch and refresh() lists'''
-        if not newBranch:
+        if self.sender() == self.functions.branch: # Called from functionBar's branch button
+            # Create branch
+            branch = self.repository.create_head( NewBranchDialog(self.repository).branchName.text() )
+        else:
             # Retrieve branch object
             item = self.branches.selectedItems().pop()
             branch = item.branch
-        else:
-            # Create branch
-            branch = repo.create_head(newBranch)
         try:
             branch.checkout() # Checkout branch
             # Refresh commitList with commits from new branch
@@ -50,8 +51,7 @@ class RepositoryViewer(QWidget):
             self.commits.refresh()
         except GitCommandError:
             if self.repository.is_dirty():
-                #=== handle dirty working directory
-                print 'dirty repository: develop handler'
+                handler = DirtyHandler(self.repository)
         self.functions.clickConsole() # Show new repo status
     def checkoutCommit(self):
         '''Reset HEAD to commit and refresh() lists'''
@@ -105,7 +105,9 @@ class FunctionsBar(QWidget): #===
         self.merge.setToolTip('Begin the process of merging two repository states')
         self.branch = QPushButton('New Branch')
         self.branch.setToolTip('Create a new branch from the currently selected commit')
-        self.push = QPushButton('Push new commit')
+        self.pull = QPushButton('Pull latest version')
+        self.pull.setToolTip('Pulls the most current version into the local repository')
+        self.push = QPushButton('Push new version')
         self.push.setToolTip('Create a new commit for the current status and push to the chosen branch')
         self.functionView = QStackedWidget()
         # Load functions into QStackedWidget()
@@ -118,15 +120,17 @@ class FunctionsBar(QWidget): #===
         self.console.clicked.connect( self.clickConsole )
         self.merge.clicked.connect( self.clickMerge )
         self.branch.clicked.connect( self.clickBranch )
+        self.pull.clicked.connect( self.clickPull )
         self.push.clicked.connect( self.clickPush )
     def loadLayout(self):
         container = QVBoxLayout()
         buttons = QHBoxLayout()
         buttons.addWidget(self.log)
         buttons.addWidget(self.console)
-        buttons.addWidget(self.merge)
-        buttons.addWidget(self.branch)
+        buttons.addWidget(self.pull)
         buttons.addWidget(self.push)
+        buttons.addWidget(self.branch)
+        buttons.addWidget(self.merge)
         container.addLayout(buttons)
         container.addWidget(self.functionView)
         self.setLayout(container)
@@ -142,6 +146,8 @@ class FunctionsBar(QWidget): #===
         print 'merge clicked'
     def clickBranch(self): #===
         print 'branch clicked'
+    def clickPull(self): #===
+        print 'pull clicked'
     def clickPush(self): #===
         print 'push clicked'
 
@@ -224,15 +230,41 @@ class CommitListItem(QListWidgetItem):
         self.hexsha = str(self.commit.hexsha)
         self.message = str(self.commit.message)
 
-class DirtyHandler(QWidget): #===
+class DirtyHandler(QDialog): #===
     '''Class for handling a dirty repository. Display modified/untracked files and allow user to handle them for a stash or push.'''
     def __init__(self, repository):
-        QWidget.__init__(self)
+        QDialog.__init__(self)
         self.repository = repository
         # Untracked files
         self.untracked = self.repository.untracked_files
         self.diff = self.repository.head.commit.diff(None)# Diff rel to working dir
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
         self.checkStatus()
+        self.exec_()
+    def loadObjects(self):
+        self.info = QTextEdit() # Where "dirty" issues are displayed to user
+        self.stashButton = QPushButton('Stash the current state')
+        self.stashButton.setToolTip('This will save the current state into the stash, which can be retrieved at a later time.')
+        self.cleanButton = QPushButton('Discard the current state')
+        self.cleanButton.setToolTip('This will revert the current state into the most recent commit. Data can NOT be retrieved.')
+        self.cancelButton = QPushButton('Cancel')
+    def loadFunctions(self):
+        self.stashButton.clicked.connect( self.stash )
+        self.cleanButton.clicked.connect( self.clean )
+    def loadLayout(self):
+        container = QVBoxLayout()
+        container.addWidget(self.info)
+        container.addWidget(self.stashButton)
+        container.addWidget(self.cleanButton)
+        self.setLayout(container)
+    def stash(self): #===
+        '''Stash the current state'''
+        print ('stashed')
+    def clean(self): #===
+        '''Remove modified/untracked files'''
+        print ('cleaned')
     def checkStatus(self):
         if (self.repository.is_dirty() and
             len(self.untracked) == 0 and 
@@ -282,6 +314,44 @@ class CommandConsole(QWidget):
         except Exception, e:
             rets = 'Error running command: '+str(cmdList)+'\n'+str(e)+'\n'+e.__doc__+'\n'+e.message
         self.output.setText( rets )
+
+class NewBranchDialog(QDialog): #===
+    '''Dialog for creating a new branch.'''
+    def __init__(self, repository):
+        QDialog.__init__(self)
+        self.setWindowTitle('Create New Branch')
+        self.repository = repository
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.exec_()
+    def loadObjects(self):
+        self.textLabel1 = QLabel('This will create a new branch named:')
+        self.branchName = QTextEdit('<enter new branch name>')
+        self.textLabel2 = QLabel('from the current state of the repository:\n'+self.repository.head.commit.hexsha)
+        self.acceptBut = QPushButton('Make new branch')
+        self.cancelBut = QPushButton('Cancel')
+    def loadFunctions(self):
+        self.acceptBut.clicked.connect( self.userAccept )
+        self.cancelBut.clicked.connect( self.userReject )
+    def loadLayout(self):
+        info = QVBoxLayout()
+        info.addWidget(self.textLabel1)
+        info.addWidget(self.branchName)
+        info.addWidget(self.textLabel2)
+        buttons = QHBoxLayout()
+        buttons.addWidget(self.cancelBut)
+        buttons.addWidget(self.acceptBut)
+        container = QVBoxLayout()
+        container.addLayout(info)
+        container.addLayout(buttons)
+        self.setLayout(container)
+    def userAccept(self):
+        self.accept()
+        self.done()
+    def userReject(self):
+        self.reject()
+        self.done()
 
 def main(repository=None):
     '''Pass in a path to git repository... return populated RepositoryViewer object'''
