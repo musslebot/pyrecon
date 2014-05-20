@@ -60,16 +60,19 @@ class DirtyHandler(QDialog):
         self.stashButton.setToolTip('This will save the current state into the stash, which can be retrieved at a later time.')
         self.cleanButton = QPushButton('Discard the current state')
         self.cleanButton.setToolTip('This will revert the current state into the most recent commit. Data can NOT be retrieved.')
-        self.cancelButton = QPushButton('Cancel')
+        self.cancelButton = QPushButton('Do Nothing')
+        self.cancelButton.setToolTip('No changes will be made to the current state.')
     def loadFunctions(self):
         self.stashButton.clicked.connect( self.stash )
         self.cleanButton.clicked.connect( self.clean )
+        self.cancelButton.clicked.connect( self.cancel )
     def loadLayout(self):
         container = QVBoxLayout()
         container.addWidget(self.info)
         container.addWidget(self.stashButton)
         if len(self.untracked) > 0:
             container.addWidget(self.cleanButton)
+        container.addWidget(self.cancelButton)
         self.setLayout(container)
     def stash(self): #===
         '''Stash the current state, including untracked files'''
@@ -82,16 +85,22 @@ class DirtyHandler(QDialog):
         rets = subprocess.check_output( cmdList )
         confirm = QMessageBox()
         confirm.setText('The following changes will be made, are you sure?')
-        print rets #===
         confirm.setInformativeText(str(rets))
         confirm.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         ret = confirm.exec_()
         if ret == QMessageBox.Ok:
             rets = subprocess.check_output( ['git','clean','-f'] )
-            print rets
         else:
             print 'Changes were not made.'
             return
+        self.done(1)
+    def cancel(self):
+        msg = QMessageBox()
+        msg.setWindowTitle('Canceled')
+        msg.setText('You have decided to keep the current, modified state of the repository.')
+        msg.setInformativeText('If you wish to checkout another branch, you must first pull, commit, stash, or clean the repository.')
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
         self.done(1)
     def checkStatus(self):
         if (len(self.modified) > 0 and
@@ -140,3 +149,29 @@ class InvalidRepoHandler(QDialog):
         self.done(1)
     def clickNo(self):
         self.done(0)
+
+class RepositoryChanged(QDialog):
+    def __init__(self):
+        QDialog.__init__(self)
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def loadObjects(self):
+        return
+    def loadFunctions(self):
+        return
+    def loadLayout(self):
+        return
+
+class BrowseRepository(QDialog): #===
+    def __init__(self):
+        QDialog.__init__(self)
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+    def loadObjects(self):
+        return
+    def loadFunctions(self):
+        return
+    def loadLayout(self):
+        return
