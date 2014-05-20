@@ -3,7 +3,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 import subprocess, os
 
-class NewBranchDialog(QDialog): #===
+class NewBranchDialog(QDialog):
     '''Dialog for creating a new branch.'''
     def __init__(self, repository):
         QDialog.__init__(self)
@@ -35,7 +35,13 @@ class NewBranchDialog(QDialog): #===
         container.addLayout(buttons)
         self.setLayout(container)
     def userAccept(self):
-        self.done(1)
+        if subprocess.call(['git', 'check-ref-format', '--branch', str(self.branchName.text())]) != 0:
+            msg = QMessageBox()
+            msg.setText('The branch name you have entered is invalid. Please try again...')
+            msg.setInformativeText('From the documentation, git does NOT allow the following in branch names:\ntwo consecutive dots (..)\nASCII control characters (i.e. bytes whose values are lower than 040, or 177 DEL), space, tilde ~, caret ^, or colon :\nquestion-mark ?, asterisk *, or open bracket [\nbegin or end with a slash / or contain multiple consecutive slashes\nend with a dot .\na sequence @{\na back-slash \\')
+            msg.exec_()
+        else:
+            self.done(1)
     def userReject(self):
         self.done(0)
 
@@ -74,7 +80,7 @@ class DirtyHandler(QDialog):
             container.addWidget(self.cleanButton)
         container.addWidget(self.cancelButton)
         self.setLayout(container)
-    def stash(self): #===
+    def stash(self):
         '''Stash the current state, including untracked files'''
         cmdList = ['git', 'stash', 'save', '-u']
         rets = subprocess.check_output( cmdList )
@@ -97,7 +103,7 @@ class DirtyHandler(QDialog):
     def cancel(self):
         msg = QMessageBox()
         msg.setWindowTitle('Canceled')
-        msg.setText('You have decided to keep the current, modified state of the repository.')
+        msg.setText('You have decided to keep the modified state of the repository.')
         msg.setInformativeText('If you wish to checkout another branch, you must first pull, commit, stash, or clean the repository.')
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()

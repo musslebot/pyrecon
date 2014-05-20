@@ -25,26 +25,34 @@ class RepositoryViewer(QWidget):
         self.pickBranch.setMinimumHeight(50)
         self.pickCommit = QPushButton('Checkout this commit')
         self.pickCommit.setMinimumHeight(50)
-        self.functions = FunctionsBar( self.repository )
+        self.functions = FunctionsBar( self.repository, viewer=self )
         self.view = QStackedWidget() #===
     def loadFunctions(self):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
         self.refreshBut.clicked.connect( self.refresh )
-        self.functions.branch.clicked.connect( self.checkoutBranch )
-    def refresh(self):
+    def refresh(self): 
         '''Refresh lists to match current repository status'''
         self.branches.refresh()
         self.commits.refresh() # will remove commits more recent than the one currently checkedout commit
-    def checkoutBranch(self):
+    def checkoutBranch(self, lastTry=False, new=False):
         '''Checkout branch and refresh() lists'''
         # Called from functionBar's new branch button
-        if self.sender() == self.functions.branch:
+        if new:
             # Create branch via NewBranchDialog
             branchDialog = NewBranchDialog(self.repository)
-            branchName = branchDialog.branchName.text()
-            branch = self.repository.create_head( branchName )
-        # Called from checkout branch button    
+            if branchDialog.result(): # Result == 1
+                branchName = branchDialog.branchName.text()
+                branch = self.repository.create_head( branchName )
+                msg = QMessageBox()
+                msg.setText('Branch created: '+str(branchName))
+                msg.exec_()
+            elif not branchDialog.result(): # Result == 0
+                msg = QMessageBox()
+                msg.setText('Branch creation aborted...')
+                msg.exec_()
+                return
+        # Called from checkout branch button of BranchList
         else: 
             # Retrieve branch object
             item = self.branches.selectedItems().pop()
@@ -55,8 +63,10 @@ class RepositoryViewer(QWidget):
             self.branches.refresh()
             self.commits.refresh()
         except GitCommandError:
-            if self.repository.is_dirty():
-                handler = DirtyHandler(self.repository)
+            if not lastTry: # Give another chance to handle before aborting attempt
+                if self.repository.is_dirty():
+                    handler = DirtyHandler(self.repository)
+                self.checkoutBranch(lastTry=True)
         self.functions.clickConsole() # Show new repo status
     def checkoutCommit(self):
         '''Reset HEAD to commit and refresh() lists'''
@@ -94,9 +104,10 @@ class RepositoryViewer(QWidget):
         self.setLayout(container)
 
 class FunctionsBar(QWidget): #===
-    def __init__(self, repository):
+    def __init__(self, repository, viewer=None):
         QWidget.__init__(self)
         self.repository = repository
+        self.viewer = viewer
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
@@ -110,9 +121,9 @@ class FunctionsBar(QWidget): #===
         self.merge.setToolTip('Begin the process of merging two repository states')
         self.branch = QPushButton('New Branch')
         self.branch.setToolTip('Create a new branch from the currently selected commit')
-        self.pull = QPushButton('Pull From Repository')
-        self.pull.setToolTip('Pulls the most current version into the local repository')
-        self.push = QPushButton('Push To Repository')
+        self.pull = QPushButton('Update/Pull')
+        self.pull.setToolTip('Pulls the most current version of this branch into the local repository')
+        self.push = QPushButton('Commit/Push')
         self.push.setToolTip('Create a new commit for the current status and push to the chosen branch')
         self.functionView = QStackedWidget()
         # Load functions into QStackedWidget()
@@ -149,13 +160,23 @@ class FunctionsBar(QWidget): #===
         self.functionView.setCurrentIndex(1)
     def clickMerge(self): #===
         print 'merge clicked'
+        #=== begin mergeTool process
     def clickBranch(self):
-        # See RepositoryViewer.checkoutBranch()
-        return
-    def clickPull(self): #===
-        print 'pull clicked'
+        self.viewer.checkoutBranch(new=True)
+    def clickPull(self, lastTry=False):
+        '''Fetch and merge the most recent commit into the current state.'''
+        try:
+            self.repository.remotes.origin.pull() # pull from repo
+            self.clickConsole()
+            self.viewer.refresh()
+        except BaseException, e:
+            print 'Problem with pull()', e
+            if not lastTry:
+                a = DirtyHandler(self.repository)
+                self.clickPull(lastTry=True)
     def clickPush(self): #===
         print 'push clicked'
+        #=== begin commit process
 
 class BranchList(QListWidget):
     def __init__(self, repository):
@@ -205,6 +226,9 @@ class CommitList(QListWidget):
         for commit in self.repository.iter_commits(): #=== Get commits from branch, not repository... otherwise will remove commits greater than currently selected date
             item = CommitListItem(commit)
             self.addItem(item)
+        # Check current state; Provide handling
+        if self.repository.is_dirty(untracked_files=True): #=== should check for untracked_files as well?
+            a = DirtyHandler(self.repository)
     def loadColors(self):
         count = 0
         for i in range(self.count()):
@@ -271,10 +295,14 @@ class CommandConsole(QWidget):
 
 def main(repository=None):
     '''Pass in a path to git repository... return populated RepositoryViewer object'''
-    if repository is None: #===
-        # Browse for folder 
-        print 'None as repository' #===
-    
+    if repository is None: #=== replace this with new BrowseRepository dialog
+        # msg = QMessageBox()
+        # msg.setText('gitTool: Please browse for your repository')
+        # msg.exec_()
+        # # Browse for folder 
+        # browse = BrowseOutputDirectory()
+        # repository = browse.output
+        print ('NONE REPO') #===
     try: # Open repository for gitTool
         repo = Repo(repository)
     except InvalidGitRepositoryError: #===
@@ -284,8 +312,6 @@ def main(repository=None):
     except: #===
         print 'Problem loading repository, quitting...' #===
         return
-    if repo.is_dirty(untracked_files=True): #=== should check for untracked_files as well?
-        a = DirtyHandler(repo)
     return RepositoryViewer(repo)
 
 #=== TEST SCRIPT
@@ -293,6 +319,6 @@ if __name__ == '__main__':
     app = QApplication.instance()
     if app == None:
         app = QApplication([])
-    a = main('/home/michaelm/Documents/cheese')
+    a = main('/home/michaelm/Documents/pyreconGitTesting')
     a.show()
     app.exec_()
