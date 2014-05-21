@@ -169,6 +169,60 @@ class RepositoryChanged(QDialog):
     def loadLayout(self):
         return
 
+class MergeHandler(QDialog): #===
+    def __init__(self, repository):
+        QDialog.__init__(self)
+        self.setWindowTitle('Merge Manager')
+        self.repository = repository
+        self.branches = self.repository.branches
+
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.exec_()
+    def loadObjects(self):
+        # Select the branch/commit to be merged
+        self.srcBranchSelect = QComboBox()
+        self.srcBranchSelect.addItems(['<source branch>']+[branch.name for branch in self.branches])
+        self.srcCommitSelect = QComboBox()
+        self.srcCommitSelect.addItem('<select branch first>')
+        # Select the branch/commit to merge into
+        self.dstBranchSelect = QComboBox()
+        self.dstBranchSelect.addItems(['<destination branch>']+[branch.name for branch in self.branches])
+        self.dstCommitSelect = QComboBox()
+        self.dstCommitSelect.addItem('<select branch first>')
+        self.goButton = QPushButton('Start MergeTool')
+    def loadFunctions(self):
+        self.goButton.setMinimumHeight(50)
+        # add items to (src/dst)CommitSelect upon choice of branch
+        self.srcBranchSelect.currentIndexChanged.connect( self.updateCommits )
+        self.dstBranchSelect.currentIndexChanged.connect( self.updateCommits )
+    def loadLayout(self):
+        container = QVBoxLayout()
+        srcSelect = QVBoxLayout()
+        srcSelect.addWidget(QLabel('Merge This'))
+        srcSelect.addWidget(self.srcBranchSelect)
+        srcSelect.addWidget(self.srcCommitSelect)
+        dstSelect = QVBoxLayout()
+        dstSelect.addWidget(QLabel('Into This'))
+        dstSelect.addWidget(self.dstBranchSelect)
+        dstSelect.addWidget(self.dstCommitSelect)
+        selector = QHBoxLayout()
+        selector.addLayout( srcSelect )
+        selector.addLayout( dstSelect )
+        container.addLayout(selector)
+        container.addWidget(self.goButton)
+        self.setLayout(container)
+    def updateCommits(self, index):
+        branch = self.branches[index-1]
+        commits = [com for com in self.repository.iter_commits('origin/'+branch.name)]
+        if self.sender() == self.srcBranchSelect: # Update src commits
+            self.srcCommitSelect.clear()
+            self.srcCommitSelect.addItems(['<source commit>']+[com.message for com in commits])
+        elif self.sender() == self.dstBranchSelect: # Update dst commits
+            self.dstCommitSelect.clear()
+            self.dstCommitSelect.addItems(['<destination commit>']+[com.message for com in commits])
+
 class BrowseRepository(QDialog): #===
     def __init__(self):
         QDialog.__init__(self)
