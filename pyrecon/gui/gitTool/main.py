@@ -160,7 +160,7 @@ class FunctionsBar(QWidget): #===
         self.functionView.setCurrentIndex(1)
     def clickMerge(self): #===
         print 'merge clicked'
-        #=== begin mergeTool process
+        MergeHandler(self.repository)
     def clickBranch(self):
         self.viewer.checkoutBranch(new=True)
     def clickPull(self, lastTry=False):
@@ -186,7 +186,7 @@ class BranchList(QListWidget):
         self.loadBranches()
         self.loadColors()
     def loadBranches(self):
-        for branch in self.repository.heads:
+        for branch in self.repository.branches:
             item = BranchListItem(branch)
             self.addItem(item)
     def loadColors(self):
@@ -223,7 +223,7 @@ class CommitList(QListWidget):
         self.loadColors()
         self.setWordWrap(True)
     def loadCommits(self):
-        for commit in self.repository.iter_commits(): #=== Get commits from branch, not repository... otherwise will remove commits greater than currently selected date
+        for commit in self.repository.iter_commits('origin/'+str(self.repository.head.ref.name)):
             item = CommitListItem(commit)
             self.addItem(item)
         # Check current state; Provide handling
