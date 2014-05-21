@@ -34,7 +34,7 @@ class RepositoryViewer(QWidget):
     def refresh(self): 
         '''Refresh lists to match current repository status'''
         self.branches.refresh()
-        self.commits.refresh() # will remove commits more recent than the one currently checkedout commit
+        self.commits.refresh()
     def checkoutBranch(self, lastTry=False, new=False):
         '''Checkout branch and refresh() lists'''
         # Called from functionBar's new branch button
@@ -74,9 +74,7 @@ class RepositoryViewer(QWidget):
         item = self.commits.selectedItems().pop()
         commit = item.commit
         self.repository.head.reset(commit) # Reset head to commit
-        self.branches.refresh()
-        # self.commits.refresh() # removes commits more recent than the one being checkedout
-        self.commits.loadColors()
+        self.refresh()
         # Display console
         self.functions.clickConsole()
     def loadLayout(self):
