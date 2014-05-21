@@ -45,83 +45,74 @@ class NewBranchDialog(QDialog):
     def userReject(self):
         self.done(0)
 
-class DirtyHandler(QDialog):
+class DirtyHandler(QDialog): #===
     '''Class for handling a dirty repository. Display modified/untracked files and allow user to handle them via stash or clean.'''
     def __init__(self, repository):
         QDialog.__init__(self)
         self.repository = repository
-        os.chdir(self.repository.working_dir) # Switch directory to repository's directory
-        self.setWindowTitle('Modified Repository Handler')
-        self.diff = self.repository.head.commit.diff(None)# Diff rel to working dir
-        self.untracked = self.repository.untracked_files
-        self.modified = [diff.a_blob.name for diff in self.diff]
+        self.setWindowTitle('Dirty Repository Manager')
+
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
-        self.checkStatus()
-        self.exec_()
+
     def loadObjects(self):
-        self.info = QTextEdit() # Where "dirty" issues are displayed to user
-        self.stashButton = QPushButton('Stash the current state')
-        self.stashButton.setToolTip('This will save the current state into the stash, which can be retrieved at a later time.')
-        self.cleanButton = QPushButton('Discard the current state')
-        self.cleanButton.setToolTip('This will revert the current state into the most recent commit. Data can NOT be retrieved.')
-        self.cancelButton = QPushButton('Do Nothing')
-        self.cancelButton.setToolTip('No changes will be made to the current state.')
+        self.info = QTextEdit()# Info about the current dirty state
+        self.saveButton = QPushButton('Save current state')
+        self.commitButton = QPushButton('Commit a new version')
+        self.forceUpdateButton = QPushButton('Overwrite with most recent version')
+        self.forceResetButton = QPushButton('Reset to state before modification')
+
     def loadFunctions(self):
-        self.stashButton.clicked.connect( self.stash )
-        self.cleanButton.clicked.connect( self.clean )
-        self.cancelButton.clicked.connect( self.cancel )
+        # Button function links
+        self.saveButton.clicked.connect( self.saveStatus )
+        self.commitButton.clicked.connect( self.commitStatus )
+        self.forceUpdateButton.clicked.connect( self.updateStatus )
+        self.forceResetButton.clicked.connect( self.resetStatus )
+        # Button ToolTips
+        self.saveButton.setToolTip('This will save (stash) the current state into the stash, which can be retrieved at a later time via the \"git stash\" command ')
+        self.commitButton.setToolTip('This will initiate the process of creating and pushing the current status to the repository as a new version')
+        self.forceUpdateButton('This will overwrite the current status with the most recent version of this branch')
+        self.forceResetButton('This will overwrite the current status with the version before changes were made')
+
     def loadLayout(self):
         container = QVBoxLayout()
-        container.addWidget(self.info)
-        container.addWidget(self.stashButton)
-        if len(self.untracked) > 0:
-            container.addWidget(self.cleanButton)
-        container.addWidget(self.cancelButton)
+        info = QVBoxLayout()
+        info.addWidget(self.info)
+        buttons = QVBoxLayout()
+        #=== status dependent loads
+        buttons.addWidget(self.saveButton)
+        buttons.addWidget(self.commitButton)
+        buttons.addWidget(self.forceUpdateButton)
+        buttons.addWidget(self.forceResetButton)
+        container.addLayout(info)
+        container.addLayout(buttons)
         self.setLayout(container)
-    def stash(self):
-        '''Stash the current state, including untracked files'''
-        cmdList = ['git', 'stash', 'save', '-u']
-        rets = subprocess.check_output( cmdList )
-        self.done(1)
-    def clean(self):
-        '''Remove modified/untracked files'''
-        cmdList = ['git', 'clean', '-fn']
-        rets = subprocess.check_output( cmdList )
-        confirm = QMessageBox()
-        confirm.setText('The following changes will be made, are you sure?')
-        confirm.setInformativeText(str(rets))
-        confirm.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        ret = confirm.exec_()
-        if ret == QMessageBox.Ok:
-            rets = subprocess.check_output( ['git','clean','-f'] )
-        else:
-            print 'Changes were not made.'
-            return
-        self.done(1)
-    def cancel(self):
-        msg = QMessageBox()
-        msg.setWindowTitle('Canceled')
-        msg.setText('You have decided to keep the modified state of the repository.')
-        msg.setInformativeText('If you wish to checkout another branch, you must first pull, commit, stash, or clean the repository.')
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.exec_()
-        self.done(1)
-    def checkStatus(self):
-        if (len(self.modified) > 0 and
-            len(self.untracked) == 0):
-            text = 'Files in the repository have been modified:\n'
-            text = text+'\n'.join(['\t'+str(mod) for mod in self.modified])
-            self.info.setText(text)
-        elif (len(self.untracked) > 0):
-            text=''
-            if len(self.modified) > 0:
-                text = 'Files have been modified:\n.'
-                text = text+'\n'.join(['\t'+str(mod) for mod in self.modified])
-            text = text+'\nUntracked files present:\n'
-            text = text+'\n'.join(['\t'+str(uFile) for uFile in self.untracked])
-            self.info.setText(text)
+
+    def saveStatus(self):
+        return
+    def commitStatus(self):
+        return
+    def updateStatus(self):
+        return
+    def resetStatus(self):
+        return
+
+class SaveStatus(QDialog): #===
+    def __init__(self, repository):
+        QDialog.__init__(self)
+        self.repository = repository
+
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+
+    def loadObjects(self):
+        return
+    def loadFunctions(self):
+        return
+    def loadLayout(self):
+        return
 
 class InvalidRepoHandler(QDialog):
     def __init__(self, path):
