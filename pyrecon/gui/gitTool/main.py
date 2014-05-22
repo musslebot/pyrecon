@@ -10,7 +10,7 @@ class RepositoryViewer(QWidget):
         QWidget.__init__(self)
         self.repository = repository # The repository being used
         self.setWindowTitle('Repository - '+str(self.repository.working_dir))
-        os.chdir(self.repository.working_dir) # Switch directory to repository's directory
+        os.chdir(self.repository.working_dir) # For console to retrieve status from correct repository
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
@@ -186,7 +186,7 @@ class BranchList(QListWidget):
         self.loadBranches()
         self.loadColors()
     def loadBranches(self):
-        for branch in self.repository.heads:
+        for branch in self.repository.branches:
             item = BranchListItem(branch)
             self.addItem(item)
     def loadColors(self):
@@ -227,7 +227,7 @@ class CommitList(QListWidget):
             item = CommitListItem(commit)
             self.addItem(item)
         # Check current state; Provide handling
-        if self.repository.is_dirty(untracked_files=True): #=== should check for untracked_files as well?
+        if self.repository.is_dirty(): #=== should check for untracked_files as well?
             a = DirtyHandler(self.repository)
     def loadColors(self):
         count = 0
