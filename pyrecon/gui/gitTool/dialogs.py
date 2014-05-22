@@ -2,6 +2,7 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 import subprocess, os
+from git import *
 
 class NewBranchDialog(QDialog):
     '''Dialog for creating a new branch.'''
@@ -50,14 +51,16 @@ class DirtyHandler(QDialog): #===
     def __init__(self, repository):
         QDialog.__init__(self)
         self.repository = repository
+        # self.remote = Remote(repository, 'origin') #=== for checking ahead/behind maybe
         self.setWindowTitle('Dirty Repository Manager')
 
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
-
+        self.exec_()
     def loadObjects(self):
         self.info = QTextEdit()# Info about the current dirty state
+        self.info.setText( subprocess.check_output( ['git','status'] ) )
         self.saveButton = QPushButton('Save current state')
         self.commitButton = QPushButton('Commit a new version')
         self.forceUpdateButton = QPushButton('Overwrite with most recent version')
@@ -72,8 +75,8 @@ class DirtyHandler(QDialog): #===
         # Button ToolTips
         self.saveButton.setToolTip('This will save (stash) the current state into the stash, which can be retrieved at a later time via the \"git stash\" command ')
         self.commitButton.setToolTip('This will initiate the process of creating and pushing the current status to the repository as a new version')
-        self.forceUpdateButton('This will overwrite the current status with the most recent version of this branch')
-        self.forceResetButton('This will overwrite the current status with the version before changes were made')
+        self.forceUpdateButton.setToolTip('This will overwrite the current status with the most recent version of this branch')
+        self.forceResetButton.setToolTip('This will overwrite the current status with the version before changes were made')
 
     def loadLayout(self):
         container = QVBoxLayout()
@@ -89,14 +92,113 @@ class DirtyHandler(QDialog): #===
         container.addLayout(buttons)
         self.setLayout(container)
 
+    #===
     def saveStatus(self):
         return
-    def commitStatus(self):
-        return
+    def commitStatus(self): #===
+        CommitHandler(self.repository)
     def updateStatus(self):
         return
     def resetStatus(self):
         return
+
+class CommitHandler(QDialog): #===
+    class StageManager(QWidget):
+        '''Allows the user to choose what to stage from modified and untracked files'''
+        def __init__(self, repository):
+            QWidget.__init__(self)
+            self.repository = repository
+            self.repository.git.reset('HEAD') # Unstage possible staged files
+            # Get modified/untracked file names
+            self.modified = [str(diff.a_blob.name) for diff in self.repository.head.commit.diff(None)]
+            self.untracked = self.repository.untracked_files
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+        def loadObjects(self):
+            self.modLabel = QLabel('Modified files')
+            self.modifiedList = QListWidget()
+            self.modifiedList.addItems(self.modified)
+            self.untLabel = QLabel('Untracked (new) files')
+            self.untrackedList = QListWidget()
+            self.untrackedList.addItems(self.untracked)
+            self.moveButton = QPushButton('<->')
+            self.outLabel = QLabel('Files to add to new version')
+            self.outList = QListWidget()
+        def loadFunctions(self):
+            self.moveButton.clicked.connect( self.moveStuff )
+            self.modifiedList.setSelectionMode( QAbstractItemView.ExtendedSelection )
+            self.untrackedList.setSelectionMode( QAbstractItemView.ExtendedSelection )
+            self.outList.setSelectionMode( QAbstractItemView.ExtendedSelection )
+        def loadLayout(self):
+            modAndUntLists = QVBoxLayout()
+            modAndUntLists.addWidget( self.modLabel )
+            modAndUntLists.addWidget( self.modifiedList )
+            modAndUntLists.addWidget( self.untLabel )
+            modAndUntLists.addWidget( self.untrackedList )
+            fileLists = QHBoxLayout()
+            fileLists.addLayout(modAndUntLists)
+            fileLists.addWidget(self.moveButton)
+            outList = QVBoxLayout()
+            outList.addWidget(self.outLabel)
+            outList.addWidget(self.outList)
+            fileLists.addLayout(outList)
+            container = QVBoxLayout()
+            container.addLayout(fileLists)
+            self.setLayout(container)
+        def moveStuff(self):
+            # Get selected items for each list
+            modSelected = self.modifiedList.selectedItems()
+            untSelected = self.untrackedList.selectedItems()
+            outSelected = self.outList.selectedItems()
+            # Take selected items, insert into appropriate list
+            for item in modSelected:
+                taken = self.modifiedList.takeItem(self.modifiedList.row(item))
+                self.outList.insertItem(self.outList.count(), taken)
+            for item in untSelected:
+                taken = self.untrackedList.takeItem(self.untrackedList.row(item))
+                self.outList.insertItem(self.outList.count(), taken)
+            for item in outSelected:
+                taken = self.outList.takeItem( self.outList.row(item) )
+                if taken.text() in self.modified: # if item is modified
+                    self.modifiedList.insertItem(self.modifiedList.count(),taken)
+                elif taken.text() in self.untracked: # if item is untracked
+                    self.untrackedList.insertItem(self.untrackedList.count(),taken)
+                else:
+                    print 'ERROR MOVING ITEM', taken
+    def __init__(self, repository):
+        QDialog.__init__(self)
+        self.setWindowTitle('Create New Version')
+        self.repository = repository
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.exec_()
+    def loadObjects(self):
+        self.stageManager = self.StageManager(self.repository)
+        self.messageManager = QTextEdit()
+        self.stack = QTabWidget()
+        self.stack.addTab(self.stageManager, u'Version File Manager')
+        self.stack.addTab(self.messageManager, u'Version Message')
+        self.doneButton = QPushButton('Finish')
+        self.cancelButton = QPushButton('Cancel')
+    def loadFunctions(self):
+        self.doneButton.clicked.connect( self.finishCommit )
+        self.doneButton.clicked.connect( self.cancelCommit )
+    def loadLayout(self):
+        container = QVBoxLayout()
+        container.addWidget( QLabel('Decide what files to add and the message for the new version') )
+        container.addWidget( self.stack )
+        buttons = QHBoxLayout()
+        buttons.addWidget(self.doneButton)
+        buttons.addWidget(self.cancelButton)
+        container.addLayout(buttons)
+        self.setLayout(container)
+    def finishCommit(self): #===
+        print 'doneClicked()!'
+    def cancelCommit(self): #===
+        print 'cancelClicked()!'
+        self.done(0)
 
 class SaveStatus(QDialog): #===
     def __init__(self, repository):
@@ -114,7 +216,7 @@ class SaveStatus(QDialog): #===
     def loadLayout(self):
         return
 
-class InvalidRepoHandler(QDialog):
+class InvalidRepoHandler(QDialog): #===
     def __init__(self, path):
         QDialog.__init__(self)
         self.path = path
@@ -147,28 +249,3 @@ class InvalidRepoHandler(QDialog):
     def clickNo(self):
         self.done(0)
 
-class RepositoryChanged(QDialog):
-    def __init__(self):
-        QDialog.__init__(self)
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-    def loadObjects(self):
-        return
-    def loadFunctions(self):
-        return
-    def loadLayout(self):
-        return
-
-class BrowseRepository(QDialog): #===
-    def __init__(self):
-        QDialog.__init__(self)
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-    def loadObjects(self):
-        return
-    def loadFunctions(self):
-        return
-    def loadLayout(self):
-        return
