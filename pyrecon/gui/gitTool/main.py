@@ -26,7 +26,8 @@ class RepositoryViewer(QWidget):
         self.pickCommit = QPushButton('Checkout this commit')
         self.pickCommit.setMinimumHeight(50)
         self.functions = FunctionsBar( self.repository, viewer=self )
-        self.view = QStackedWidget() #===
+        # self.view = QStackedWidget() #===
+        self.view = self.functions.functionView
     def loadFunctions(self):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
@@ -151,7 +152,7 @@ class FunctionsBar(QWidget): #===
         container.addWidget(self.functionView)
         self.setLayout(container)
     def clickLog(self):
-        ret = subprocess.check_output(['git', 'log'])
+        ret = subprocess.check_output(['git', 'log', '--graph', '--pretty=oneline', '--abbrev-commit'])
         self.functionView.widget(0).setText(ret)
         self.functionView.setCurrentIndex(0)
     def clickConsole(self):
@@ -194,7 +195,8 @@ class BranchList(QListWidget):
         count = 0
         for i in range(self.count()):
             item = self.item(i)
-            if item.branch.commit == self.repository.head.commit:
+            if (not self.repository.head.is_detached and
+                item.branch.commit == self.repository.head.commit):
                 item.setBackground(QColor('lightgreen'))
             elif count%2 == 0:
                 item.setBackground(QColor('lightgray'))
@@ -223,9 +225,11 @@ class CommitList(QListWidget):
         self.loadColors()
         self.setWordWrap(True)
     def loadCommits(self):
-        for commit in self.repository.iter_commits('origin/'+str(self.repository.head.ref.name)):
-            item = CommitListItem(commit)
-            self.addItem(item)
+        if not self.repository.head.is_detached: # check for detached head
+            head = self.repository.head.ref
+            for commit in self.repository.iter_commits('origin/'+str(head.name)):
+                item = CommitListItem(commit)
+                self.addItem(item)
         # Check current state; Provide handling
         if self.repository.is_dirty(): #=== what about untracked files?
             a = DirtyHandler(self.repository)
@@ -233,7 +237,7 @@ class CommitList(QListWidget):
         count = 0
         for i in range(self.count()):
             item = self.item(i)
-            if item.commit == self.repository.head.commit: #===
+            if (item.commit == self.repository.head.commit):
                 item.setBackground(QColor('lightgreen'))
             elif count%2 == 0:
                 item.setBackground(QColor('lightgray'))
