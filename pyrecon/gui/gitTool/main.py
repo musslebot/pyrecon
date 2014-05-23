@@ -39,8 +39,8 @@ class RepositoryViewer(QWidget):
         '''Checkout branch and refresh() lists'''
         # Called from functionBar's new branch button
         if new:
-            # Create branch via NewBranchDialog
-            branchDialog = NewBranchDialog(self.repository)
+            # Create branch via NewBranchHandler
+            branchDialog = NewBranchHandler(self.repository)
             if branchDialog.result(): # Result == 1
                 branchName = branchDialog.branchName.text()
                 branch = self.repository.create_head( branchName )
@@ -293,7 +293,7 @@ class CommandConsole(QWidget):
             rets = 'Error running command: '+str(cmdList)+'\n'+str(e)+'\n'+e.__doc__+'\n'+e.message
         self.output.setText( rets )
 
-def main(repository=None):
+def main(repository=None): #===
     '''Pass in a path to git repository... return populated RepositoryViewer object'''
     if repository is None: #=== replace this with new BrowseRepository dialog
         # msg = QMessageBox()

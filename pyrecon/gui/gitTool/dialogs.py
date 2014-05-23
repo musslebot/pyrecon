@@ -4,48 +4,6 @@ from PySide.QtGui import *
 import subprocess, os
 from git import *
 
-class NewBranchDialog(QDialog):
-    '''Dialog for creating a new branch.'''
-    def __init__(self, repository):
-        QDialog.__init__(self)
-        self.setWindowTitle('Create New Branch')
-        self.repository = repository
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-        self.exec_()
-    def loadObjects(self):
-        self.textLabel1 = QLabel('This will create a new branch named:')
-        self.branchName = QLineEdit('<enter new branch name>')
-        self.textLabel2 = QLabel('from the current state of the repository:\n'+self.repository.head.commit.hexsha)
-        self.acceptBut = QPushButton('Make new branch')
-        self.cancelBut = QPushButton('Cancel')
-    def loadFunctions(self):
-        self.acceptBut.clicked.connect( self.userAccept )
-        self.cancelBut.clicked.connect( self.userReject )
-    def loadLayout(self):
-        info = QVBoxLayout()
-        info.addWidget(self.textLabel1)
-        info.addWidget(self.branchName)
-        info.addWidget(self.textLabel2)
-        buttons = QHBoxLayout()
-        buttons.addWidget(self.cancelBut)
-        buttons.addWidget(self.acceptBut)
-        container = QVBoxLayout()
-        container.addLayout(info)
-        container.addLayout(buttons)
-        self.setLayout(container)
-    def userAccept(self):
-        if subprocess.call(['git', 'check-ref-format', '--branch', str(self.branchName.text())]) != 0:
-            msg = QMessageBox()
-            msg.setText('The branch name you have entered is invalid. Please try again...')
-            msg.setInformativeText('From the documentation, git does NOT allow the following in branch names:\ntwo consecutive dots (..)\nASCII control characters (i.e. bytes whose values are lower than 040, or 177 DEL), space, tilde ~, caret ^, or colon :\nquestion-mark ?, asterisk *, or open bracket [\nbegin or end with a slash / or contain multiple consecutive slashes\nend with a dot .\na sequence @{\na back-slash \\')
-            msg.exec_()
-        else:
-            self.done(1)
-    def userReject(self):
-        self.done(0)
-
 class DirtyHandler(QDialog): #===
     '''Class for handling a dirty repository. Display modified/untracked files and allow user to handle them via stash or clean.'''
     def __init__(self, repository):
@@ -95,20 +53,24 @@ class DirtyHandler(QDialog): #===
     #===
     def saveStatus(self):
         return
-    def commitStatus(self): #===
-        CommitHandler(self.repository)
+    def commitStatus(self):
+        commitProcess = CommitHandler(self.repository)
+        if commitProcess.result(): # result == 1
+            self.done(1)
+        else:
+            return
     def updateStatus(self):
         return
     def resetStatus(self):
         return
 
-class CommitHandler(QDialog): #===
+class CommitHandler(QDialog):
     class StageManager(QWidget):
         '''Allows the user to choose what to stage from modified and untracked files'''
         def __init__(self, repository):
             QWidget.__init__(self)
             self.repository = repository
-            self.repository.git.reset('HEAD') # Unstage possible staged files
+            self.repository.head.reset() # Unstage possible staged files
             # Get modified/untracked file names
             self.modified = [str(diff.a_blob.name) for diff in self.repository.head.commit.diff(None)]
             self.untracked = self.repository.untracked_files
@@ -165,7 +127,39 @@ class CommitHandler(QDialog): #===
                 elif taken.text() in self.untracked: # if item is untracked
                     self.untrackedList.insertItem(self.untrackedList.count(),taken)
                 else:
-                    print 'ERROR MOVING ITEM', taken
+                    print 'ERROR MOVING ITEM', taken.text()
+    class MessageManager(QDialog):
+        def __init__(self):
+            QDialog.__init__(self)
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+            self.exec_()
+        def loadObjects(self):
+            self.message = QLineEdit()
+            self.okBut = QPushButton('Okay')
+            self.cancelBut = QPushButton('Cancel')
+        def loadFunctions(self):
+            self.okBut.clicked.connect( self.finish )
+            self.cancelBut.clicked.connect( self.cancel )
+        def loadLayout(self):
+            container = QVBoxLayout()
+            container.addWidget(QLabel('Enter a description of the new version:'))
+            container.addWidget(self.message)
+            buttons = QHBoxLayout()
+            buttons.addWidget(self.okBut)
+            buttons.addWidget(self.cancelBut)
+            container.addLayout(buttons)
+            self.setLayout(container)
+        def finish(self):
+            if len(self.message.text()) == 0:
+                msg = QMessageBox()
+                msg.setText('Please enter a description of the new version!')
+                msg.exec_()
+                return
+            self.done(1)
+        def cancel(self):
+            self.done(0)
     def __init__(self, repository):
         QDialog.__init__(self)
         self.setWindowTitle('Create New Version')
@@ -176,31 +170,52 @@ class CommitHandler(QDialog): #===
         self.exec_()
     def loadObjects(self):
         self.stageManager = self.StageManager(self.repository)
-        self.messageManager = QTextEdit()
-        self.stack = QTabWidget()
-        self.stack.addTab(self.stageManager, u'Version File Manager')
-        self.stack.addTab(self.messageManager, u'Version Message')
-        self.doneButton = QPushButton('Finish')
+        self.doneButton = QPushButton('Push New Version')
         self.cancelButton = QPushButton('Cancel')
     def loadFunctions(self):
         self.doneButton.clicked.connect( self.finishCommit )
-        self.doneButton.clicked.connect( self.cancelCommit )
+        self.doneButton.setMinimumHeight(50)
+        self.cancelButton.clicked.connect( self.cancelCommit )
+        self.cancelButton.setMinimumHeight(50)
     def loadLayout(self):
         container = QVBoxLayout()
-        container.addWidget( QLabel('Decide what files to add and the message for the new version') )
-        container.addWidget( self.stack )
+        container.addWidget( QLabel('ADD FILES TO THE NEW VERSION') )
+        container.addWidget( self.stageManager )
         buttons = QHBoxLayout()
         buttons.addWidget(self.doneButton)
         buttons.addWidget(self.cancelButton)
         container.addLayout(buttons)
         self.setLayout(container)
-    def finishCommit(self): #===
-        print 'doneClicked()!'
-    def cancelCommit(self): #===
-        print 'cancelClicked()!'
+    def finishCommit(self):
+        # Check to make sure description is valid
+        outputList = self.stageManager.outList
+        if outputList.count() == 0:
+            msg = QMessageBox()
+            msg.setText('Please add files to your new version!')
+            msg.exec_()
+            return
+        # Get list of files to be pushed as new version
+        outFiles = [outputList.item(row).text() for row in xrange(outputList.count())]
+        self.repository.index.add(outFiles) # Add them to index
+        # Get version description
+        desc = CommitHandler.MessageManager()
+        description = desc.message.text()
+        # Confirm before push
+        msg = QMessageBox()
+        msg.setStandardButtons(QMessageBox.Ok|QMessageBox.Cancel)
+        msg.setText('You are about to push a version to the remote repository. Make sure everything is correct before clicking OK')
+        msg.setInformativeText('DESCRIPTION: '+description+'\n\n'+str(subprocess.check_output(['git','status'])))
+        if msg.exec_() == QMessageBox.Ok:
+            self.repository.index.commit(description)
+            self.repository.remotes.origin.push()
+            self.done(1)
+        else:
+            return
+    def cancelCommit(self):
+        self.repository.head.reset() # Unstage any changes
         self.done(0)
 
-class SaveStatus(QDialog): #===
+class StashHandler(QDialog): #===
     def __init__(self, repository):
         QDialog.__init__(self)
         self.repository = repository
@@ -215,6 +230,48 @@ class SaveStatus(QDialog): #===
         return
     def loadLayout(self):
         return
+
+class NewBranchHandler(QDialog):
+    '''Dialog for creating a new branch.'''
+    def __init__(self, repository):
+        QDialog.__init__(self)
+        self.setWindowTitle('Create New Branch')
+        self.repository = repository
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.exec_()
+    def loadObjects(self):
+        self.textLabel1 = QLabel('This will create a new branch named:')
+        self.branchName = QLineEdit('<enter new branch name>')
+        self.textLabel2 = QLabel('from the current state of the repository:\n'+self.repository.head.commit.hexsha)
+        self.acceptBut = QPushButton('Make new branch')
+        self.cancelBut = QPushButton('Cancel')
+    def loadFunctions(self):
+        self.acceptBut.clicked.connect( self.userAccept )
+        self.cancelBut.clicked.connect( self.userReject )
+    def loadLayout(self):
+        info = QVBoxLayout()
+        info.addWidget(self.textLabel1)
+        info.addWidget(self.branchName)
+        info.addWidget(self.textLabel2)
+        buttons = QHBoxLayout()
+        buttons.addWidget(self.cancelBut)
+        buttons.addWidget(self.acceptBut)
+        container = QVBoxLayout()
+        container.addLayout(info)
+        container.addLayout(buttons)
+        self.setLayout(container)
+    def userAccept(self):
+        if subprocess.call(['git', 'check-ref-format', '--branch', str(self.branchName.text())]) != 0:
+            msg = QMessageBox()
+            msg.setText('The branch name you have entered is invalid. Please try again...')
+            msg.setInformativeText('From the documentation, git does NOT allow the following in branch names:\ntwo consecutive dots (..)\nASCII control characters (i.e. bytes whose values are lower than 040, or 177 DEL), space, tilde ~, caret ^, or colon :\nquestion-mark ?, asterisk *, or open bracket [\nbegin or end with a slash / or contain multiple consecutive slashes\nend with a dot .\na sequence @{\na back-slash \\')
+            msg.exec_()
+        else:
+            self.done(1)
+    def userReject(self):
+        self.done(0)
 
 class InvalidRepoHandler(QDialog): #===
     def __init__(self, path):
