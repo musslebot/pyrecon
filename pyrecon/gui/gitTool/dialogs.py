@@ -26,10 +26,10 @@ class DirtyHandler(QDialog): #===
 
     def loadFunctions(self):
         # Button function links
-        self.saveButton.clicked.connect( self.saveStatus )
+        self.saveButton.clicked.connect( self.saveStatus ) #===
         self.commitButton.clicked.connect( self.commitStatus )
-        self.forceUpdateButton.clicked.connect( self.updateStatus )
-        self.forceResetButton.clicked.connect( self.resetStatus )
+        self.forceUpdateButton.clicked.connect( self.updateStatus ) #===
+        self.forceResetButton.clicked.connect( self.resetStatus ) #===
         # Button ToolTips
         self.saveButton.setToolTip('This will save (stash) the current state into the stash, which can be retrieved at a later time via the \"git stash\" command ')
         self.commitButton.setToolTip('This will initiate the process of creating and pushing the current status to the repository as a new version')
@@ -65,6 +65,7 @@ class DirtyHandler(QDialog): #===
         return
 
 class CommitHandler(QDialog):
+    '''Handles adding/removing files from the index, supplying a commit message, and pushing to the remote repository.'''
     class StageManager(QWidget):
         '''Allows the user to choose what to stage from modified and untracked files'''
         def __init__(self, repository):
@@ -203,7 +204,7 @@ class CommitHandler(QDialog):
         # Confirm before push
         msg = QMessageBox()
         msg.setStandardButtons(QMessageBox.Ok|QMessageBox.Cancel)
-        msg.setText('You are about to push a version to the remote repository. Make sure everything is correct before clicking OK')
+        msg.setText('You are about to push a version to the remote repository branch: '+str(self.repository.head.ref.name)+'\nMake sure everything is correct before clicking OK')
         msg.setInformativeText('DESCRIPTION: '+description+'\n\n'+str(subprocess.check_output(['git','status'])))
         if msg.exec_() == QMessageBox.Ok:
             self.repository.index.commit(description)
