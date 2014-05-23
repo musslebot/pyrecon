@@ -10,7 +10,7 @@ class RepositoryViewer(QWidget):
         QWidget.__init__(self)
         self.repository = repository # The repository being used
         self.setWindowTitle('Repository - '+str(self.repository.working_dir))
-        os.chdir(self.repository.working_dir) # Switch directory to repository's directory
+        os.chdir(self.repository.working_dir) # For console to retrieve status from correct repository
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
@@ -39,8 +39,8 @@ class RepositoryViewer(QWidget):
         '''Checkout branch and refresh() lists'''
         # Called from functionBar's new branch button
         if new:
-            # Create branch via NewBranchDialog
-            branchDialog = NewBranchDialog(self.repository)
+            # Create branch via NewBranchHandler
+            branchDialog = NewBranchHandler(self.repository)
             if branchDialog.result(): # Result == 1
                 branchName = branchDialog.branchName.text()
                 branch = self.repository.create_head( branchName )
@@ -73,8 +73,10 @@ class RepositoryViewer(QWidget):
         # Retrive commit object
         item = self.commits.selectedItems().pop()
         commit = item.commit
-        self.repository.head.reset(commit) # Reset head to commit
-        self.refresh()
+        self.repository.git.checkout(commit) # Reset head to commit
+        self.branches.refresh()
+        # self.commits.refresh() # removes commits more recent than the one being checkedout
+        self.commits.loadColors()
         # Display console
         self.functions.clickConsole()
     def loadLayout(self):
@@ -192,7 +194,7 @@ class BranchList(QListWidget):
         count = 0
         for i in range(self.count()):
             item = self.item(i)
-            if item.branch == self.repository.head.ref:
+            if item.branch.commit == self.repository.head.commit:
                 item.setBackground(QColor('lightgreen'))
             elif count%2 == 0:
                 item.setBackground(QColor('lightgray'))
@@ -225,13 +227,13 @@ class CommitList(QListWidget):
             item = CommitListItem(commit)
             self.addItem(item)
         # Check current state; Provide handling
-        if self.repository.is_dirty(untracked_files=True): #=== should check for untracked_files as well?
+        if self.repository.is_dirty(): #=== what about untracked files?
             a = DirtyHandler(self.repository)
     def loadColors(self):
         count = 0
         for i in range(self.count()):
             item = self.item(i)
-            if item.commit == self.repository.head.ref.commit: #===
+            if item.commit == self.repository.head.commit: #===
                 item.setBackground(QColor('lightgreen'))
             elif count%2 == 0:
                 item.setBackground(QColor('lightgray'))
@@ -291,7 +293,7 @@ class CommandConsole(QWidget):
             rets = 'Error running command: '+str(cmdList)+'\n'+str(e)+'\n'+e.__doc__+'\n'+e.message
         self.output.setText( rets )
 
-def main(repository=None):
+def main(repository=None): #===
     '''Pass in a path to git repository... return populated RepositoryViewer object'''
     if repository is None: #=== replace this with new BrowseRepository dialog
         # msg = QMessageBox()
