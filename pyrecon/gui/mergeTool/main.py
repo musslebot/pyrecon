@@ -84,6 +84,15 @@ class MergeSetNavigator(QWidget):
             outpath = a.output
             # Go through all setList items and save to outputdir
             self.writeMergeObjects(outpath)
+        msg = QMessageBox()
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg.setText('Would you like to close mergeTool?')
+        ret = msg.exec_()
+        if ret == QMessageBox.Yes:
+            self.done(1)
+        elif ret == QMessageBox.No:
+            return
+
     def checkConflicts(self):
         unresolved_list = [] # list of unresolved conflict names
         for i in range(self.setList.count()):
