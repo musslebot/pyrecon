@@ -19,46 +19,50 @@ class DirtyHandler(QDialog): #===
     def loadObjects(self):
         self.info = QTextEdit()# Info about the current dirty state
         self.info.setText( subprocess.check_output( ['git','status'] ) )
-        self.saveButton = QPushButton('Save current state')
+        self.stashButton = QPushButton('Save (stash) current state')
         self.commitButton = QPushButton('Commit a new version')
         self.forceUpdateButton = QPushButton('Overwrite with most recent version')
         self.forceResetButton = QPushButton('Reset to state before modification')
-
+        self.cancelButton = QPushButton('Cancel')
     def loadFunctions(self):
         # Button function links
-        self.saveButton.clicked.connect( self.saveStatus ) #===
+        self.stashButton.clicked.connect( self.stashStatus )
         self.commitButton.clicked.connect( self.commitStatus )
         self.forceUpdateButton.clicked.connect( self.updateStatus ) #===
         self.forceResetButton.clicked.connect( self.resetStatus ) #===
+        self.cancelButton.clicked.connect( self.close )
         # Button ToolTips
-        self.saveButton.setToolTip('This will save (stash) the current state into the stash, which can be retrieved at a later time via the \"git stash\" command ')
+        self.stashButton.setToolTip('This will save (stash) the current state into the stash, which can be retrieved at a later time via the \"git stash\" command ')
         self.commitButton.setToolTip('This will initiate the process of creating and pushing the current status to the repository as a new version')
         self.forceUpdateButton.setToolTip('This will overwrite the current status with the most recent version of this branch')
         self.forceResetButton.setToolTip('This will overwrite the current status with the version before changes were made')
-
     def loadLayout(self):
         container = QVBoxLayout()
         info = QVBoxLayout()
         info.addWidget(self.info)
         buttons = QVBoxLayout()
         #=== status dependent loads
-        buttons.addWidget(self.saveButton)
+        buttons.addWidget(self.stashButton)
         buttons.addWidget(self.commitButton)
         buttons.addWidget(self.forceUpdateButton)
         buttons.addWidget(self.forceResetButton)
+        buttons.addWidget(self.cancelButton)
         container.addLayout(info)
         container.addLayout(buttons)
         self.setLayout(container)
-
-    #===
-    def saveStatus(self):
-        return
     def commitStatus(self):
         commitProcess = CommitHandler(self.repository)
         if commitProcess.result(): # result == 1
             self.done(1)
         else:
             return
+    def stashStatus(self):
+        stashProcess = StashHandler(self.repository)
+        if stashProcess.result():
+            self.done(1)
+        else:
+            return
+    #===
     def updateStatus(self):
         return
     def resetStatus(self):
@@ -216,21 +220,148 @@ class CommitHandler(QDialog):
         self.repository.head.reset() # Unstage any changes
         self.done(0)
 
-class StashHandler(QDialog): #===
+class StashHandler(QDialog):
+    class LoadStash(QDialog):
+        def __init__(self, repository):
+            QDialog.__init__(self)
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+            self.exec_()
+        def loadObjects(self):
+            self.stashList = QComboBox()
+            self.loadButton = QPushButton('Load Stashed State')
+            self.cancelButton = QPushButton('Cancel')
+        def loadFunctions(self):
+            self.loadButton.setMinimumHeight(50)
+            self.loadButton.clicked.connect( self.loadStash )
+            self.cancelButton.clicked.connect( self.close )
+            # Get stash list
+            ret = subprocess.check_output(['git', 'stash','list'])
+            self.stashList.insertItems(1,ret.split('\n'))
+            self.stashList.insertItem(0,'<select stashed state>')
+            self.stashList.setCurrentIndex(0)
+        def loadLayout(self):
+            container = QVBoxLayout()
+            container.addWidget(self.stashList)
+            container.addWidget(self.loadButton)
+            container.addWidget(self.cancelButton)
+            self.setLayout(container)
+        def loadStash(self):
+            index = self.stashList.currentIndex()
+            # Did user select appropriate stash?
+            msg = QMessageBox()
+            if index == 0:
+                msg.setText('Please select appropriate stash state to load.')
+                msg.exec_()
+                return
+            # Pop stash
+            try:
+                ret = subprocess.check_output(['git','stash','pop','stash@{%d}'%(index-1)])
+                msg.setText('Stashed state successfully loaded!\n\n'+str(ret))
+                msg.exec_()
+                self.done(1)
+            except BaseException, e:
+                msg.setText('Error loading stashed state.\n\nReason:\n'+str(e))
+                msg.exec_()
+                return
+    class SaveStash(QDialog):
+        def __init__(self, repository):
+            QDialog.__init__(self)
+            self.repository = repository
+            self.setWindowTitle('Stash Save Manager')
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+            self.exec_()
+        def loadObjects(self):
+            self.currentState = QTextEdit()
+            self.message = QLineEdit()
+            self.includeUntracked = QCheckBox("Include untracked files")
+            self.saveButton = QPushButton('Stash')
+        def loadFunctions(self):
+            self.currentState.setText(subprocess.check_output(['git','status']))
+            self.message.setText('<Enter optional message>')
+            self.saveButton.clicked.connect( self.saveStash )
+            self.saveButton.setMinimumHeight(50)
+        def loadLayout(self):
+            container = QVBoxLayout()
+            container.addWidget(self.currentState)
+            container.addWidget(self.message)
+            container.addWidget(self.includeUntracked)
+            container.addWidget(self.saveButton)
+            self.setLayout(container)
+        def saveStash(self):
+            msg = QMessageBox()
+            try:
+                # Save stash
+                # - get message
+                if self.message.text() == '<Enter optional message>':
+                    stashMessage = ''
+                else:
+                    stashMessage = self.message.text()
+                # - build list of commands
+                cmdList = ['git','stash','save',str(stashMessage)]
+                # - untracked
+                if self.includeUntracked.isChecked():
+                    cmdList.insert(3,'-u')
+                # - run command
+                ret = subprocess.check_output(cmdList)
+                msg.setText('Stash successful!')
+                msg.setInformativeText(ret)
+                msg.exec_()
+                self.done(1)
+            except BaseException, e:
+                msg.setText('Stash unsuccessful! :(')
+                msg.setInformativeText('Reason:\n'+str(e)) # show exception
+                msg.exec_()
     def __init__(self, repository):
         QDialog.__init__(self)
+        self.setWindowTitle('Stash Manager')
         self.repository = repository
-
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
-
+        self.exec_()
     def loadObjects(self):
-        return
+        self.label = QLabel('Would you like to save (stash) the current state or load a previously stashed state?')
+        self.saveButton = QPushButton('Stash Current State')
+        self.loadButton = QPushButton('Load Stashed State')
     def loadFunctions(self):
-        return
+        self.saveButton.setMinimumHeight(50)
+        self.loadButton.setMinimumHeight(50)
+        self.saveButton.clicked.connect( self.saveStash )
+        self.loadButton.clicked.connect( self.loadStash )
     def loadLayout(self):
-        return
+        buttons = QHBoxLayout()
+        buttons.addWidget(self.saveButton)
+        buttons.addWidget(self.loadButton)
+        container = QVBoxLayout()
+        container.addWidget(self.label)
+        container.addLayout(buttons)
+        self.setLayout(container)
+    def saveStash(self):
+        if not self.repository.is_dirty():
+            msg = QMessageBox()
+            msg.setText('Your repository has no changes to stash!')
+            msg.exec_()
+            return
+        saveProcess = self.SaveStash(self.repository)
+        if saveProcess.result():
+            self.done(1)
+        else:
+            return
+    def loadStash(self):
+        if self.repository.is_dirty():
+            msg = QMessageBox()
+            msg.setText('Your repository is dirty! Please commit or clean your repository before loading a stashed state.')
+            msg.exec_()
+            return
+        loadProcess = self.LoadStash(self.repository)
+        if loadProcess.result():
+            self.done(1)
+        else:
+            return
 
 class NewBranchHandler(QDialog):
     '''Dialog for creating a new branch.'''

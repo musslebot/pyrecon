@@ -74,7 +74,7 @@ class RepositoryViewer(QWidget):
         # Retrive commit object
         item = self.commits.selectedItems().pop()
         commit = item.commit
-        self.repository.git.checkout(commit) # Reset head to commit
+        self.repository.git.checkout(commit)
         self.branches.refresh()
         # self.commits.refresh() # removes commits more recent than the one being checkedout
         self.commits.loadColors()
