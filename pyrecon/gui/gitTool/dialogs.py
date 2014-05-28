@@ -43,9 +43,9 @@ class DirtyHandler(QDialog): #===
         buttons = QVBoxLayout()
         #=== status dependent loads
         buttons.addWidget(self.stashButton)
-        buttons.addWidget(self.commitButton)
-        buttons.addWidget(self.forceUpdateButton)
-        buttons.addWidget(self.forceResetButton)
+        buttons.addWidget(self.commitButton) # Only if not behind #===
+        buttons.addWidget(self.forceUpdateButton) # Only if behind #===
+        buttons.addWidget(self.forceResetButton) # Only if not behind #===
         buttons.addWidget(self.cancelButton)
         container.addLayout(info)
         container.addLayout(buttons)
@@ -62,13 +62,31 @@ class DirtyHandler(QDialog): #===
             self.done(1)
         else:
             return
+    def resetStatus(self):
+        '''Hard reset of HEAD'''
+        confirm = QMessageBox()
+        confirm.setText('Are you sure you want to reset your repository\'s state?')
+        confirm.setInformativeText('This will permanently remove any modifications you have made from the previous state and can not be retrieved once deleted.')
+        confirm.setStandardButtons( QMessageBox.Yes | QMessageBox.No)
+        ret = confirm.exec_()
+        if ret == QMessageBox.Yes:
+            try:
+                self.repository.head.reset('--hard')
+                self.done(1)
+            except BaseException, e:
+                msg = QMessageBox()
+                msg.setText('Reset failed.\nReason:\n\n')
+                msg.setInformativeText(str(e))
+                msg.exec_()
+        elif ret == QMessageBox.No:
+            msg = QMessageBox()
+            msg.setText('Aborting reset...')
+            msg.exec_()
     #===
     def updateStatus(self):
         return
-    def resetStatus(self):
-        return
 
-class CommitHandler(QDialog):
+class CommitHandler(QDialog): #=== newBranch
     '''Handles adding/removing files from the index, supplying a commit message, and pushing to the remote repository.'''
     class StageManager(QWidget):
         '''Allows the user to choose what to stage from modified and untracked files'''
@@ -76,7 +94,7 @@ class CommitHandler(QDialog):
             QWidget.__init__(self)
             self.repository = repository
             self.repository.head.reset() # Unstage possible staged files
-            # Get modified/untracked file names
+            # Get modified/untracked file names #=== what if detached?
             self.modified = [str(diff.a_blob.name) for diff in self.repository.head.commit.diff(None)]
             self.untracked = self.repository.untracked_files
             self.loadObjects()
@@ -177,6 +195,7 @@ class CommitHandler(QDialog):
         self.stageManager = self.StageManager(self.repository)
         self.doneButton = QPushButton('Push New Version')
         self.cancelButton = QPushButton('Cancel')
+        self.newBranch = QCheckBox('Commit to new branch?')
     def loadFunctions(self):
         self.doneButton.clicked.connect( self.finishCommit )
         self.doneButton.setMinimumHeight(50)
@@ -184,7 +203,10 @@ class CommitHandler(QDialog):
         self.cancelButton.setMinimumHeight(50)
     def loadLayout(self):
         container = QVBoxLayout()
-        container.addWidget( QLabel('ADD FILES TO THE NEW VERSION') )
+        header = QHBoxLayout()
+        header.addWidget(QLabel('ADD FILES TO THE NEW VERSION'))
+        header.addWidget(self.newBranch)
+        container.addLayout( header )
         container.addWidget( self.stageManager )
         buttons = QHBoxLayout()
         buttons.addWidget(self.doneButton)
@@ -199,6 +221,31 @@ class CommitHandler(QDialog):
             msg.setText('Please add files to your new version!')
             msg.exec_()
             return
+        # If newBranch is checked
+        #=== make new branch
+        if self.newBranch.isChecked():
+            branchDialog = NewBranchHandler(self.repository)
+            if branchDialog.result(): # successful: result() == 1
+                branchName = branchDialog.branchName.text()
+                branch = self.repository.create_head( branchName )
+                msg = QMessageBox()
+                msg.setText('Branch created: '+str(branchName))
+                msg.exec_()
+            else:
+                msg = QMessageBox()
+                msg.setText('New branch creations failed... try again.')
+                msg.exec_()
+                return
+            try:
+                branch.checkout() # Checkout branch
+                # self.repository.git.branch('-u origin') #===
+                subprocess.call(['git','branch','-u','origin']) #=== change original newBranch function
+            except BaseException, e:
+                msg = QMessageBox()
+                msg.setText('Failed to switch to new branch. Aborting...\nReason:\n')
+                msg.setInformativeText(str(e))
+                msg.exec_()
+                return
         # Get list of files to be pushed as new version
         outFiles = [outputList.item(row).text() for row in xrange(outputList.count())]
         self.repository.index.add(outFiles) # Add them to index
@@ -212,7 +259,7 @@ class CommitHandler(QDialog):
         msg.setInformativeText('DESCRIPTION: '+description+'\n\n'+str(subprocess.check_output(['git','status'])))
         if msg.exec_() == QMessageBox.Ok:
             self.repository.index.commit(description)
-            self.repository.remotes.origin.push()
+            subprocess.call(['git', 'push', 'origin', str(self.repository.head.ref.name)]) #=== need to update other newBranch function
             self.done(1)
         else:
             return
@@ -466,6 +513,7 @@ class MergeHandler(QDialog): #===
         # add items to (src/dst)CommitSelect upon choice of branch
         self.srcBranchSelect.currentIndexChanged.connect( self.updateCommits )
         self.dstBranchSelect.currentIndexChanged.connect( self.updateCommits )
+        self.goButton.clicked.connect( self.beginMergeTool )
     def loadLayout(self):
         container = QVBoxLayout()
         srcSelect = QVBoxLayout()
@@ -491,6 +539,45 @@ class MergeHandler(QDialog): #===
         elif self.sender() == self.dstBranchSelect: # Update dst commits
             self.dstCommitSelect.clear()
             self.dstCommitSelect.addItems(['<destination commit>']+[com.message for com in commits])
+    def beginMergeTool(self):
+        try:
+            from pyrecon.main import openSeries
+            from pyrecon.tools.mergeTool.main import createMergeSet
+            from pyrecon.gui.mergeTool.main import MergeSetWrapper
+            # Get indeces
+            srcB = self.srcBranchSelect.currentIndex()-1 # -1 to account for <choose branch> label
+            srcC = self.srcCommitSelect.currentIndex()-1 # -1 to account for <choose commit> label
+            dstB = self.dstBranchSelect.currentIndex()-1
+            dstC = self.dstBranchSelect.currentIndex()-1
+            # Get git objects for these indeces
+            # - load source files into repository
+            srcBranch = self.repository.branches[srcB]
+            self.repository.git.checkout(srcBranch)
+            srcCommit = [com for com in self.repository.iter_commits()][srcC]
+            self.repository.git.checkout(srcCommit)
+            ser2 = openSeries(self.repository.working_dir)
+            # - load destination files into repository
+            dstBranch = self.repository.branches[dstB]
+            self.repository.git.checkout(dstBranch)
+            dstCommit = [com for com in self.repository.iter_commits()][dstC]
+            ser1 = openSeries(self.repository.working_dir)
+            
+            # MergeTool
+            mergeSet = createMergeSet(ser1,ser2)
+            mergeGui = MergeSetWrapper(mergeSet)
+            
+            mergeDialog = QDialog() # To make it popup in a window
+            container = QHBoxLayout()
+            container.addWidget(mergeGui)
+            mergeDialog.setLayout(container)
+            mergeDialog.setWindowTitle('MergeTool - git')
+            mergeDialog.exec_()
+            self.done(1)
+        except BaseException, e:
+            msg = QMessageBox()
+            msg.setText('Could not start mergeTool!\n\nReason:\n'+str(e))
+            msg.exec_()
+            return
 
 class BrowseRepository(QDialog): #===
     def __init__(self):
