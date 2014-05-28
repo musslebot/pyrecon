@@ -7,7 +7,11 @@ def createMergeSet(series1, series2):
 	mSer = MergeSeries(series1, series2)
 	mSecs = []
 	for i in range( len(series1.sections) ):
-		mSecs.append( MergeSection(series1.sections[i],series2.sections[i]) )
+		if series1.sections[i].index == series2.sections[i].index:
+			mSecs.append( MergeSection(series1.sections[i],series2.sections[i]) )
+		else:
+			raise Exception('Series do not have matching section indeces! Aborting createMergeSet()!')
+			return
 	return MergeSet( mSer, mSecs )
 
 class MergeSet:
