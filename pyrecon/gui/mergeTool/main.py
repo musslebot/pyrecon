@@ -84,12 +84,14 @@ class MergeSetNavigator(QWidget):
             outpath = a.output
             # Go through all setList items and save to outputdir
             self.writeMergeObjects(outpath)
+        #===
         msg = QMessageBox()
         msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         msg.setText('Would you like to close mergeTool?')
         ret = msg.exec_()
         if ret == QMessageBox.Yes:
-            self.done(1)
+            self.parentWidget().close()
+            self.parentWidget().parentWidget().done(1) #=== doesnt work from MainWindow
         elif ret == QMessageBox.No:
             return
 
@@ -191,7 +193,7 @@ class MergeSetList(QListWidget):
                 item.resolution.contours.chooseLeft.click()
                 # zconts
                 uniqueA, uniqueB, ovlps = item.merge.getCategorizedZContours()
-                item.merge.zcontours = uniqueA+uniqueB+overlaps
+                item.merge.zcontours = uniqueA+uniqueB+ovlps
             item.refresh()
     def quickMergeABContsB(self, items): #===
         '''This completes the merge resolution by selection the B (right) version of non-contour conflicts (attributes & images). For contour conflicts, this selects BOTH (left & right) for overlaps and uniques.'''
@@ -205,7 +207,7 @@ class MergeSetList(QListWidget):
                 item.resolution.contours.chooseRight.click()
                 # zconts
                 uniqueA, uniqueB, ovlps = item.merge.getCategorizedZContours()
-                item.merge.zcontours = uniqueA+uniqueB+overlaps
+                item.merge.zcontours = uniqueA+uniqueB+ovlps
             item.refresh()
 
 class MergeSetListItem(QListWidgetItem):
