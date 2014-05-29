@@ -27,15 +27,17 @@ class RepositoryViewer(QWidget):
         self.pickCommit.setMinimumHeight(50)
         self.functions = FunctionsBar( self.repository, viewer=self )
         # self.view = QStackedWidget() #===
-        self.view = self.functions.functionView
+        self.view = self.functions.functionView #===
     def loadFunctions(self):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
         self.refreshBut.clicked.connect( self.refresh )
+        self.branches.itemDoubleClicked.connect( self.openBranchMenu )
     def refresh(self): 
         '''Refresh lists to match current repository status'''
         self.branches.refresh()
         self.commits.refresh()
+        self.functions.clickConsole() #=== show git status
     def checkoutBranch(self, lastTry=False, new=False):
         '''Checkout branch and refresh() lists'''
         # Called from functionBar's new branch button
@@ -45,6 +47,8 @@ class RepositoryViewer(QWidget):
             if branchDialog.result(): # Result == 1
                 branchName = branchDialog.branchName.text()
                 branch = self.repository.create_head( branchName )
+                branch.checkout()
+                subprocess.call(['git','branch','-u','origin'])
                 msg = QMessageBox()
                 msg.setText('Branch created: '+str(branchName))
                 msg.exec_()
@@ -71,15 +75,29 @@ class RepositoryViewer(QWidget):
         self.functions.clickConsole() # Show new repo status
     def checkoutCommit(self):
         '''Reset HEAD to commit and refresh() lists'''
-        # Retrive commit object
-        item = self.commits.selectedItems().pop()
-        commit = item.commit
-        self.repository.git.checkout(commit)
-        self.branches.refresh()
-        # self.commits.refresh() # removes commits more recent than the one being checkedout
-        self.commits.loadColors()
-        # Display console
-        self.functions.clickConsole()
+        try:
+            # Retrive commit object
+            item = self.commits.selectedItems().pop()
+            commit = item.commit
+            self.repository.git.checkout(commit)
+            self.branches.refresh()
+            # self.commits.refresh() # removes commits more recent than the one being checkedout
+            self.commits.loadColors()
+            # Display console
+            self.functions.clickConsole()
+        except BaseException, e:
+            msg = QMessageBox()
+            msg.setInformativeText(str(e))
+            msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            if self.repository.is_dirty(untracked_files=True):
+                msg.setText('Error: Would you like to manage possible untracked files?')
+                ret = msg.exec_()
+                if ret == QMessageBox.Yes:
+                    DirtyHandler( self.repository )
+                else:
+                    return
+            else:
+                msg.exec_()
     def loadLayout(self):
         # BranchList and CommitList
         branchesAndCommits = QVBoxLayout()
@@ -103,6 +121,40 @@ class RepositoryViewer(QWidget):
         container.addLayout(branchesAndCommits)
         container.addLayout(functionsAndView)
         self.setLayout(container)
+    def openBranchMenu(self, item):
+        # Double click menu
+        menu = QMenu()
+        menu.addAction('Rename')
+        menu.addAction('Delete')
+        action = menu.exec_( QCursor.pos() )
+        if action.text() == 'Rename':
+            self.renameBranch(item.branch)
+        elif action.text() == 'Delete':
+            self.deleteBranch(item.branch)
+    def renameBranch(self, branch):
+        renameDialog = RenameBranch(branch)
+        if renameDialog.result():
+            #=== this may only change local branch, not remote
+            ret = subprocess.check_output(['git','branch','-m',str(branch.name),str(renameDialog.textLine.text())])
+            self.refresh()
+        else:
+            msg = QMessageBox()
+            msg.setText('Aborting rename...')
+            msg.exec_()
+    def deleteBranch(self, branch):
+        msg = QMessageBox()
+        msg.setText('You are about to delete the branch: %s\nThis canNOT be undone, and you will lose data.'%(branch.name))
+        msg.setInformativeText('Are you sure you want to do this?')
+        msg.setStandardButtons( QMessageBox.Yes | QMessageBox.No )
+        confirm = msg.exec_()
+        if confirm == QMessageBox.Yes:
+            self.repository.branches.master.checkout() #=== necessary to switch before delete
+            ret = subprocess.check_output(['git','branch','-D',branch.name])
+            self.refresh()
+        else:
+            msg = QMessageBox()
+            msg.setText('Aborting branch delete...')
+            msg.exec_()
 
 class FunctionsBar(QWidget): #===
     def __init__(self, repository, viewer=None):
@@ -159,9 +211,16 @@ class FunctionsBar(QWidget): #===
         ret = subprocess.check_output(['git', 'status'])
         self.functionView.widget(1).output.setText(ret)
         self.functionView.setCurrentIndex(1)
-    def clickMerge(self): #===
-        print 'merge clicked'
-        MergeHandler(self.repository)
+    def clickMerge(self):
+        if self.repository.is_dirty():
+            msg = QMessageBox()
+            msg.setText('Repository contains modifications! Please clean before using mergeTool.')
+            msg.exec_()
+            DirtyHandler(self.repository)
+            self.viewer.refresh() #===
+            return
+        merging = MergeHandler(self.repository)
+        self.viewer.refresh()
     def clickBranch(self):
         self.viewer.checkoutBranch(new=True)
     def clickPull(self, lastTry=False):
@@ -177,7 +236,12 @@ class FunctionsBar(QWidget): #===
                 self.clickPull(lastTry=True)
     def clickPush(self): #===
         print 'push clicked'
-        #=== begin commit process
+        if self.repository.is_dirty(untracked_files=True):
+            a = CommitHandler(self.repository)
+        else:
+            msg = QMessageBox()
+            msg.setText('No changes to commit!')
+            msg.exec_()
 
 class BranchList(QListWidget):
     def __init__(self, repository):
@@ -186,6 +250,7 @@ class BranchList(QListWidget):
         self.repository = repository
         self.loadBranches()
         self.loadColors()
+        # self.itemDoubleClicked.connect( self.doubleClick ) # moved signal/slot to RepositoryViewer instead... better refresh functionality
     def loadBranches(self):
         for branch in self.repository.branches:
             item = BranchListItem(branch)
@@ -231,7 +296,7 @@ class CommitList(QListWidget):
                 item = CommitListItem(commit)
                 self.addItem(item)
         # Check current state; Provide handling
-        if self.repository.is_dirty(): #=== what about untracked files?
+        if self.repository.is_dirty():
             a = DirtyHandler(self.repository)
     def loadColors(self):
         count = 0

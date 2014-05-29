@@ -86,7 +86,7 @@ class DirtyHandler(QDialog): #===
     def updateStatus(self):
         return
 
-class CommitHandler(QDialog): #=== newBranch
+class CommitHandler(QDialog):
     '''Handles adding/removing files from the index, supplying a commit message, and pushing to the remote repository.'''
     class StageManager(QWidget):
         '''Allows the user to choose what to stage from modified and untracked files'''
@@ -238,8 +238,7 @@ class CommitHandler(QDialog): #=== newBranch
                 return
             try:
                 branch.checkout() # Checkout branch
-                # self.repository.git.branch('-u origin') #===
-                subprocess.call(['git','branch','-u','origin']) #=== change original newBranch function
+                subprocess.call(['git','branch','-u','origin'])
             except BaseException, e:
                 msg = QMessageBox()
                 msg.setText('Failed to switch to new branch. Aborting...\nReason:\n')
@@ -259,7 +258,7 @@ class CommitHandler(QDialog): #=== newBranch
         msg.setInformativeText('DESCRIPTION: '+description+'\n\n'+str(subprocess.check_output(['git','status'])))
         if msg.exec_() == QMessageBox.Ok:
             self.repository.index.commit(description)
-            subprocess.call(['git', 'push', 'origin', str(self.repository.head.ref.name)]) #=== need to update other newBranch function
+            subprocess.call(['git', 'push', 'origin', str(self.repository.head.ref.name)])
             self.done(1)
         else:
             return
@@ -591,3 +590,35 @@ class BrowseRepository(QDialog): #===
         return
     def loadLayout(self):
         return
+
+class RenameBranch(QDialog):
+    def __init__(self, branch):
+        QDialog.__init__(self)
+        self.branch = branch
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.exec_()
+    def loadObjects(self):
+        self.label = QLabel('Enter new name for %s'%self.branch.name)
+        self.textLine = QLineEdit()
+        self.okayBut = QPushButton('Rename')
+        self.cancelBut = QPushButton('Cancel')
+    def loadFunctions(self):
+        self.okayBut.setMinimumHeight(50)
+        self.cancelBut.setMinimumHeight(50)
+        self.okayBut.clicked.connect( self.okay )
+        self.cancelBut.clicked.connect( self.cancel )
+    def loadLayout(self):
+        container = QVBoxLayout()
+        container.addWidget(self.label)
+        container.addWidget(self.textLine)
+        buttons = QHBoxLayout()
+        buttons.addWidget(self.okayBut)
+        buttons.addWidget(self.cancelBut)
+        container.addLayout(buttons)
+        self.setLayout(container)
+    def okay(self):
+        self.done(1) 
+    def cancel(self):
+        self.done(0)
