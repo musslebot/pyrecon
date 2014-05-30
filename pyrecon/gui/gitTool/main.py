@@ -4,6 +4,26 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 from dialogs import *
 
+class RepositoryManager(QWidget):
+    def __init__(self, repository=None):
+        QWidget.__init__(self)
+    def isRemoteChanged(self):
+        '''Returns True if the current branch differs from the remote version.'''
+        return
+    def push(self):
+        return
+    def pull(self):
+        return
+    def merge(self):
+        return
+    def stash(self):
+        return
+    def commit(self):
+        return
+    def newBranch(self):
+        '''Start process for new branch creation.'''
+        return
+
 class RepositoryViewer(QWidget):
     '''Provides a GUI for interacting with a GitPython repository'''
     def __init__(self, repository):
