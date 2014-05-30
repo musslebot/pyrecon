@@ -19,6 +19,7 @@ class RepositoryManager(QWidget):
     def stash(self):
         return
     def commit(self):
+        '''Start process for new commit.'''
         return
     def newBranch(self):
         '''Start process for new branch creation.'''
