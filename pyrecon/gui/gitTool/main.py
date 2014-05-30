@@ -364,30 +364,33 @@ class CommandConsole(QWidget):
 
 def main(repository=None): #===
     '''Pass in a path to git repository... return populated RepositoryViewer object'''
-    if repository is None: #=== replace this with new BrowseRepository dialog
-        # msg = QMessageBox()
-        # msg.setText('gitTool: Please browse for your repository')
-        # msg.exec_()
-        # # Browse for folder 
-        # browse = BrowseOutputDirectory()
-        # repository = browse.output
-        print ('NONE REPO') #===
+    if repository is None:
+        msg = QMessageBox()
+        msg.setText('gitTool: Please browse for your repository')
+        msg.exec_()
+        # Browse for folder 
+        browse = BrowseRepository()
+        repository = browse.output
     try: # Open repository for gitTool
         repo = Repo(repository)
-    except InvalidGitRepositoryError: #===
-        InvalidRepoHandler(repository)
-        #=== set up remote repo?
-        repo = Repo(repository)
-    except: #===
+    except InvalidGitRepositoryError, e: # Git repository not initialized
+        a = InvalidRepoHandler(repository)
+        if a.result(): # success: result == 1
+            repo = Repo(repository)
+        else:
+            print 'Did not initialize repository'
+            return
+    except:
         print 'Problem loading repository, quitting...' #===
         return
-    return RepositoryViewer(repo)
+    finally:
+        return RepositoryViewer(repo)
 
 #=== TEST SCRIPT
 if __name__ == '__main__':
     app = QApplication.instance()
     if app == None:
         app = QApplication([])
-    a = main('/home/michaelm/Documents/pyreconGitTesting')
+    a = main()
     a.show()
     app.exec_()

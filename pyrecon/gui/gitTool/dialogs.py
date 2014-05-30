@@ -3,6 +3,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 import subprocess, os
 from git import *
+from pyrecon.gui.main import BrowseWidget
 
 class DirtyHandler(QDialog): #===
     '''Class for handling a dirty repository. Display modified/untracked files and allow user to handle them via stash or clean.'''
@@ -452,6 +453,38 @@ class NewBranchHandler(QDialog):
         self.done(0)
 
 class InvalidRepoHandler(QDialog): #===
+    class RemoteRequest(QDialog): #===
+        '''Request location of remote repository'''
+        def __init__(self):
+            QDialog.__init__(self)
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+            self.exec_()
+        def loadObjects(self):
+            self.label = QLabel('Enter the path to the remote repository:')
+            self.remotePath = QLineEdit()
+            self.doneBut = QPushButton('Continue')
+        def loadFunctions(self):
+            self.doneBut.setMinimumHeight(50)
+            self.doneBut.clicked.connect( self.finish )
+        def loadLayout(self):
+            container = QVBoxLayout()
+            container.addWidget(self.label)
+            container.addWidget(self.remotePath)
+            container.addWidget(self.doneBut)
+            self.setLayout(container)
+        def finish(self): #===
+            # check if appropriate
+            msg = QMessageBox()
+            try:
+                subprocess.call(['git','remote','add','origin',str(self.remotePath.text())])
+                subprocess.call(['git','branch','-u','origin'])
+                self.done(1)
+            except BaseException, e:
+                msg.setText('Error:\n\n'+str(e))
+                msg.exec_()
+                return
     def __init__(self, path):
         QDialog.__init__(self)
         self.path = path
@@ -461,11 +494,13 @@ class InvalidRepoHandler(QDialog): #===
         self.loadLayout()
         self.exec_()
     def loadObjects(self):
-        self.info1 = QTextEdit()
+        self.info1 = QLabel()
         self.info1.setText(str(self.path)+' is an invalid Git repository. Would you like to initialize it as a git repository?')
         self.yes = QPushButton('Yes, initialize repository')
         self.no = QPushButton('No, quit the gitTool')
     def loadFunctions(self):
+        self.yes.setMinimumHeight(50)
+        self.no.setMinimumHeight(50)
         self.yes.clicked.connect( self.clickYes )
         self.no.clicked.connect( self.clickNo )
     def loadLayout(self):
@@ -478,8 +513,7 @@ class InvalidRepoHandler(QDialog): #===
         self.setLayout(container)
     def clickYes(self):
         rets = subprocess.check_output(['git','init'])
-        print rets
-        #=== need to setup remote repository
+        remReq = self.RemoteRequest()
         self.done(1)
     def clickNo(self):
         self.done(0)
@@ -581,15 +615,32 @@ class MergeHandler(QDialog): #===
 class BrowseRepository(QDialog): #===
     def __init__(self):
         QDialog.__init__(self)
+        self.setWindowTitle('Browse for your repository')
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
+        self.exec_()
     def loadObjects(self):
-        return
+        self.path = BrowseWidget()
+        self.doneBut = QPushButton()
     def loadFunctions(self):
-        return
+        self.doneBut.setMinimumHeight(50)
+        self.doneBut.setText('Open Repository')
+        self.doneBut.clicked.connect( self.finish )
     def loadLayout(self):
-        return
+        main = QVBoxLayout()
+        main.addWidget(self.path)
+        main.addWidget(self.doneBut)
+        self.setLayout(main)
+    def finish(self):
+        self.output = str(self.path.path.text())
+        if 'Enter or browse' not in self.output or self.output == '':
+            self.done(1)
+        else:
+            msg=QMessageBox()
+            msg.setText('Invalid output directory: '+str(self.output))
+            msg.exec_()
+            return
 
 class RenameBranch(QDialog):
     def __init__(self, branch):
