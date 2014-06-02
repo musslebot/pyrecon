@@ -5,6 +5,95 @@ import subprocess, os
 from git import *
 from pyrecon.gui.main import BrowseWidget
 
+class BranchHandler(QDialog): #===
+    class NewBranch(QDialog): #=== doesnt need repo, just dialog
+        def __init__(self, repository):
+            QDialog.__init__(self)
+            self.setWindowTitle('Create New Branch')
+            self.repository = repository
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+            self.exec_()
+        def loadObjects(self):
+            self.textLabel1 = QLabel('This will create a new branch named:')
+            self.branchName = QLineEdit('<enter new branch name>')
+            self.textLabel2 = QLabel('from the current state of the repository:\n'+self.repository.head.commit.hexsha)
+            self.acceptBut = QPushButton('Make new branch')
+            self.cancelBut = QPushButton('Cancel')
+        def loadFunctions(self):
+            self.acceptBut.clicked.connect( self.userAccept )
+            self.cancelBut.clicked.connect( self.userReject )
+        def loadLayout(self):
+            info = QVBoxLayout()
+            info.addWidget(self.textLabel1)
+            info.addWidget(self.branchName)
+            info.addWidget(self.textLabel2)
+            buttons = QHBoxLayout()
+            buttons.addWidget(self.cancelBut)
+            buttons.addWidget(self.acceptBut)
+            container = QVBoxLayout()
+            container.addLayout(info)
+            container.addLayout(buttons)
+            self.setLayout(container)
+        def userAccept(self):
+            if subprocess.call(['git', 'check-ref-format', '--branch', str(self.branchName.text())]) != 0:
+                msg = QMessageBox()
+                msg.setText('The branch name you have entered is invalid. Please try again...')
+                msg.setInformativeText('From the documentation, git does NOT allow the following in branch names:\ntwo consecutive dots (..)\nASCII control characters (i.e. bytes whose values are lower than 040, or 177 DEL), space, tilde ~, caret ^, or colon :\nquestion-mark ?, asterisk *, or open bracket [\nbegin or end with a slash / or contain multiple consecutive slashes\nend with a dot .\na sequence @{\na back-slash \\')
+                msg.exec_()
+            else:
+                self.done(1)
+        def userReject(self):
+            self.done(0)
+    class DeleteBranch(QDialog):
+        def __init__(self, branch):
+            QDialog.__init__(self):
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+        def loadObjects(self): #===
+            return
+        def loadFunctions(self): #===
+            return
+        def loadLayout(self): #===
+            return
+        def okay(self):
+            self.done(1)
+        def cancel(self):
+            self.done(0)
+    class RenameBranch(QDialog):
+        def __init__(self, branch):
+            QDialog.__init__(self)
+            self.branch = branch
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+            self.exec_()
+        def loadObjects(self):
+            self.label = QLabel('Enter new name for %s'%self.branch.name)
+            self.textLine = QLineEdit()
+            self.okayBut = QPushButton('Rename')
+            self.cancelBut = QPushButton('Cancel')
+        def loadFunctions(self):
+            self.okayBut.setMinimumHeight(50)
+            self.cancelBut.setMinimumHeight(50)
+            self.okayBut.clicked.connect( self.okay )
+            self.cancelBut.clicked.connect( self.cancel )
+        def loadLayout(self):
+            container = QVBoxLayout()
+            container.addWidget(self.label)
+            container.addWidget(self.textLine)
+            buttons = QHBoxLayout()
+            buttons.addWidget(self.okayBut)
+            buttons.addWidget(self.cancelBut)
+            container.addLayout(buttons)
+            self.setLayout(container)
+        def okay(self):
+            self.done(1) 
+        def cancel(self):
+            self.done(0)
+
 class DirtyHandler(QDialog): #===
     '''Class for handling a dirty repository. Display modified/untracked files and allow user to handle them via stash or clean.'''
     def __init__(self, repository):
@@ -411,46 +500,7 @@ class StashHandler(QDialog):
             return
 
 class NewBranchHandler(QDialog):
-    '''Dialog for creating a new branch.'''
-    def __init__(self, repository):
-        QDialog.__init__(self)
-        self.setWindowTitle('Create New Branch')
-        self.repository = repository
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-        self.exec_()
-    def loadObjects(self):
-        self.textLabel1 = QLabel('This will create a new branch named:')
-        self.branchName = QLineEdit('<enter new branch name>')
-        self.textLabel2 = QLabel('from the current state of the repository:\n'+self.repository.head.commit.hexsha)
-        self.acceptBut = QPushButton('Make new branch')
-        self.cancelBut = QPushButton('Cancel')
-    def loadFunctions(self):
-        self.acceptBut.clicked.connect( self.userAccept )
-        self.cancelBut.clicked.connect( self.userReject )
-    def loadLayout(self):
-        info = QVBoxLayout()
-        info.addWidget(self.textLabel1)
-        info.addWidget(self.branchName)
-        info.addWidget(self.textLabel2)
-        buttons = QHBoxLayout()
-        buttons.addWidget(self.cancelBut)
-        buttons.addWidget(self.acceptBut)
-        container = QVBoxLayout()
-        container.addLayout(info)
-        container.addLayout(buttons)
-        self.setLayout(container)
-    def userAccept(self):
-        if subprocess.call(['git', 'check-ref-format', '--branch', str(self.branchName.text())]) != 0:
-            msg = QMessageBox()
-            msg.setText('The branch name you have entered is invalid. Please try again...')
-            msg.setInformativeText('From the documentation, git does NOT allow the following in branch names:\ntwo consecutive dots (..)\nASCII control characters (i.e. bytes whose values are lower than 040, or 177 DEL), space, tilde ~, caret ^, or colon :\nquestion-mark ?, asterisk *, or open bracket [\nbegin or end with a slash / or contain multiple consecutive slashes\nend with a dot .\na sequence @{\na back-slash \\')
-            msg.exec_()
-        else:
-            self.done(1)
-    def userReject(self):
-        self.done(0)
+    
 
 class InvalidRepoHandler(QDialog): #===
     class RemoteRequest(QDialog): #===
@@ -642,34 +692,3 @@ class BrowseRepository(QDialog): #===
             msg.exec_()
             return
 
-class RenameBranch(QDialog):
-    def __init__(self, branch):
-        QDialog.__init__(self)
-        self.branch = branch
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-        self.exec_()
-    def loadObjects(self):
-        self.label = QLabel('Enter new name for %s'%self.branch.name)
-        self.textLine = QLineEdit()
-        self.okayBut = QPushButton('Rename')
-        self.cancelBut = QPushButton('Cancel')
-    def loadFunctions(self):
-        self.okayBut.setMinimumHeight(50)
-        self.cancelBut.setMinimumHeight(50)
-        self.okayBut.clicked.connect( self.okay )
-        self.cancelBut.clicked.connect( self.cancel )
-    def loadLayout(self):
-        container = QVBoxLayout()
-        container.addWidget(self.label)
-        container.addWidget(self.textLine)
-        buttons = QHBoxLayout()
-        buttons.addWidget(self.okayBut)
-        buttons.addWidget(self.cancelBut)
-        container.addLayout(buttons)
-        self.setLayout(container)
-    def okay(self):
-        self.done(1) 
-    def cancel(self):
-        self.done(0)
