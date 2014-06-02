@@ -1,54 +1,23 @@
-import pyrecon, time, subprocess, os, sys
-from git import *
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide.QtGui import QApplication
 from dialogs import *
+from viewer import *
 
-class RepositoryManager(QWidget):
-    def __init__(self, repository=None):
-        QWidget.__init__(self)
-    def isRemoteChanged(self):
-        '''Returns True if the current branch differs from the remote version.'''
-        return
-    def push(self):
-        return
-    def pull(self):
-        return
-    def merge(self):
-        return
-    def stash(self):
-        return
-    def commit(self):
-        '''Start process for new commit.'''
-        return
-    def newBranch(self):
-        '''Start process for new branch creation.'''
-        return
+def main(repository=None): #===
+    '''Pass in a path to git repository... return populated RepositoryViewer object'''
+    repo = RepoViewer('/home/michaelm/Documents/TESTY/')
+    return repo
 
+#=== TEST SCRIPT
+if __name__ == '__main__':
+    app = QApplication.instance()
+    if app == None:
+        app = QApplication([])
+    a = main()
+    a.show()
+    app.exec_()
+
+# OLD STUFF
 class RepositoryViewer(QWidget):
-    '''Provides a GUI for interacting with a GitPython repository'''
-    def __init__(self, repository):
-        QWidget.__init__(self)
-        self.repository = repository # The repository being used
-        self.setWindowTitle('Repository - '+str(self.repository.working_dir))
-        os.chdir(self.repository.working_dir) # For console to retrieve status from correct repository
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-    def loadObjects(self):
-        # List of branches in the repository
-        self.branches = BranchList( self.repository )
-        # List of commits for the currently selected branch
-        self.commits = CommitList( self.repository )
-        self.refreshBut = QPushButton('Refresh')
-        self.refreshBut.setToolTip('Click this if you\'ve made changes in the repository outside of this tool')
-        self.pickBranch = QPushButton('Checkout this branch')
-        self.pickBranch.setMinimumHeight(50)
-        self.pickCommit = QPushButton('Checkout this commit')
-        self.pickCommit.setMinimumHeight(50)
-        self.functions = FunctionsBar( self.repository, viewer=self )
-        # self.view = QStackedWidget() #===
-        self.view = self.functions.functionView #===
     def loadFunctions(self):
         self.pickBranch.clicked.connect( self.checkoutBranch )
         self.pickCommit.clicked.connect( self.checkoutCommit )
@@ -177,6 +146,39 @@ class RepositoryViewer(QWidget):
             msg.setText('Aborting branch delete...')
             msg.exec_()
 
+class CommandConsole(QWidget):
+    def __init__(self, repository):
+        QWidget.__init__(self)
+        self.repository = repository
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.subprocessCommand() # Run the default command
+    def loadObjects(self):
+        self.inputLine = QLineEdit('git status')
+        self.output = QTextEdit()
+    def loadFunctions(self):
+        self.inputLine.returnPressed.connect( self.subprocessCommand )
+    def loadLayout(self):
+        inputBox = QHBoxLayout()
+        inputBox.addWidget( self.inputLine )
+        outputBox = QHBoxLayout()
+        outputBox.addWidget( self.output )
+        container = QVBoxLayout()
+        container.addLayout(inputBox)
+        container.addLayout(outputBox)
+        self.setLayout(container)
+    def subprocessCommand(self):
+        '''Perform the command in self.inputLine and display the results'''
+        cmdList = self.inputLine.text().split(' ')
+        try:
+            rets = subprocess.check_output( cmdList )
+        except subprocess.CalledProcessError:
+            rets = 'Error running command: '+str(cmdList)+'\n'+str(subprocess.CalledProcessError)
+        except Exception, e:
+            rets = 'Error running command: '+str(cmdList)+'\n'+str(e)+'\n'+e.__doc__+'\n'+e.message
+        self.output.setText( rets )
+
 class FunctionsBar(QWidget): #===
     def __init__(self, repository, viewer=None):
         QWidget.__init__(self)
@@ -263,155 +265,3 @@ class FunctionsBar(QWidget): #===
             msg = QMessageBox()
             msg.setText('No changes to commit!')
             msg.exec_()
-
-class BranchList(QListWidget):
-    def __init__(self, repository):
-        QListWidget.__init__(self)
-        self.setWindowTitle('Branches')
-        self.repository = repository
-        self.loadBranches()
-        self.loadColors()
-        # self.itemDoubleClicked.connect( self.doubleClick ) # moved signal/slot to RepositoryViewer instead... better refresh functionality
-    def loadBranches(self):
-        for branch in self.repository.branches:
-            item = BranchListItem(branch)
-            self.addItem(item)
-    def loadColors(self):
-        '''Alternates lightgray and white with green for the current HEAD'''
-        count = 0
-        for i in range(self.count()):
-            item = self.item(i)
-            if (not self.repository.head.is_detached and
-                item.branch.commit == self.repository.head.commit):
-                item.setBackground(QColor('lightgreen'))
-            elif count%2 == 0:
-                item.setBackground(QColor('lightgray'))
-            else:
-                item.setBackground(QColor('white'))
-            count+=1
-    def refresh(self):
-        self.clear()
-        self.loadBranches()
-        self.loadColors()
-
-class BranchListItem(QListWidgetItem):
-    def __init__(self, branch):
-        QListWidgetItem.__init__(self)
-        self.branch = branch
-        self.setText(self.branch.name)
-        self.setTextAlignment(Qt.AlignHCenter)
-        self.setSizeHint(QSize(self.sizeHint().width(), 30))
-
-class CommitList(QListWidget):
-    def __init__(self, repository):
-        QListWidget.__init__(self)
-        self.setWindowTitle('Commit History')
-        self.repository = repository
-        self.loadCommits()
-        self.loadColors()
-        self.setWordWrap(True)
-    def loadCommits(self):
-        if not self.repository.head.is_detached: # check for detached head
-            head = self.repository.head.ref
-            for commit in self.repository.iter_commits('origin/'+str(head.name)):
-                item = CommitListItem(commit)
-                self.addItem(item)
-        # Check current state; Provide handling
-        if self.repository.is_dirty():
-            a = DirtyHandler(self.repository)
-    def loadColors(self):
-        count = 0
-        for i in range(self.count()):
-            item = self.item(i)
-            if (item.commit == self.repository.head.commit):
-                item.setBackground(QColor('lightgreen'))
-            elif count%2 == 0:
-                item.setBackground(QColor('lightgray'))
-            else:
-                item.setBackground(QColor('white'))
-            count+=1
-    def refresh(self):
-        self.clear()
-        self.loadCommits()
-        self.loadColors()
-    
-class CommitListItem(QListWidgetItem):
-    def __init__(self, commit):
-        QListWidgetItem.__init__(self)
-        self.commit = commit # GitPython commit object
-        self.formatData()
-        self.setText(self.date+'\n'+self.message)
-        self.setToolTip('Hexsha: '+self.hexsha+'\n'+'Author:\t'+self.author)
-        self.setTextAlignment(Qt.AlignHCenter)
-    def formatData(self):
-        # Format info to be displayed as item text
-        self.date = str(time.asctime(time.gmtime(self.commit.committed_date)))
-        self.author = str(self.commit.author)
-        self.hexsha = str(self.commit.hexsha)
-        self.message = str(self.commit.message)
-
-class CommandConsole(QWidget):
-    def __init__(self, repository):
-        QWidget.__init__(self)
-        self.repository = repository
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-        self.subprocessCommand() # Run the default command
-    def loadObjects(self):
-        self.inputLine = QLineEdit('git status')
-        self.output = QTextEdit()
-    def loadFunctions(self):
-        self.inputLine.returnPressed.connect( self.subprocessCommand )
-    def loadLayout(self):
-        inputBox = QHBoxLayout()
-        inputBox.addWidget( self.inputLine )
-        outputBox = QHBoxLayout()
-        outputBox.addWidget( self.output )
-        container = QVBoxLayout()
-        container.addLayout(inputBox)
-        container.addLayout(outputBox)
-        self.setLayout(container)
-    def subprocessCommand(self):
-        '''Perform the command in self.inputLine and display the results'''
-        cmdList = self.inputLine.text().split(' ')
-        try:
-            rets = subprocess.check_output( cmdList )
-        except subprocess.CalledProcessError:
-            rets = 'Error running command: '+str(cmdList)+'\n'+str(subprocess.CalledProcessError)
-        except Exception, e:
-            rets = 'Error running command: '+str(cmdList)+'\n'+str(e)+'\n'+e.__doc__+'\n'+e.message
-        self.output.setText( rets )
-
-def main(repository=None): #===
-    '''Pass in a path to git repository... return populated RepositoryViewer object'''
-    if repository is None:
-        msg = QMessageBox()
-        msg.setText('gitTool: Please browse for your repository')
-        msg.exec_()
-        # Browse for folder 
-        browse = BrowseRepository()
-        repository = browse.output
-    try: # Open repository for gitTool
-        repo = Repo(repository)
-    except InvalidGitRepositoryError, e: # Git repository not initialized
-        a = InvalidRepoHandler(repository)
-        if a.result(): # success: result == 1
-            repo = Repo(repository)
-        else:
-            print 'Did not initialize repository'
-            return
-    except:
-        print 'Problem loading repository, quitting...' #===
-        return
-    finally:
-        return RepositoryViewer(repo)
-
-#=== TEST SCRIPT
-if __name__ == '__main__':
-    app = QApplication.instance()
-    if app == None:
-        app = QApplication([])
-    a = main()
-    a.show()
-    app.exec_()
