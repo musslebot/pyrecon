@@ -13,23 +13,23 @@ class RepoViewer(QWidget): #===
         self.loadFunctions()
         self.loadLayout()
     def loadObjects(self): #===
-        self.setWindowTitle('Repository: '+str(self.repo.directory))
+        self.setWindowTitle('Repository Viewer')
         self.branchList = BranchViewer(self.repo, self)
-        self.branchOptions = QPushButton('Branch Options') #===
+        self.branchOptions = QPushButton('Branch Options')
         self.commitList = CommitViewer(self.repo, self)
-        self.commitOptions = QPushButton('Commit Options') #===
+        self.commitOptions = QPushButton('Commit Options')
         self.content = QStackedWidget() #=== View contents of repo
-        # self.refreshBut = QPushButton('Sync && Refresh')
+        self.syncBut = QPushButton('Sync with remote')
     def loadFunctions(self): #===
-        # self.refreshBut.clicked.connect(self.refreshAll)
-        # self.refreshBut.setMinimumHeight(50)
+        self.syncBut.clicked.connect(self.remoteSync)
+        self.syncBut.setMinimumHeight(50)
         self.branchOptions.clicked.connect(self.branchList.openOptions)
         self.commitOptions.clicked.connect(self.commitList.openOptions)
     def loadLayout(self):
         container = QVBoxLayout()
         contentLayout = QVBoxLayout()
-        # contentLayout.addWidget(self.refreshBut)
-        contentLayout.addWidget(QLabel('Repository Content'))
+        contentLayout.addWidget(self.syncBut)
+        contentLayout.addWidget(QLabel('Repository Content: %s'%self.repo.directory))
         contentLayout.addWidget(self.content)
         branchLayout = QVBoxLayout()
         branchHeader = QHBoxLayout()
@@ -58,7 +58,9 @@ class RepoViewer(QWidget): #===
             print 'modified'
         self.branchList.refresh()
         self.commitList.refresh()
-        return
+    def remoteSync(self,remote='origin'): #===
+        print 'syncing w/ remote' #===
+        self.refreshAll()
 
 class BranchViewer(QListWidget):
     class BranchItem(QListWidgetItem):
@@ -109,14 +111,20 @@ class BranchViewer(QListWidget):
                 item.setBackground(QColor('lightgray'))
             else:
                 item.setBackground(QColor('white'))
+            #=== if not pushed to remote
+            if item.branch.name not in self.repo.git.branch('-r'):
+                item.setBackground(QColor('yellow'))
+                item.setToolTip('This branch has not been pushed to the remote repository!')
             count+=1
-        if self.repo.isDetached(): # HEAD is detached
+        # HEAD is detached
+        if self.repo.isDetached():
             '''Add detached head item to list.'''
             item = QListWidgetItem()
             item.setText('DETACHED HEAD')
             item.setTextAlignment(Qt.AlignHCenter)
             item.setSizeHint(QSize(self.sizeHint().width(), 30))
-            item.setBackground(QColor('lightgreen'))
+            item.setBackground(QColor('red'))
+            item.setForeground(QColor('white'))
             self.insertItem(0,item)
     def refresh(self):
         self.clear()
@@ -200,26 +208,41 @@ class CommitViewer(QListWidget):
             self.loadActions()
         def loadActions(self):
             self.addAction('Checkout')
-            return
+    class CommitOptions(QMenu):
+        def __init__(self):
+            QMenu.__init__(self)
+            self.loadActions()
+        def loadActions(self):
+            self.addAction('Create New Commit')
+            self.addAction('Stash Manager')
     def __init__(self, repository, viewer):
         QListWidget.__init__(self)
         self.repo = repository
         self.viewer = viewer
         self.menu = self.CommitMenu()
+        self.options = self.CommitOptions()
         self.loadCommits()
         self.loadColors()
         self.setWordWrap(True)
         self.setFlow(QListView.LeftToRight)
         self.itemDoubleClicked.connect( self.openMenu )
-    def loadCommits(self):
-        if not self.repo.head.is_detached: # check for detached head
+    def loadCommits(self): #=== avoid remote?
+        # Not detached HEAD
+        if (not self.repo.isDetached() and self.repo.head.ref.name in self.repo.git.branch('-r')):
             head = self.repo.head.ref
+            # git commits from remote (origin)
             for commit in self.repo.iter_commits('origin/'+str(head.name)):
                 item = self.CommitItem(commit)
                 self.addItem(item)
+        # Detached HEAD or not remote
+        else:
+            for commit in self.repo.iter_commits():
+                item = self.CommitItem(commit)
+                self.addItem(item)
         # Check current state; Provide handling
-        if self.repo.is_dirty():
-            a = DirtyHandler(self.repo)
+        if self.repo.is_dirty(): #===
+            # a = DirtyHandler(self.repo)
+            return
     def loadColors(self):
         count = 0
         for i in range(self.count()):
@@ -231,9 +254,10 @@ class CommitViewer(QListWidget):
             else:
                 item.setBackground(QColor('white'))
             count+=1
-    def refresh(self):
-        self.clear()
-        self.loadCommits()
+    def refresh(self): #===
+        if not self.repo.isDetached():
+            self.clear()
+            self.loadCommits()
         self.loadColors()
     def openMenu(self, item):
         action = self.menu.exec_( QCursor.pos() )
@@ -241,4 +265,24 @@ class CommitViewer(QListWidget):
             response = self.repo.checkout(commit=item.commit)
             self.viewer.refreshAll()
     def openOptions(self): #===
+        action = self.options.exec_( QCursor.pos() )
+        if action.text() == 'Create New Commit':
+            self.newCommit()
+        elif action.text() == 'Stash Manager':
+            self.openStash()
+    def newCommit(self): #===
+        Message('New commit manager coming soon!')
+    def openStash(self): #===
+        dialog = StashHandler(self.repo)
+
+class ContentViewer(QStackedWidget): #===
+    '''View the contents of the current repository.'''
+    class ListView(QWidget): #===
+        def __init__(self):
+            QWidget.__init__(self)
+    class GraphicalView(QWidget): #===
+        def __init__(self):
+            QWidget.__init__(self)
+    def __init__(self, repository, viewer):
+        QStackedWidget.__init__(self)
         return
