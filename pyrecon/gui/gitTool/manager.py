@@ -17,11 +17,9 @@ class RepoManager(Repo): #===
         '''Return True if head is detached'''
         return self.head.is_detached
     def isBehind(self):
-        '''Returns True if the current HEAD is behind remote HEAD.'''
+        '''Returns True if the current branch is behind remote branch.'''
         self.fetch()
-        if 'behind' in self.status():
-            return True
-        return False
+        return 'behind' in self.status()
 
     # Local functions
     def checkout(self, branch=None, commit=None): #===

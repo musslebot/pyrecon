@@ -6,6 +6,7 @@ from git import *
 from pyrecon.gui.main import BrowseWidget
 
 class Message(QMessageBox):
+    '''Create a basic popup message.'''
     def __init__(self, message, details=None):
         QMessageBox.__init__(self)
         self.setText(str(message))
@@ -292,7 +293,7 @@ class CommitHandler(QDialog):
             self.done(0)
     def __init__(self, repository):
         QDialog.__init__(self)
-        self.setWindowTitle('Create New Version')
+        self.setWindowTitle('Create New Commit')
         self.repository = repository
         self.loadObjects()
         self.loadFunctions()
@@ -405,7 +406,7 @@ class StashHandler(QDialog):
             # Did user select appropriate stash?
             msg = QMessageBox()
             if index == 0:
-                msg.setText('Please select appropriate stash state to load.')
+                msg.setText('Please select appropriate stashed state to load.')
                 msg.exec_()
                 return
             # Pop stash
@@ -509,7 +510,7 @@ class StashHandler(QDialog):
             msg = QMessageBox()
             msg.setText('Your repository is dirty! Please commit or clean your repository before loading a stashed state.')
             msg.exec_()
-            return
+            return #===
         loadProcess = self.LoadStash(self.repository)
         if loadProcess.result():
             self.done(1)
