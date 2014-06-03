@@ -8,28 +8,47 @@ class RepoManager(Repo): #===
         self.directory = self.working_dir
         os.chdir(self.directory)
 
-    # Local functions
-    def checkout(self, branch=None, commit=None):
-        print 'checkout', branch #===
-        return
+    # Local state accessors
     def isDirty(self, untracked=False):
         '''Return True if the repository is modified.
         untracked=True (check untracked files too)'''
         return self.is_dirty(untracked_files=untracked)
+    def isDetached(self):
+        '''Return True if head is detached'''
+        return self.head.is_detached
+    def isBehind(self):
+        '''Returns True if the current HEAD is behind remote HEAD.'''
+        self.fetch()
+        if 'behind' in self.status():
+            return True
+        return False
+
+    # Local functions
+    def checkout(self, branch=None, commit=None): #===
+        if branch is not None:
+            cmd = ['git','checkout',str(branch.name)]
+        elif commit is not None:
+            cmd = ['git','checkout',str(commit.hexsha)]
+        return subprocess.check_output(cmd)
     def stash(self): #===
+        '''Stash command'''
         return
     def commit(self): #===
         '''Start process for new commit.'''
         return
-    def newBranch(self): #===
-        '''Start process for new branch creation.'''
-        return
-    def rename(self, branch=None):
-        print 'rename', branch #===
-        return
-    def delete(self, branch=None):
-        print 'delete', branch #===
-        return
+    def newBranch(self, name):
+        cmd = ['git', 'branch', str(name)]
+        return subprocess.check_output(cmd)
+    def rename(self, branch, newName):
+        cmd = ['git', 'branch', '-m', str(branch.name), str(newName)]
+        return subprocess.check_output(cmd) #=== only local?
+    def delete(self, branch): #===
+        # if on branch, switch to master first
+        if (not self.isDetached() and self.head.ref.name == branch):
+            self.branches.master.checkout()
+        # delete branch
+        cmd = ['git','branch','-D',str(branch)]
+        return subprocess.check_output(cmd)
     def merge(self): #===
         '''Merge two git objects'''
         return
@@ -38,12 +57,6 @@ class RepoManager(Repo): #===
         return subprocess.check_output(cmd)
 
     # From remote
-    def isBehind(self):
-        '''Returns True if the current HEAD is behind remote HEAD.'''
-        self.fetch()
-        if 'behind' in self.status():
-            return True
-        return False
     def fetch(self):
         '''Fetch changes from remote origin.'''
         cmd = ['git','fetch'] 

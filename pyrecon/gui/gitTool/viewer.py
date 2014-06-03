@@ -1,6 +1,7 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 from manager import RepoManager
+from dialogs import *
 import time
 
 class RepoViewer(QWidget): #===
@@ -18,14 +19,16 @@ class RepoViewer(QWidget): #===
         self.commitList = CommitViewer(self.repo, self)
         self.commitOptions = QPushButton('Commit Options') #===
         self.content = QStackedWidget() #=== View contents of repo
-        self.refreshBut = QPushButton('Sync && Refresh')
+        # self.refreshBut = QPushButton('Sync && Refresh')
     def loadFunctions(self): #===
-        self.refreshBut.clicked.connect(self.refreshAll)
-        self.refreshBut.setMinimumHeight(50)
+        # self.refreshBut.clicked.connect(self.refreshAll)
+        # self.refreshBut.setMinimumHeight(50)
+        self.branchOptions.clicked.connect(self.branchList.openOptions)
+        self.commitOptions.clicked.connect(self.commitList.openOptions)
     def loadLayout(self):
         container = QVBoxLayout()
         contentLayout = QVBoxLayout()
-        contentLayout.addWidget(self.refreshBut)
+        # contentLayout.addWidget(self.refreshBut)
         contentLayout.addWidget(QLabel('Repository Content'))
         contentLayout.addWidget(self.content)
         branchLayout = QVBoxLayout()
@@ -46,7 +49,7 @@ class RepoViewer(QWidget): #===
         container.addLayout(contentLayout)
         container.addLayout(listLayout)
         self.setLayout(container)
-    def refreshAll(self):
+    def refreshAll(self): #===
         if self.repo.isBehind(): # fetch from remote
             #=== BehindHandler()?
             print 'behind'
@@ -73,12 +76,20 @@ class BranchViewer(QListWidget):
             self.addAction('Checkout')
             self.addAction('Rename')
             self.addAction('Delete')
+    class BranchOptions(QMenu):
+        def __init__(self):
+            QMenu.__init__(self)
+            self.loadActions()
+        def loadActions(self):
+            self.addAction('New Branch')
+            self.addAction('Merge Branches')
     def __init__(self, repository, viewer):
         QListWidget.__init__(self)
         self.setWindowTitle('Branches')
         self.repo = repository
         self.viewer = viewer
         self.menu = self.BranchMenu()
+        self.options = self.BranchOptions()
         self.loadBranches()
         self.loadColors()
         self.itemDoubleClicked.connect( self.openMenu )
@@ -99,6 +110,14 @@ class BranchViewer(QListWidget):
             else:
                 item.setBackground(QColor('white'))
             count+=1
+        if self.repo.isDetached(): # HEAD is detached
+            '''Add detached head item to list.'''
+            item = QListWidgetItem()
+            item.setText('DETACHED HEAD')
+            item.setTextAlignment(Qt.AlignHCenter)
+            item.setSizeHint(QSize(self.sizeHint().width(), 30))
+            item.setBackground(QColor('lightgreen'))
+            self.insertItem(0,item)
     def refresh(self):
         self.clear()
         self.loadBranches()
@@ -107,11 +126,58 @@ class BranchViewer(QListWidget):
         action = self.menu.exec_( QCursor.pos() )
         if action.text() == 'Checkout':
             self.repo.checkout(branch=item.branch)
+            self.viewer.refreshAll()
         elif action.text() == 'Rename':
-            self.repo.rename(branch=item.branch)
+            self.renameBranch(item.branch)
         elif action.text() == 'Delete':
-            self.repo.delete(branch=item.branch)
-
+            self.deleteBranch(item.branch)
+    def openOptions(self):
+        action = self.options.exec_( QCursor.pos() )
+        if action.text() == 'New Branch': #===
+            self.createBranch()
+        elif action.text() == 'Merge Branches': #===
+            self.mergeBranches()
+    def renameBranch(self, branch):
+        dialog = BranchHandler.RenameBranch(branch)
+        if dialog.result(): # success
+            newName = dialog.textLine.text()
+            response = self.repo.rename(branch, newName)
+            self.viewer.refreshAll()
+            if response == '':
+                Message('Successfully renamed branch: %s -> %s'%(branch.name,newName))
+            else:
+                Message(response)
+            #=== check for remote version
+            #=== ask if remote version should be deleted too
+        else:
+            Message('Rename aborted...')
+    def deleteBranch(self, branch):
+        dialog = BranchHandler.DeleteBranch(branch)
+        if dialog.result():
+            response = self.repo.delete(branch=branch.name)
+            self.viewer.refreshAll()
+            if response == '':
+                Message('Successfully deleted branch: %s'%(branch.name))
+            else:
+                Message(response)
+            #=== check for remote version
+            #=== ask if remote version should be deleted too
+        else:
+            Message('Delete aborted...')
+    def createBranch(self):
+        dialog = BranchHandler.NewBranch()
+        if dialog.result():
+            newBranchName = dialog.branchName.text()
+            response = self.repo.newBranch(newBranchName)
+            self.viewer.refreshAll()
+            if response == '':
+                Message('New branch created: %s'%(newBranchName))
+            else:
+                Message(response)
+        else:
+            Message('Branch creation aborted...')
+    def mergeBranches(self): #===
+        return
 
 class CommitViewer(QListWidget):
     class CommitItem(QListWidgetItem):
@@ -133,6 +199,7 @@ class CommitViewer(QListWidget):
             QMenu.__init__(self)
             self.loadActions()
         def loadActions(self):
+            self.addAction('Checkout')
             return
     def __init__(self, repository, viewer):
         QListWidget.__init__(self)
@@ -171,4 +238,7 @@ class CommitViewer(QListWidget):
     def openMenu(self, item):
         action = self.menu.exec_( QCursor.pos() )
         if action.text() == 'Checkout':
-            self.repo.checkout(commit=item.commit)
+            response = self.repo.checkout(commit=item.commit)
+            self.viewer.refreshAll()
+    def openOptions(self): #===
+        return
