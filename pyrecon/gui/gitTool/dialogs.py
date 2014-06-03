@@ -5,12 +5,19 @@ import subprocess, os
 from git import *
 from pyrecon.gui.main import BrowseWidget
 
-class BranchHandler(QDialog): #===
-    class NewBranch(QDialog): #=== doesnt need repo, just dialog
-        def __init__(self, repository):
+class Message(QMessageBox):
+    def __init__(self, message, details=None):
+        QMessageBox.__init__(self)
+        self.setText(str(message))
+        if details is not None:
+            self.setInformativeText(str(details))
+        self.exec_()
+
+class BranchHandler(QDialog):
+    class NewBranch(QDialog):
+        def __init__(self):
             QDialog.__init__(self)
             self.setWindowTitle('Create New Branch')
-            self.repository = repository
             self.loadObjects()
             self.loadFunctions()
             self.loadLayout()
@@ -18,8 +25,7 @@ class BranchHandler(QDialog): #===
         def loadObjects(self):
             self.textLabel1 = QLabel('This will create a new branch named:')
             self.branchName = QLineEdit('<enter new branch name>')
-            self.textLabel2 = QLabel('from the current state of the repository:\n'+self.repository.head.commit.hexsha)
-            self.acceptBut = QPushButton('Make new branch')
+            self.acceptBut = QPushButton('Finish')
             self.cancelBut = QPushButton('Cancel')
         def loadFunctions(self):
             self.acceptBut.clicked.connect( self.userAccept )
@@ -28,15 +34,15 @@ class BranchHandler(QDialog): #===
             info = QVBoxLayout()
             info.addWidget(self.textLabel1)
             info.addWidget(self.branchName)
-            info.addWidget(self.textLabel2)
             buttons = QHBoxLayout()
-            buttons.addWidget(self.cancelBut)
             buttons.addWidget(self.acceptBut)
+            buttons.addWidget(self.cancelBut)
             container = QVBoxLayout()
             container.addLayout(info)
             container.addLayout(buttons)
             self.setLayout(container)
         def userAccept(self):
+            '''Check if valid branch name.'''
             if subprocess.call(['git', 'check-ref-format', '--branch', str(self.branchName.text())]) != 0:
                 msg = QMessageBox()
                 msg.setText('The branch name you have entered is invalid. Please try again...')
@@ -48,16 +54,27 @@ class BranchHandler(QDialog): #===
             self.done(0)
     class DeleteBranch(QDialog):
         def __init__(self, branch):
-            QDialog.__init__(self):
+            QDialog.__init__(self)
+            self.branch = branch
             self.loadObjects()
             self.loadFunctions()
             self.loadLayout()
-        def loadObjects(self): #===
-            return
-        def loadFunctions(self): #===
-            return
-        def loadLayout(self): #===
-            return
+            self.exec_()
+        def loadObjects(self):
+            self.info = QLabel('You are about to delete the branch: %s\nThis canNOT be undone, and you will lose data.'%(self.branch.name))
+            self.continueBut = QPushButton('Delete')
+            self.cancelBut = QPushButton('Cancel')
+        def loadFunctions(self):
+            self.continueBut.clicked.connect( self.okay )
+            self.cancelBut.clicked.connect( self.cancel )
+        def loadLayout(self):
+            buttons = QHBoxLayout()
+            buttons.addWidget(self.cancelBut)
+            buttons.addWidget(self.continueBut)
+            container = QVBoxLayout()
+            container.addWidget(self.info)
+            container.addLayout(buttons)
+            self.setLayout(container)
         def okay(self):
             self.done(1)
         def cancel(self):
@@ -71,7 +88,7 @@ class BranchHandler(QDialog): #===
             self.loadLayout()
             self.exec_()
         def loadObjects(self):
-            self.label = QLabel('Enter new name for %s'%self.branch.name)
+            self.label = QLabel('Enter new name for branch: %s'%self.branch.name)
             self.textLine = QLineEdit()
             self.okayBut = QPushButton('Rename')
             self.cancelBut = QPushButton('Cancel')
@@ -498,9 +515,6 @@ class StashHandler(QDialog):
             self.done(1)
         else:
             return
-
-class NewBranchHandler(QDialog):
-    
 
 class InvalidRepoHandler(QDialog): #===
     class RemoteRequest(QDialog): #===
