@@ -22,7 +22,7 @@ class RepoViewer(QWidget): #===
         self.commitOptions.setMaximumWidth(100)
         self.content = QStackedWidget() #=== View contents of repo
         self.syncBut = QPushButton('Sync with remote')
-        self.syncOpts = QPushButton('Remote Options') #===
+        # self.syncOpts = QPushButton('Remote Options') #===
         # Labels
         self.repoLabel = QLabel('Repository: %s'%self.repo.directory)
         self.repoLabel.setFont(QFont('Arial',14))
@@ -33,8 +33,8 @@ class RepoViewer(QWidget): #===
     def loadFunctions(self): #===
         self.syncBut.clicked.connect(self.remoteSync)
         self.syncBut.setMinimumHeight(50)
-        self.syncOpts.setMinimumHeight(50)
-        self.syncOpts.setMaximumWidth(100)
+        # self.syncOpts.setMinimumHeight(50)
+        # self.syncOpts.setMaximumWidth(100)
         self.branchOptions.clicked.connect(self.branchList.openOptions)
         self.commitOptions.clicked.connect(self.commitList.openOptions)
     def loadLayout(self):
@@ -42,7 +42,7 @@ class RepoViewer(QWidget): #===
         contentLayout = QVBoxLayout()
         remoteButs = QHBoxLayout()
         remoteButs.addWidget(self.syncBut)
-        remoteButs.addWidget(self.syncOpts)
+        # remoteButs.addWidget(self.syncOpts)
         # contentLayout.addLayout(remoteButs)
         contentLayout.addWidget(self.repoLabel)
         contentLayout.addWidget(self.content)
@@ -121,7 +121,7 @@ class BranchViewer(QListWidget):
         for i in range(self.count()):
             item = self.item(i)
             if (not self.repo.head.is_detached and
-                item.branch.commit == self.repo.head.commit):
+                item.branch.name == self.repo.head.ref.name):
                 item.setBackground(QColor('lightgreen'))
             elif count%2 == 0:
                 item.setBackground(QColor('lightgray'))
@@ -290,6 +290,12 @@ class CommitViewer(QListWidget):
         Message('New commit manager coming soon!')
     def openStash(self): #===
         dialog = StashHandler(self.repo)
+
+class RemoteViewer(QWidget): #===
+    '''Manage fetch/push with remote server.'''
+    def __init__(self, repoViewer):
+        QWidget.__init__(self)
+        self.viewer = repoViewer
 
 class ContentViewer(QStackedWidget): #===
     '''View the contents of the current repository.'''
