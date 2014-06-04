@@ -9,6 +9,9 @@ class RepoManager(Repo): #===
         os.chdir(self.directory)
 
     # Local state accessors
+    def needsHandling(self, untracked=False): #===
+        '''Returns True if the repo needs any kind of handling.'''
+        return (self.isDirty(untracked=untracked) or self.isDetached() or self.isBehind() or self.isDiverged())
     def isDirty(self, untracked=False):
         '''Return True if the repository is modified.
         untracked=True (check untracked files too)'''
@@ -20,6 +23,10 @@ class RepoManager(Repo): #===
         '''Returns True if the current branch is behind remote branch.'''
         self.fetch()
         return 'behind' in self.status()
+    def isDiverged(self): #===
+        '''Returns True if the current branch has diverged from remote'''
+        self.fetch()
+        return 'diverged' in self.status()
 
     # Local functions
     def checkout(self, branch=None, commit=None): #===
@@ -55,16 +62,18 @@ class RepoManager(Repo): #===
         return subprocess.check_output(cmd)
 
     # From remote
-    def fetch(self):
+    def fetch(self, refspec=None):
         '''Fetch changes from remote origin.'''
-        cmd = ['git','fetch'] 
+        cmd = ['git','fetch','origin'] 
+        if refspec is not None:
+            cmd.append(str(refspec))
         return subprocess.check_output(cmd)
     def pull(self):
         '''Pull is fetch+merge.'''
         return
 
     # To remote
-    def push(self):
-        #=== check for changes
-        cmd = ['git','push','origin','HEAD']
+    def push(self, remote='origin', refspec='HEAD'):
+        #=== check for changes; test what happens if remote is ahead
+        cmd = ['git','push',str(remote),str(refspec)]
         return subprocess.check_output(cmd)
