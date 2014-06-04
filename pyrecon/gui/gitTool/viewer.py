@@ -16,30 +16,45 @@ class RepoViewer(QWidget): #===
         self.setWindowTitle('Repository Viewer')
         self.branchList = BranchViewer(self.repo, self)
         self.branchOptions = QPushButton('Branch Options')
+        self.branchOptions.setMaximumWidth(100)
         self.commitList = CommitViewer(self.repo, self)
         self.commitOptions = QPushButton('Commit Options')
+        self.commitOptions.setMaximumWidth(100)
         self.content = QStackedWidget() #=== View contents of repo
         self.syncBut = QPushButton('Sync with remote')
+        self.syncOpts = QPushButton('Remote Options') #===
+        # Labels
+        self.repoLabel = QLabel('Repository: %s'%self.repo.directory)
+        self.repoLabel.setFont(QFont('Arial',14))
+        self.branchLabel = QLabel('Local Branches')
+        self.branchLabel.setFont(QFont('Arial',16))
+        self.commitLabel = QLabel('Local Commits')
+        self.commitLabel.setFont(QFont('Arial',16))
     def loadFunctions(self): #===
         self.syncBut.clicked.connect(self.remoteSync)
         self.syncBut.setMinimumHeight(50)
+        self.syncOpts.setMinimumHeight(50)
+        self.syncOpts.setMaximumWidth(100)
         self.branchOptions.clicked.connect(self.branchList.openOptions)
         self.commitOptions.clicked.connect(self.commitList.openOptions)
     def loadLayout(self):
         container = QVBoxLayout()
         contentLayout = QVBoxLayout()
-        contentLayout.addWidget(self.syncBut)
-        contentLayout.addWidget(QLabel('Repository Content: %s'%self.repo.directory))
+        remoteButs = QHBoxLayout()
+        remoteButs.addWidget(self.syncBut)
+        remoteButs.addWidget(self.syncOpts)
+        # contentLayout.addLayout(remoteButs)
+        contentLayout.addWidget(self.repoLabel)
         contentLayout.addWidget(self.content)
         branchLayout = QVBoxLayout()
         branchHeader = QHBoxLayout()
-        branchHeader.addWidget(QLabel('Branches'))
+        branchHeader.addWidget(self.branchLabel)
         branchHeader.addWidget(self.branchOptions)
         branchLayout.addLayout(branchHeader)
         branchLayout.addWidget(self.branchList)
         commitLayout = QVBoxLayout()
         commitHeader = QHBoxLayout()
-        commitHeader.addWidget(QLabel('Commits'))
+        commitHeader.addWidget(self.commitLabel)
         commitHeader.addWidget(self.commitOptions)
         commitLayout.addLayout(commitHeader)
         commitLayout.addWidget(self.commitList)
@@ -48,6 +63,7 @@ class RepoViewer(QWidget): #===
         listLayout.addLayout(commitLayout)
         container.addLayout(contentLayout)
         container.addLayout(listLayout)
+        container.addLayout(remoteButs)
         self.setLayout(container)
     def refreshAll(self): #===
         if self.repo.isBehind(): # fetch from remote
@@ -58,7 +74,7 @@ class RepoViewer(QWidget): #===
             print 'modified'
         self.branchList.refresh()
         self.commitList.refresh()
-    def remoteSync(self,remote='origin'): #===
+    def remoteSync(self,remote='origin',refspec=None): #===
         print 'syncing w/ remote' #===
         self.refreshAll()
 
