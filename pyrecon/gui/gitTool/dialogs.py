@@ -25,7 +25,8 @@ class BranchHandler(QDialog):
             self.exec_()
         def loadObjects(self):
             self.textLabel1 = QLabel('This will create a new branch named:')
-            self.branchName = QLineEdit('<enter new branch name>')
+            self.branchName = QLineEdit()
+            self.textLabel2 = QLabel('from the currently checkedout commit.')
             self.acceptBut = QPushButton('Finish')
             self.cancelBut = QPushButton('Cancel')
         def loadFunctions(self):
@@ -35,6 +36,7 @@ class BranchHandler(QDialog):
             info = QVBoxLayout()
             info.addWidget(self.textLabel1)
             info.addWidget(self.branchName)
+            info.addWidget(self.textLabel2)
             buttons = QHBoxLayout()
             buttons.addWidget(self.acceptBut)
             buttons.addWidget(self.cancelBut)
