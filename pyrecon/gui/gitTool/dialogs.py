@@ -6,7 +6,7 @@ from git import *
 from pyrecon.gui.main import BrowseWidget
 
 class Message(QMessageBox):
-    '''Create a basic popup message.'''
+    '''Create a basic popup message containing a message.'''
     def __init__(self, message, details=None):
         QMessageBox.__init__(self)
         self.setText(str(message))
@@ -14,6 +14,7 @@ class Message(QMessageBox):
             self.setInformativeText(str(details))
         self.exec_()
 
+# Handlers for managing local repo
 class BranchHandler(QDialog):
     class NewBranch(QDialog):
         def __init__(self):
@@ -26,7 +27,7 @@ class BranchHandler(QDialog):
         def loadObjects(self):
             self.textLabel1 = QLabel('This will create a new branch named:')
             self.branchName = QLineEdit()
-            self.textLabel2 = QLabel('from the currently checkedout commit.')
+            self.textLabel2 = QLabel('from the currently checked-out commit.')
             self.acceptBut = QPushButton('Finish')
             self.cancelBut = QPushButton('Cancel')
         def loadFunctions(self):
@@ -113,88 +114,6 @@ class BranchHandler(QDialog):
             self.done(1) 
         def cancel(self):
             self.done(0)
-
-class DirtyHandler(QDialog): #===
-    '''Class for handling a dirty repository. Display modified/untracked files and allow user to handle them via stash or clean.'''
-    def __init__(self, repository):
-        QDialog.__init__(self)
-        self.repository = repository
-        # self.remote = Remote(repository, 'origin') #=== for checking ahead/behind maybe
-        self.setWindowTitle('Dirty Repository Manager')
-
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-        self.exec_()
-    def loadObjects(self):
-        self.info = QTextEdit()# Info about the current dirty state
-        self.info.setText( subprocess.check_output( ['git','status'] ) )
-        self.stashButton = QPushButton('Save (stash) current state')
-        self.commitButton = QPushButton('Commit a new version')
-        self.forceUpdateButton = QPushButton('Overwrite with most recent version')
-        self.forceResetButton = QPushButton('Reset to state before modification')
-        self.cancelButton = QPushButton('Cancel')
-    def loadFunctions(self):
-        # Button function links
-        self.stashButton.clicked.connect( self.stashStatus )
-        self.commitButton.clicked.connect( self.commitStatus )
-        self.forceUpdateButton.clicked.connect( self.updateStatus ) #===
-        self.forceResetButton.clicked.connect( self.resetStatus ) #===
-        self.cancelButton.clicked.connect( self.close )
-        # Button ToolTips
-        self.stashButton.setToolTip('This will save (stash) the current state into the stash, which can be retrieved at a later time via the \"git stash\" command ')
-        self.commitButton.setToolTip('This will initiate the process of creating and pushing the current status to the repository as a new version')
-        self.forceUpdateButton.setToolTip('This will overwrite the current status with the most recent version of this branch')
-        self.forceResetButton.setToolTip('This will overwrite the current status with the version before changes were made')
-    def loadLayout(self):
-        container = QVBoxLayout()
-        info = QVBoxLayout()
-        info.addWidget(self.info)
-        buttons = QVBoxLayout()
-        #=== status dependent loads
-        buttons.addWidget(self.stashButton)
-        buttons.addWidget(self.commitButton) # Only if not behind #===
-        buttons.addWidget(self.forceUpdateButton) # Only if behind #===
-        buttons.addWidget(self.forceResetButton) # Only if not behind #===
-        buttons.addWidget(self.cancelButton)
-        container.addLayout(info)
-        container.addLayout(buttons)
-        self.setLayout(container)
-    def commitStatus(self):
-        commitProcess = CommitHandler(self.repository)
-        if commitProcess.result(): # result == 1
-            self.done(1)
-        else:
-            return
-    def stashStatus(self):
-        stashProcess = StashHandler(self.repository)
-        if stashProcess.result():
-            self.done(1)
-        else:
-            return
-    def resetStatus(self):
-        '''Hard reset of HEAD'''
-        confirm = QMessageBox()
-        confirm.setText('Are you sure you want to reset your repository\'s state?')
-        confirm.setInformativeText('This will permanently remove any modifications you have made from the previous state and can not be retrieved once deleted.')
-        confirm.setStandardButtons( QMessageBox.Yes | QMessageBox.No)
-        ret = confirm.exec_()
-        if ret == QMessageBox.Yes:
-            try:
-                self.repository.head.reset('--hard')
-                self.done(1)
-            except BaseException, e:
-                msg = QMessageBox()
-                msg.setText('Reset failed.\nReason:\n\n')
-                msg.setInformativeText(str(e))
-                msg.exec_()
-        elif ret == QMessageBox.No:
-            msg = QMessageBox()
-            msg.setText('Aborting reset...')
-            msg.exec_()
-    #===
-    def updateStatus(self):
-        return
 
 class CommitHandler(QDialog):
     '''Handles adding/removing files from the index, supplying a commit message, and pushing to the remote repository.'''
@@ -519,72 +438,6 @@ class StashHandler(QDialog):
         else:
             return
 
-class InvalidRepoHandler(QDialog): #===
-    class RemoteRequest(QDialog): #===
-        '''Request location of remote repository'''
-        def __init__(self):
-            QDialog.__init__(self)
-            self.loadObjects()
-            self.loadFunctions()
-            self.loadLayout()
-            self.exec_()
-        def loadObjects(self):
-            self.label = QLabel('Enter the path to the remote repository:')
-            self.remotePath = QLineEdit()
-            self.doneBut = QPushButton('Continue')
-        def loadFunctions(self):
-            self.doneBut.setMinimumHeight(50)
-            self.doneBut.clicked.connect( self.finish )
-        def loadLayout(self):
-            container = QVBoxLayout()
-            container.addWidget(self.label)
-            container.addWidget(self.remotePath)
-            container.addWidget(self.doneBut)
-            self.setLayout(container)
-        def finish(self): #===
-            # check if appropriate
-            msg = QMessageBox()
-            try:
-                subprocess.call(['git','remote','add','origin',str(self.remotePath.text())])
-                subprocess.call(['git','branch','-u','origin'])
-                self.done(1)
-            except BaseException, e:
-                msg.setText('Error:\n\n'+str(e))
-                msg.exec_()
-                return
-    def __init__(self, path):
-        QDialog.__init__(self)
-        self.path = path
-        os.chdir(self.path)
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-        self.exec_()
-    def loadObjects(self):
-        self.info1 = QLabel()
-        self.info1.setText(str(self.path)+' is an invalid Git repository. Would you like to initialize it as a git repository?')
-        self.yes = QPushButton('Yes, initialize repository')
-        self.no = QPushButton('No, quit the gitTool')
-    def loadFunctions(self):
-        self.yes.setMinimumHeight(50)
-        self.no.setMinimumHeight(50)
-        self.yes.clicked.connect( self.clickYes )
-        self.no.clicked.connect( self.clickNo )
-    def loadLayout(self):
-        container = QVBoxLayout()
-        container.addWidget(self.info1)
-        buttons = QHBoxLayout()
-        buttons.addWidget(self.yes)
-        buttons.addWidget(self.no)
-        container.addLayout(buttons)
-        self.setLayout(container)
-    def clickYes(self):
-        rets = subprocess.check_output(['git','init'])
-        remReq = self.RemoteRequest()
-        self.done(1)
-    def clickNo(self):
-        self.done(0)
-
 class MergeHandler(QDialog): #===
     def __init__(self, repository):
         QDialog.__init__(self)
@@ -679,6 +532,172 @@ class MergeHandler(QDialog): #===
             msg.exec_()
             return
 
+# Handlers for states that conflict with remote
+class RemoteHandler(QDialog):
+    def __init__(self):
+        QDialog.__init__(self)
+        self.exec_()
+class BehindHandler(QDialog):
+    def __init__(self):
+        QDialog.__init__(self)
+        self.exec_()
+class AheadHandler(QDialog):
+    def __init__(self):
+        QDialog.__init__(self)
+        self.exec_()
+class DivergedHandler(QDialog):
+    def __init__(self):
+        QDialog.__init__(self)
+        self.exec_()
+class DirtyHandler(QDialog): #===
+    '''Class for handling a dirty repository. Display modified/untracked files and allow user to handle them via stash or clean.'''
+    def __init__(self, repository):
+        QDialog.__init__(self)
+        self.repository = repository
+        # self.remote = Remote(repository, 'origin') #=== for checking ahead/behind maybe
+        self.setWindowTitle('Dirty Repository Manager')
+
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.exec_()
+    def loadObjects(self):
+        self.info = QTextEdit()# Info about the current dirty state
+        self.info.setText( subprocess.check_output( ['git','status'] ) )
+        self.stashButton = QPushButton('Save (stash) current state')
+        self.commitButton = QPushButton('Commit a new version')
+        self.forceUpdateButton = QPushButton('Overwrite with most recent version')
+        self.forceResetButton = QPushButton('Reset to state before modification')
+        self.cancelButton = QPushButton('Cancel')
+    def loadFunctions(self):
+        # Button function links
+        self.stashButton.clicked.connect( self.stashStatus )
+        self.commitButton.clicked.connect( self.commitStatus )
+        self.forceUpdateButton.clicked.connect( self.updateStatus ) #===
+        self.forceResetButton.clicked.connect( self.resetStatus ) #===
+        self.cancelButton.clicked.connect( self.close )
+        # Button ToolTips
+        self.stashButton.setToolTip('This will save (stash) the current state into the stash, which can be retrieved at a later time via the \"git stash\" command ')
+        self.commitButton.setToolTip('This will initiate the process of creating and pushing the current status to the repository as a new version')
+        self.forceUpdateButton.setToolTip('This will overwrite the current status with the most recent version of this branch')
+        self.forceResetButton.setToolTip('This will overwrite the current status with the version before changes were made')
+    def loadLayout(self):
+        container = QVBoxLayout()
+        info = QVBoxLayout()
+        info.addWidget(self.info)
+        buttons = QVBoxLayout()
+        #=== status dependent loads
+        buttons.addWidget(self.stashButton)
+        buttons.addWidget(self.commitButton) # Only if not behind #===
+        buttons.addWidget(self.forceUpdateButton) # Only if behind #===
+        buttons.addWidget(self.forceResetButton) # Only if not behind #===
+        buttons.addWidget(self.cancelButton)
+        container.addLayout(info)
+        container.addLayout(buttons)
+        self.setLayout(container)
+    def commitStatus(self):
+        commitProcess = CommitHandler(self.repository)
+        if commitProcess.result(): # result == 1
+            self.done(1)
+        else:
+            return
+    def stashStatus(self):
+        stashProcess = StashHandler(self.repository)
+        if stashProcess.result():
+            self.done(1)
+        else:
+            return
+    def resetStatus(self):
+        '''Hard reset of HEAD'''
+        confirm = QMessageBox()
+        confirm.setText('Are you sure you want to reset your repository\'s state?')
+        confirm.setInformativeText('This will permanently remove any modifications you have made from the previous state and can not be retrieved once deleted.')
+        confirm.setStandardButtons( QMessageBox.Yes | QMessageBox.No)
+        ret = confirm.exec_()
+        if ret == QMessageBox.Yes:
+            try:
+                self.repository.head.reset('--hard')
+                self.done(1)
+            except BaseException, e:
+                msg = QMessageBox()
+                msg.setText('Reset failed.\nReason:\n\n')
+                msg.setInformativeText(str(e))
+                msg.exec_()
+        elif ret == QMessageBox.No:
+            msg = QMessageBox()
+            msg.setText('Aborting reset...')
+            msg.exec_()
+    #===
+    def updateStatus(self):
+        return
+
+# Handlers for connecting gitTool to a local repo
+class InvalidRepoHandler(QDialog): #===
+    class RemoteRequest(QDialog): #===
+        '''Request location of remote repository'''
+        def __init__(self):
+            QDialog.__init__(self)
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+            self.exec_()
+        def loadObjects(self):
+            self.label = QLabel('Enter the path to the remote repository:')
+            self.remotePath = QLineEdit()
+            self.doneBut = QPushButton('Continue')
+        def loadFunctions(self):
+            self.doneBut.setMinimumHeight(50)
+            self.doneBut.clicked.connect( self.finish )
+        def loadLayout(self):
+            container = QVBoxLayout()
+            container.addWidget(self.label)
+            container.addWidget(self.remotePath)
+            container.addWidget(self.doneBut)
+            self.setLayout(container)
+        def finish(self): #===
+            # check if appropriate
+            msg = QMessageBox()
+            try:
+                subprocess.call(['git','remote','add','origin',str(self.remotePath.text())])
+                subprocess.call(['git','branch','-u','origin'])
+                self.done(1)
+            except BaseException, e:
+                msg.setText('Error:\n\n'+str(e))
+                msg.exec_()
+                return
+    def __init__(self, path):
+        QDialog.__init__(self)
+        self.path = path
+        os.chdir(self.path)
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.exec_()
+    def loadObjects(self):
+        self.info1 = QLabel()
+        self.info1.setText(str(self.path)+' is an invalid Git repository. Would you like to initialize it as a git repository?')
+        self.yes = QPushButton('Yes, initialize repository')
+        self.no = QPushButton('No, quit the gitTool')
+    def loadFunctions(self):
+        self.yes.setMinimumHeight(50)
+        self.no.setMinimumHeight(50)
+        self.yes.clicked.connect( self.clickYes )
+        self.no.clicked.connect( self.clickNo )
+    def loadLayout(self):
+        container = QVBoxLayout()
+        container.addWidget(self.info1)
+        buttons = QHBoxLayout()
+        buttons.addWidget(self.yes)
+        buttons.addWidget(self.no)
+        container.addLayout(buttons)
+        self.setLayout(container)
+    def clickYes(self):
+        rets = subprocess.check_output(['git','init'])
+        remReq = self.RemoteRequest()
+        self.done(1)
+    def clickNo(self):
+        self.done(0)
+
 class BrowseRepository(QDialog): #===
     def __init__(self):
         QDialog.__init__(self)
@@ -708,4 +727,3 @@ class BrowseRepository(QDialog): #===
             msg.setText('Invalid output directory: '+str(self.output))
             msg.exec_()
             return
-
