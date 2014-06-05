@@ -533,19 +533,157 @@ class MergeHandler(QDialog): #===
             return
 
 # Handlers for states that conflict with remote
-class RemoteHandler(QDialog):
+class SyncHandler(QDialog): #===
+    class LocalBranchItem(QListWidgetItem):
+        class LocalMenu(QMenu):
+            def __init__(self, color):
+                QMenu.__init__(self)
+                self.loadActions(color)
+            def loadActions(self, color):
+                if color == 'green':
+                    self.addAction('Already in sync')
+                elif color == 'yellow':
+                    self.addAction('Sync with remote')
+                elif color == 'red':
+                    self.addAction('Push to remote')
+        def __init__(self, name, remName, color):
+            QListWidgetItem.__init__(self)
+            self.setText(name)
+            self.loadSpecifics(remName, color)
+            self.setTextAlignment(Qt.AlignHCenter)
+            self.setSizeHint(QSize(self.sizeHint().width(), 30))
+        def loadSpecifics(self, remName, color):
+            self.menu = self.LocalMenu(color)
+            if color == 'green':
+                self.setToolTip('This local branch is synced with %s'%remName)
+                self.setBackground(QColor('lightgreen'))
+            elif color == 'yellow':
+                self.setToolTip('This local branch is tracking %s but is out-of-sync'%remName)
+                self.setBackground(QColor('yellow'))
+            elif color == 'red':
+                self.setToolTip('This local branch does not exist in the remote repository.')
+                self.setBackground(QColor('red'))
+                self.setForeground(QColor('white'))
+    class RemoteBranchItem(QListWidgetItem):
+        class RemoteMenu(QMenu):
+            def __init__(self, color):
+                QMenu.__init__(self)
+                self.loadActions(color)
+            def loadActions(self, color):
+                if color == 'green':
+                    self.addAction('Already in sync')
+                elif color == 'yellow':
+                    self.addAction('Sync with local')
+                elif color == 'red':
+                    self.addAction('Copy to local')
+        def __init__(self, name, locName, color):
+            QListWidgetItem.__init__(self)
+            self.setText(name)
+            self.loadSpecifics(locName, color)
+            self.setTextAlignment(Qt.AlignHCenter)
+            self.setSizeHint(QSize(self.sizeHint().width(), 30))
+        def loadSpecifics(self, locName, color):
+            self.menu = self.RemoteMenu(color)
+            if color == 'green':
+                self.setToolTip('This remote branch is tracked by %s and is up-to-date'%locName)
+                self.setBackground(QColor('lightgreen'))
+            elif color == 'yellow':
+                self.setToolTip('This remote branch is tracked by %s but is out-of-sync'%locName)
+                self.setBackground(QColor('yellow'))
+            elif color == 'red':
+                self.setToolTip('This remote branch is not tracked by your local repository.')
+                self.setBackground(QColor('red'))
+                self.setForeground(QColor('white'))
+    def __init__(self, repo):
+        QDialog.__init__(self)
+        self.setWindowTitle('Sync Manager')
+        self.repo = repo
+        self.repo.remote().fetch() # Fetch the most up-to-date remote
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
+        self.loadBranchLists()
+        self.exec_()
+    def loadObjects(self):
+        self.localLabel = QLabel('Local Branches')
+        self.localBranches = QListWidget()
+        self.remoteLabel = QLabel('Remote Branches')
+        self.remoteBranches = QListWidget()
+        self.doneBut = QPushButton('Finished')
+        self.doneBut.setMinimumHeight(50)
+    def loadFunctions(self):
+        self.doneBut.clicked.connect( self.done )
+        self.localBranches.itemDoubleClicked.connect( self.openMenu ) #===
+        self.remoteBranches.itemDoubleClicked.connect( self.openMenu ) #===
+    def loadLayout(self):
+        container = QVBoxLayout()
+        local = QVBoxLayout()
+        local.addWidget(self.localLabel)
+        local.addWidget(self.localBranches)
+        remote = QVBoxLayout()
+        remote.addWidget(self.remoteLabel)
+        remote.addWidget(self.remoteBranches)
+        branches = QHBoxLayout()
+        branches.addLayout(local)
+        branches.addLayout(remote)
+        container.addLayout(branches)
+        container.addWidget(self.doneBut)
+        self.setLayout(container)
+    def pairBranches(self):
+        # Get branches
+        local = [branch for branch in self.repo.branches]
+        remote = [branch.lstrip(' ') for branch in self.repo.git.branch('-r').split('\n') if '->' not in branch] # This is only names of remote branch
+        # Pair local branches with tracked remote branch and sync state color
+        tracked = []
+        for branch in local:
+            # Local branch is tracking remote branch
+            if str(branch.tracking_branch()) in remote:
+                remoteRef = self.repo.remote().refs[branch.name]
+                # is branch out of sync?
+                if branch.commit == remoteRef.commit:
+                    tracked.append( (branch.name,remoteRef.name,'green') ) # in sync
+                else:
+                    tracked.append( (branch.name,remoteRef.name,'yellow') ) # not synced
+            else:
+                tracked.append( (branch.name,None,'red') ) # not tracked
+        # append remote branches that dont have local ref
+        appendedRemotes = [branch[1] for branch in tracked]
+        for branch in remote:
+            if branch not in appendedRemotes:
+                tracked.append( (None,branch,'red') )
+        return tracked
+    def loadBranchLists(self):
+        branchPairs = self.pairBranches()
+        synced = [pair for pair in branchPairs if pair[2] == 'green']
+        outSync = [pair for pair in branchPairs if pair[2] == 'yellow']
+        noTrack = [pair for pair in branchPairs if pair[2] == 'red']
+        for pair in synced:
+            self.localBranches.addItem( self.LocalBranchItem(pair[0],pair[1],'green') )
+            self.remoteBranches.addItem( self.RemoteBranchItem(pair[1],pair[0],'green'))
+        for pair in outSync:
+            self.localBranches.addItem( self.LocalBranchItem(pair[0],pair[1],'yellow') )
+            self.remoteBranches.addItem( self.RemoteBranchItem(pair[1],pair[0],'yellow'))
+        for pair in noTrack:
+            if pair[0] is None: # on remote, not in local
+                self.remoteBranches.addItem( self.RemoteBranchItem(pair[1],None,'red') )
+            else: # in local, not on remote
+                self.localBranches.addItem( self.LocalBranchItem(pair[0],None,'red') )
+    def refresh(self): #===
+        self.localBranches.clear()
+        self.remoteBranches.clear()
+        self.loadBranchLists()
+    def openMenu(self, item): #===
+        action = item.menu.popup( QCursor.pos() )
+
+class BehindHandler(QDialog): #===
     def __init__(self):
         QDialog.__init__(self)
         self.exec_()
-class BehindHandler(QDialog):
+class AheadHandler(QDialog): #===
     def __init__(self):
         QDialog.__init__(self)
         self.exec_()
-class AheadHandler(QDialog):
-    def __init__(self):
-        QDialog.__init__(self)
-        self.exec_()
-class DivergedHandler(QDialog):
+class DivergedHandler(QDialog): #===
     def __init__(self):
         QDialog.__init__(self)
         self.exec_()
