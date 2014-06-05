@@ -20,9 +20,10 @@ class RepoViewer(QWidget): #===
         self.commitList = CommitViewer(self.repo, self)
         self.commitOptions = QPushButton('Commit Options')
         self.commitOptions.setMaximumWidth(100)
-        self.content = QStackedWidget() #=== View contents of repo
+        # self.content = QStackedWidget() #=== View contents of repo
         self.syncBut = QPushButton('Sync with remote')
-        # self.syncOpts = QPushButton('Remote Options') #===
+        self.syncBut.setMinimumHeight(50)
+        self.syncBut.setToolTip('Open manager for handling remote content.')
         # Labels
         self.repoLabel = QLabel('Repository: %s'%self.repo.directory)
         self.repoLabel.setFont(QFont('Arial',14))
@@ -32,9 +33,6 @@ class RepoViewer(QWidget): #===
         self.commitLabel.setFont(QFont('Arial',16))
     def loadFunctions(self): #===
         self.syncBut.clicked.connect(self.remoteSync)
-        self.syncBut.setMinimumHeight(50)
-        # self.syncOpts.setMinimumHeight(50)
-        # self.syncOpts.setMaximumWidth(100)
         self.branchOptions.clicked.connect(self.branchList.openOptions)
         self.commitOptions.clicked.connect(self.commitList.openOptions)
     def loadLayout(self):
@@ -42,10 +40,8 @@ class RepoViewer(QWidget): #===
         contentLayout = QVBoxLayout()
         remoteButs = QHBoxLayout()
         remoteButs.addWidget(self.syncBut)
-        # remoteButs.addWidget(self.syncOpts)
-        # contentLayout.addLayout(remoteButs)
         contentLayout.addWidget(self.repoLabel)
-        contentLayout.addWidget(self.content)
+        # contentLayout.addWidget(self.content)
         branchLayout = QVBoxLayout()
         branchHeader = QHBoxLayout()
         branchHeader.addWidget(self.branchLabel)
@@ -66,16 +62,14 @@ class RepoViewer(QWidget): #===
         container.addLayout(remoteButs)
         self.setLayout(container)
     def refreshAll(self): #===
-        if self.repo.isBehind(): # fetch from remote
-            #=== BehindHandler()?
-            print 'behind'
-        if self.repo.isDirty():
-            #=== ModifiedHandler()?
-            print 'modified'
+        if self.repo.needsHandling():
+            print 'needs handling!' #===
         self.branchList.refresh()
         self.commitList.refresh()
     def remoteSync(self,remote='origin',refspec=None): #===
-        print 'syncing w/ remote' #===
+        self.repo.fetch()
+        # Open handler dialog
+        rem = SyncHandler(self.repo) #===
         self.refreshAll()
 
 class BranchViewer(QListWidget):
@@ -127,16 +121,13 @@ class BranchViewer(QListWidget):
                 item.setBackground(QColor('lightgray'))
             else:
                 item.setBackground(QColor('white'))
-            #=== if not pushed to remote
-            if item.branch.name not in self.repo.git.branch('-r'):
-                item.setBackground(QColor('yellow'))
-                item.setToolTip('This branch has not been pushed to the remote repository!')
             count+=1
         # HEAD is detached
         if self.repo.isDetached():
             '''Add detached head item to list.'''
             item = QListWidgetItem()
-            item.setText('DETACHED HEAD')
+            item.setText('DETACHED HEAD\nYou are currently not on any branch.')
+            item.setToolTip('You may be checking out an old commit!')
             item.setTextAlignment(Qt.AlignHCenter)
             item.setSizeHint(QSize(self.sizeHint().width(), 30))
             item.setBackground(QColor('red'))
@@ -246,7 +237,7 @@ class CommitViewer(QListWidget):
         # Not detached HEAD
         if (not self.repo.isDetached() and self.repo.head.ref.name in self.repo.git.branch('-r')):
             head = self.repo.head.ref
-            # git commits from remote (origin)
+            # git commits from remote (origin) #===
             for commit in self.repo.iter_commits('origin/'+str(head.name)):
                 item = self.CommitItem(commit)
                 self.addItem(item)
@@ -255,10 +246,6 @@ class CommitViewer(QListWidget):
             for commit in self.repo.iter_commits():
                 item = self.CommitItem(commit)
                 self.addItem(item)
-        # Check current state; Provide handling
-        if self.repo.is_dirty(): #===
-            # a = DirtyHandler(self.repo)
-            return
     def loadColors(self):
         count = 0
         for i in range(self.count()):
@@ -287,15 +274,11 @@ class CommitViewer(QListWidget):
         elif action.text() == 'Stash Manager':
             self.openStash()
     def newCommit(self): #===
+        '''Begin process for making a new commit'''
         Message('New commit manager coming soon!')
     def openStash(self): #===
+        '''Open the stash manager'''
         dialog = StashHandler(self.repo)
-
-class RemoteViewer(QWidget): #===
-    '''Manage fetch/push with remote server.'''
-    def __init__(self, repoViewer):
-        QWidget.__init__(self)
-        self.viewer = repoViewer
 
 class ContentViewer(QStackedWidget): #===
     '''View the contents of the current repository.'''
