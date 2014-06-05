@@ -35,9 +35,14 @@ class RepoManager(Repo): #===
         elif commit is not None:
             cmd = ['git','checkout',str(commit.hexsha)]
         return subprocess.check_output(cmd)
-    def stash(self): #===
+    def stash(self, untracked=False, message=None): #===
         '''Stash command'''
-        return
+        cmd = ['git','stash','save']
+        if untracked:
+            cmd.append('-u')
+        if message is not None:
+            cmd.append(str(message))
+        return subprocess.check_output(cmd)
     def commit(self): #===
         '''Start process for new commit.'''
         return
