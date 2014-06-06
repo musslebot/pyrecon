@@ -680,13 +680,19 @@ class SyncHandler(QDialog):
         self.loadBranchLists()
     def openMenu(self, item): #===
         action = item.menu.exec_( QCursor.pos() )
-        if action.text() in ['Sync with local','Sync with remote']: # remote is ahead or behind?
+        if action.text() in ['Sync with local','Sync with remote']: # remote is ahead, behind, or diverged
+            branchName = str(item.text()).replace('origin/','') # name of local copy
+            try:
+                subprocess.call(['git','checkout',str(branchName)])
+            except Exception, e:
+                Message('Error:\n'+str(e))
             if self.repo.isAhead():
-                Message('The remote branch is behind your local branch. Push local changes to remote.') #===
+                a = AheadHandler(branchName)
             elif self.repo.isBehind():
-                Message('The remote branch is ahead of your local branch. Pull remote changes to local.') #===
-            elif self.repo.isDiverged():
-                Message('The remote branch and local branch have diverged. Merge them together.') #===
+                a = BehindHandler(branchName)
+            elif self.repo.isDiverged(): #=== use MergeHandler
+                Message('The remote branch and local branch have diverged. Merge them together.')
+                a = DivergedHandler(branchName)
         elif action.text() == 'Pull to local': # remote not in local repo
             resp = subprocess.check_output(['git','checkout','-b',str(item.text()).replace('origin/',''),'--track',str(item.text())]) 
             Message(resp)
@@ -698,13 +704,72 @@ class SyncHandler(QDialog):
         self.done(1)
 
 class BehindHandler(QDialog): #===
-    def __init__(self):
+    def __init__(self, branch):
         QDialog.__init__(self)
+        self.branch = branch
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
         self.exec_()
+    def loadObjects(self):
+        self.label = QLabel('The local branch is behind the remote branch. Would you like to pull all of the commits ahead of your current state?')
+        self.yesBut = QPushButton('Yes')
+        self.noBut = QPushButton('No')
+        self.yesBut.setMinimumHeight(50)
+        self.noBut.setMinimumHeight(50)
+    def loadFunctions(self):
+        self.yesBut.clicked.connect( self.doPull )
+        self.noBut.clicked.connect( self.dontPull )
+    def loadLayout(self):
+        container = QVBoxLayout()
+        container.addWidget(self.label)
+        buttons = QHBoxLayout()
+        buttons.addWidget(self.yesBut)
+        buttons.addWidget(self.noBut)
+        container.addLayout(buttons)
+        self.setLayout(container)
+    def doPull(self):
+        try:
+            subprocess.call(['git','pull'])
+        except Exception, e:
+            Message('Error:\n'+str(e))
+        self.done(1)
+    def dontPull(self):
+        self.done(0)
+
 class AheadHandler(QDialog): #===
-    def __init__(self):
+    def __init__(self,branch):
         QDialog.__init__(self)
+        self.branch = branch
+        self.loadObjects()
+        self.loadFunctions()
+        self.loadLayout()
         self.exec_()
+    def loadObjects(self):
+        self.label = QLabel('The local branch is ahead the remote branch. Would you like to push all of the commits to the remote branch?')
+        self.yesBut = QPushButton('Yes')
+        self.noBut = QPushButton('No')
+        self.yesBut.setMinimumHeight(50)
+        self.noBut.setMinimumHeight(50)
+    def loadFunctions(self):
+        self.yesBut.clicked.connect( self.doPush )
+        self.noBut.clicked.connect( self.dontPush )
+    def loadLayout(self):
+        container = QVBoxLayout()
+        container.addWidget(self.label)
+        buttons = QHBoxLayout()
+        buttons.addWidget(self.yesBut)
+        buttons.addWidget(self.noBut)
+        container.addLayout(buttons)
+        self.setLayout(container)
+    def doPush(self):
+        try:
+            subprocess.call(['git','push','origin','HEAD'])
+        except Exception, e:
+            Message('Error:\n'+str(e))
+        self.done(1)
+    def dontPush(self):
+        self.done(0)
 class DivergedHandler(QDialog): #===
     def __init__(self):
         QDialog.__init__(self)
