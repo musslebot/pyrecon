@@ -533,7 +533,7 @@ class MergeHandler(QDialog): #===
             return
 
 # Handlers for states that conflict with remote
-class SyncHandler(QDialog): #===
+class SyncHandler(QDialog):
     class LocalBranchItem(QListWidgetItem):
         class LocalMenu(QMenu):
             def __init__(self, color):
@@ -575,7 +575,7 @@ class SyncHandler(QDialog): #===
                 elif color == 'yellow':
                     self.addAction('Sync with local')
                 elif color == 'red':
-                    self.addAction('Copy to local')
+                    self.addAction('Pull to local')
         def __init__(self, name, locName, color):
             QListWidgetItem.__init__(self)
             self.setText(name)
@@ -612,9 +612,9 @@ class SyncHandler(QDialog): #===
         self.doneBut = QPushButton('Finished')
         self.doneBut.setMinimumHeight(50)
     def loadFunctions(self):
-        self.doneBut.clicked.connect( self.done )
-        self.localBranches.itemDoubleClicked.connect( self.openMenu ) #===
-        self.remoteBranches.itemDoubleClicked.connect( self.openMenu ) #===
+        self.doneBut.clicked.connect( self.finish )
+        self.localBranches.itemDoubleClicked.connect( self.openMenu )
+        self.remoteBranches.itemDoubleClicked.connect( self.openMenu )
     def loadLayout(self):
         container = QVBoxLayout()
         local = QVBoxLayout()
@@ -630,9 +630,14 @@ class SyncHandler(QDialog): #===
         container.addWidget(self.doneBut)
         self.setLayout(container)
     def pairBranches(self):
+        '''Group branches together based on their sync status.
+        green -> in sync
+        yellow -> out of sync
+        red -> no remote-to-local relationship
+        '''
         # Get branches
         local = [branch for branch in self.repo.branches]
-        remote = [branch.lstrip(' ') for branch in self.repo.git.branch('-r').split('\n') if '->' not in branch] # This is only names of remote branch
+        remote = [branch.lstrip(' ') for branch in self.repo.git.branch('-r').split('\n') if '->' not in branch] # This is only names of remote branch #=== is '->' a good exception?
         # Pair local branches with tracked remote branch and sync state color
         tracked = []
         for branch in local:
@@ -653,6 +658,7 @@ class SyncHandler(QDialog): #===
                 tracked.append( (None,branch,'red') )
         return tracked
     def loadBranchLists(self):
+        '''Load local and remote branches into their branch lists, in order: green -> yellow -> red'''
         branchPairs = self.pairBranches()
         synced = [pair for pair in branchPairs if pair[2] == 'green']
         outSync = [pair for pair in branchPairs if pair[2] == 'yellow']
@@ -673,7 +679,23 @@ class SyncHandler(QDialog): #===
         self.remoteBranches.clear()
         self.loadBranchLists()
     def openMenu(self, item): #===
-        action = item.menu.popup( QCursor.pos() )
+        action = item.menu.exec_( QCursor.pos() )
+        if action.text() in ['Sync with local','Sync with remote']: # remote is ahead or behind?
+            if self.repo.isAhead():
+                Message('The remote branch is behind your local branch. Push local changes to remote.') #===
+            elif self.repo.isBehind():
+                Message('The remote branch is ahead of your local branch. Pull remote changes to local.') #===
+            elif self.repo.isDiverged():
+                Message('The remote branch and local branch have diverged. Merge them together.') #===
+        elif action.text() == 'Pull to local': # remote not in local repo
+            Message('Pull remote branch to local') #===
+            
+        elif action.text() == 'Push to remote': # local not in remote repo
+            resp = self.repo.push(remote='origin',refspec=item.text(),setupstream=True)
+            Message(resp)
+        self.refresh()
+    def finish(self):
+        self.done(1)
 
 class BehindHandler(QDialog): #===
     def __init__(self):
@@ -704,20 +726,17 @@ class DirtyHandler(QDialog): #===
         self.info.setText( subprocess.check_output( ['git','status'] ) )
         self.stashButton = QPushButton('Save (stash) current state')
         self.commitButton = QPushButton('Commit a new version')
-        self.forceUpdateButton = QPushButton('Overwrite with most recent version')
-        self.forceResetButton = QPushButton('Reset to state before modification')
+        self.forceResetButton = QPushButton('Delete changes since last commit')
         self.cancelButton = QPushButton('Cancel')
     def loadFunctions(self):
         # Button function links
         self.stashButton.clicked.connect( self.stashStatus )
         self.commitButton.clicked.connect( self.commitStatus )
-        self.forceUpdateButton.clicked.connect( self.updateStatus ) #===
         self.forceResetButton.clicked.connect( self.resetStatus ) #===
         self.cancelButton.clicked.connect( self.close )
         # Button ToolTips
         self.stashButton.setToolTip('This will save (stash) the current state into the stash, which can be retrieved at a later time via the \"git stash\" command ')
         self.commitButton.setToolTip('This will initiate the process of creating and pushing the current status to the repository as a new version')
-        self.forceUpdateButton.setToolTip('This will overwrite the current status with the most recent version of this branch')
         self.forceResetButton.setToolTip('This will overwrite the current status with the version before changes were made')
     def loadLayout(self):
         container = QVBoxLayout()
@@ -726,9 +745,12 @@ class DirtyHandler(QDialog): #===
         buttons = QVBoxLayout()
         #=== status dependent loads
         buttons.addWidget(self.stashButton)
-        buttons.addWidget(self.commitButton) # Only if not behind #===
-        buttons.addWidget(self.forceUpdateButton) # Only if behind #===
-        buttons.addWidget(self.forceResetButton) # Only if not behind #===
+        if (not self.repository.isBehind() and
+            self.repository.isDirty()
+            ):
+            buttons.addWidget(self.commitButton)
+        if (self.repository.isDirty()):
+            buttons.addWidget(self.forceResetButton)
         buttons.addWidget(self.cancelButton)
         container.addLayout(info)
         container.addLayout(buttons)
@@ -765,9 +787,6 @@ class DirtyHandler(QDialog): #===
             msg = QMessageBox()
             msg.setText('Aborting reset...')
             msg.exec_()
-    #===
-    def updateStatus(self):
-        return
 
 # Handlers for connecting gitTool to a local repo
 class InvalidRepoHandler(QDialog): #===
