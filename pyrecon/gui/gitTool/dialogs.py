@@ -688,8 +688,8 @@ class SyncHandler(QDialog):
             elif self.repo.isDiverged():
                 Message('The remote branch and local branch have diverged. Merge them together.') #===
         elif action.text() == 'Pull to local': # remote not in local repo
-            Message('Pull remote branch to local') #===
-            
+            resp = subprocess.check_output(['git','checkout','-b',str(item.text()).replace('origin/',''),'--track',str(item.text())]) 
+            Message(resp)
         elif action.text() == 'Push to remote': # local not in remote repo
             resp = self.repo.push(remote='origin',refspec=item.text(),setupstream=True)
             Message(resp)
