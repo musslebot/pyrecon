@@ -68,6 +68,13 @@ class RepoViewer(QWidget): #===
         self.commitList.refresh()
     def remoteSync(self,remote='origin',refspec=None): #===
         self.repo.fetch()
+        if self.repo.isDirty():
+            Message('gitTool has detected modifications to your current working directory -- These need to be handled before any remote syncing can be done.')
+            a = DirtyHandler(self.repo)
+            if a.result():
+                pass
+            else:
+                return 
         # Open handler dialog
         rem = SyncHandler(self.repo) #===
         self.refreshAll()
@@ -162,8 +169,6 @@ class BranchViewer(QListWidget):
                 Message('Successfully renamed branch: %s -> %s'%(branch.name,newName))
             else:
                 Message(response)
-            #=== check for remote version
-            #=== ask if remote version should be deleted too
         else:
             Message('Rename aborted...')
     def deleteBranch(self, branch):
@@ -235,7 +240,10 @@ class CommitViewer(QListWidget):
         self.itemDoubleClicked.connect( self.openMenu )
     def loadCommits(self): #=== avoid remote?
         # Not detached HEAD
-        if (not self.repo.isDetached() and self.repo.head.ref.name in self.repo.git.branch('-r')):
+        if (not self.repo.isDetached() and
+            not self.repo.isAhead() and
+            self.repo.head.ref.name in self.repo.git.branch('-r')
+            ):
             head = self.repo.head.ref
             # git commits from remote (origin) #===
             for commit in self.repo.iter_commits('origin/'+str(head.name)):
