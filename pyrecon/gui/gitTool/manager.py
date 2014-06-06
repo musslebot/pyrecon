@@ -19,6 +19,10 @@ class RepoManager(Repo): #===
     def isDetached(self):
         '''Return True if head is detached'''
         return self.head.is_detached
+    def isAhead(self):
+        '''Returns True if current branch is ahead of remote branch'''
+        self.fetch()
+        return 'ahead' in self.status()
     def isBehind(self):
         '''Returns True if the current branch is behind remote branch.'''
         self.fetch()
@@ -78,7 +82,9 @@ class RepoManager(Repo): #===
         return
 
     # To remote
-    def push(self, remote='origin', refspec='HEAD'):
+    def push(self, remote='origin', refspec='HEAD', setupstream=False):
         #=== check for changes; test what happens if remote is ahead
         cmd = ['git','push',str(remote),str(refspec)]
+        if setupstream:
+            cmd.insert(2,'-u')
         return subprocess.check_output(cmd)
