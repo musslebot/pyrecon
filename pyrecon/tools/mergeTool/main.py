@@ -1,9 +1,8 @@
 from pyrecon.classes import Series, Section
 from pyrecon.tools import handleXML as xml
 
-def createMergeSet(series1, series2):
+def createMergeSet(series1, series2): #=== needs multithreading
 	'''This function takes in two Series objects and returns a MergeSet to be used for the mergeTool'''
-
 	mSer = MergeSeries(series1, series2)
 	mSecs = []
 	for i in range( len(series1.sections) ):
@@ -88,7 +87,7 @@ class MergeSection:
 		for kwarg in kwargs:
 			print kwarg+':',kwargs[kwarg] #===
 
-	def checkConflicts(self):
+	def checkConflicts(self): #===
 		'''Automatically sets merged stuff if they are equivalent'''
 		# Are attributes equivalent?
 		if self.section1.attributes() == self.section2.attributes():
@@ -97,7 +96,7 @@ class MergeSection:
 		if self.section1.image == self.section2.image:
 			self.images = self.section1.image
 		# Are contours equivalent?
-		separatedConts = self.getCategorizedContours(overlaps=True)
+		separatedConts = self.getCategorizedContours(overlaps=True) #=== thread this function
 		self.uniqueA = separatedConts[0]
 		self.uniqueB = separatedConts[1]
 		self.compOvlps = separatedConts[2]
@@ -105,6 +104,7 @@ class MergeSection:
 		if (len(self.uniqueA+self.uniqueB) == 0 and 
 			len(self.confOvlps) == 0):
 			self.contours = self.section1.contours
+			
 	def isDone(self):
 		'''Boolean indicating status of merge.'''
 		return (self.attributes is not None and
@@ -117,6 +117,7 @@ class MergeSection:
 				self.contours is not None).count(True)
 		
 	# mergeTool functions
+	#=== MULTITHREAD THIS FUNCTION!!!!!!!
 	def getCategorizedContours(self, threshold=(1+2**(-17)), sameName=True, overlaps=False):
 		'''Returns lists of mutually overlapping contours between two Section objects.'''
 		compOvlps = [] # Pairs of completely (within threshold) overlapping contours 
