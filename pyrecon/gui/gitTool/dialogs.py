@@ -643,7 +643,7 @@ class SyncHandler(QDialog):
         for branch in local:
             # Local branch is tracking remote branch
             if str(branch.tracking_branch()) in remote:
-                remoteRef = self.repo.remote().refs[branch.name]
+                remoteRef = self.repo.remote().refs[str(branch.tracking_branch()).replace('origin/','')]
                 # is branch out of sync?
                 if branch.commit == remoteRef.commit:
                     tracked.append( (branch.name,remoteRef.name,'green') ) # in sync
