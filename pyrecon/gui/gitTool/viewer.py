@@ -189,8 +189,13 @@ class BranchViewer(QListWidget):
                 Message(response)
         else:
             Message('Branch creation aborted...')
-    def mergeBranches(self): #===
-        return
+    def mergeBranches(self):
+        dialog = MergeHandler(self.repo)
+        if dialog.result():
+            CommitHandler(self.repo)
+        else:
+            Message('mergeTool indicates that the merge was not successful...')
+        self.viewer.refreshAll()
 
 class CommitViewer(QListWidget):
     class CommitItem(QListWidgetItem):
