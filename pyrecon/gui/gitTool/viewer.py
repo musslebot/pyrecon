@@ -111,6 +111,7 @@ class BranchViewer(QListWidget):
         self.options = self.BranchOptions()
         self.loadBranches()
         self.loadColors()
+        self.setAlternatingRowColors(True)
         self.itemDoubleClicked.connect( self.openMenu )
     def loadBranches(self):
         for branch in self.repo.branches:
@@ -118,17 +119,11 @@ class BranchViewer(QListWidget):
             self.addItem(item)
     def loadColors(self):
         '''Alternates lightgray and white with green for the current HEAD'''
-        count = 0
         for i in range(self.count()):
             item = self.item(i)
             if (not self.repo.head.is_detached and
                 item.branch.name == self.repo.head.ref.name):
                 item.setBackground(QColor('lightgreen'))
-            elif count%2 == 0:
-                item.setBackground(QColor('lightgray'))
-            else:
-                item.setBackground(QColor('white'))
-            count+=1
         # HEAD is detached
         if self.repo.isDetached():
             '''Add detached head item to list.'''
@@ -180,8 +175,6 @@ class BranchViewer(QListWidget):
                 Message('Successfully deleted branch: %s'%(branch.name))
             else:
                 Message(response)
-            #=== check for remote version
-            #=== ask if remote version should be deleted too
         else:
             Message('Delete aborted...')
     def createBranch(self):
@@ -237,6 +230,7 @@ class CommitViewer(QListWidget):
         self.loadColors()
         self.setWordWrap(True)
         self.setFlow(QListView.LeftToRight)
+        self.setAlternatingRowColors(True) #===
         self.itemDoubleClicked.connect( self.openMenu )
     def loadCommits(self): #=== avoid remote?
         # Not detached HEAD
@@ -255,16 +249,10 @@ class CommitViewer(QListWidget):
                 item = self.CommitItem(commit)
                 self.addItem(item)
     def loadColors(self):
-        count = 0
         for i in range(self.count()):
             item = self.item(i)
             if (item.commit == self.repo.head.commit):
                 item.setBackground(QColor('lightgreen'))
-            elif count%2 == 0:
-                item.setBackground(QColor('lightgray'))
-            else:
-                item.setBackground(QColor('white'))
-            count+=1
     def refresh(self): #===
         if not self.repo.isDetached():
             self.clear()
