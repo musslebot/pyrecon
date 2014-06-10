@@ -65,7 +65,7 @@ class BranchHandler(QDialog):
             self.loadLayout()
             self.exec_()
         def loadObjects(self):
-            self.info = QLabel('You are about to delete the branch: %s\nThis canNOT be undone, and you will lose data.'%(self.branch.name))
+            self.info = QLabel('You are about to delete the local branch: %s\nThis CANNOT be undone, and data not pushed to the remote will be lost.'%(self.branch.name))
             self.continueBut = QPushButton('Delete')
             self.cancelBut = QPushButton('Cancel')
         def loadFunctions(self):
@@ -284,7 +284,8 @@ class CommitHandler(QDialog):
         msg = QMessageBox()
         msg.setStandardButtons(QMessageBox.Ok|QMessageBox.Cancel)
         msg.setText('You are about to push a version to the remote repository branch: '+str(self.repository.head.ref.name)+'\nMake sure everything is correct before clicking OK')
-        msg.setInformativeText('DESCRIPTION: '+description+'\n\n'+str(subprocess.check_output(['git','status'])))
+        # msg.setInformativeText('DESCRIPTION: '+description+'\n\n'+str(subprocess.check_output(['git','status'])))
+        msg.setDetailedText('DESCRIPTION: '+description+'\n\n'+str(subprocess.check_output(['git','status'])))
         if msg.exec_() == QMessageBox.Ok:
             self.repository.index.commit(description)
             subprocess.call(['git', 'push', 'origin', str(self.repository.head.ref.name)])
@@ -439,7 +440,7 @@ class StashHandler(QDialog):
             return
 
 class MergeHandler(QDialog): #===
-    def __init__(self, repository):
+    def __init__(self, repository, srcCommit=None, dstCommit=None):
         QDialog.__init__(self)
         self.setWindowTitle('Merge Manager')
         self.repository = repository
@@ -447,8 +448,13 @@ class MergeHandler(QDialog): #===
 
         self.loadObjects()
         self.loadFunctions()
-        self.loadLayout()
-        self.exec_()
+        if (srcCommit is not None and dstCommit is not None):
+            self.beginMergeTool(srcCommit=srcCommit, dstCommit=dstCommit)
+            self.exec_()
+            self.hide()
+        else:
+            self.loadLayout()
+            self.exec_()
     def loadObjects(self):
         # Select the branch/commit to be merged
         self.srcBranchSelect = QComboBox()
@@ -492,33 +498,40 @@ class MergeHandler(QDialog): #===
         elif self.sender() == self.dstBranchSelect: # Update dst commits
             self.dstCommitSelect.clear()
             self.dstCommitSelect.addItems(['<destination commit>']+[com.message for com in commits])
-    def beginMergeTool(self):
+    def beginMergeTool(self, srcCommit=None, dstCommit=None):
         try:
+            #=== this process needs to be improved... namely, the checkConflicts() function takes way too long to determine overlap conflicts
+            Message('The mergeTool will be opened to handle conflicts. This process may take a few minutes, please be patient.')
             from pyrecon.main import openSeries
             from pyrecon.tools.mergeTool.main import createMergeSet
             from pyrecon.gui.mergeTool.main import MergeSetWrapper
-            # Get indeces
-            srcB = self.srcBranchSelect.currentIndex()-1 # -1 to account for <choose branch> label
-            srcC = self.srcCommitSelect.currentIndex()-1 # -1 to account for <choose commit> label
-            dstB = self.dstBranchSelect.currentIndex()-1
-            dstC = self.dstBranchSelect.currentIndex()-1
-            # Get git objects for these indeces
-            # - load source files into repository
-            srcBranch = self.repository.branches[srcB]
-            self.repository.git.checkout(srcBranch)
-            srcCommit = [com for com in self.repository.iter_commits()][srcC]
-            self.repository.git.checkout(srcCommit)
-            ser2 = openSeries(self.repository.working_dir)
-            # - load destination files into repository
-            dstBranch = self.repository.branches[dstB]
-            self.repository.git.checkout(dstBranch)
-            dstCommit = [com for com in self.repository.iter_commits()][dstC]
-            ser1 = openSeries(self.repository.working_dir)
+            if (srcCommit is None or dstCommit is None):
+                # Get indeces
+                srcB = self.srcBranchSelect.currentIndex()-1 # -1 to account for <choose branch> label
+                srcC = self.srcCommitSelect.currentIndex()-1 # -1 to account for <choose commit> label
+                dstB = self.dstBranchSelect.currentIndex()-1
+                dstC = self.dstBranchSelect.currentIndex()-1
+                # Get git objects for these indeces
+                srcBranch = self.repository.branches[srcB]
+                srcCommit = [com for com in self.repository.iter_commits()][srcC]
+                dstBranch = self.repository.branches[dstB]
+                dstCommit = [com for com in self.repository.iter_commits()][dstC]
+                # - load source files into repository
+                self.repository.git.checkout(srcBranch)
+                self.repository.git.checkout(srcCommit)
+                ser2 = openSeries(self.repository.working_dir)
+                # - load destination files into repository
+                self.repository.git.checkout(dstBranch)
+                ser1 = openSeries(self.repository.working_dir)
+            else: # src & dstCommit are given
+                self.repository.git.checkout(srcCommit)
+                ser2 = openSeries(self.repository.working_dir)
+                self.repository.git.checkout(dstCommit)
+                ser1 = openSeries(self.repository.working_dir) 
             
             # MergeTool
             mergeSet = createMergeSet(ser1,ser2)
             mergeGui = MergeSetWrapper(mergeSet)
-            
             mergeDialog = QDialog() # To make it popup in a window
             container = QHBoxLayout()
             container.addWidget(mergeGui)
@@ -649,6 +662,7 @@ class SyncHandler(QDialog):
                     tracked.append( (branch.name,remoteRef.name,'green') ) # in sync
                 else:
                     tracked.append( (branch.name,remoteRef.name,'yellow') ) # not synced
+            # Local branch not tracking remote branch
             else:
                 tracked.append( (branch.name,None,'red') ) # not tracked
         # append remote branches that dont have local ref
@@ -688,11 +702,13 @@ class SyncHandler(QDialog):
                 Message('Error:\n'+str(e))
             if self.repo.isAhead():
                 a = AheadHandler(branchName)
-            elif self.repo.isBehind():
+            elif self.repo.isBehind(): #=== Should this be merging?
                 a = BehindHandler(branchName)
-            elif self.repo.isDiverged(): #=== use MergeHandler
-                Message('The remote branch and local branch have diverged. Merge them together.')
-                a = DivergedHandler(branchName)
+            elif self.repo.isDiverged():
+                Message('The remote branch and local branch have diverged.')
+                a = MergeHandler(self.repo, srcCommit='origin/'+branchName, dstCommit=branchName)
+                # allow user to commit or do whatever with the now merged stuff
+                b = DirtyHandler(self.repo)
         elif action.text() == 'Pull to local': # remote not in local repo
             resp = subprocess.check_output(['git','checkout','-b',str(item.text()).replace('origin/',''),'--track',str(item.text())]) 
             Message(resp)
@@ -706,13 +722,14 @@ class SyncHandler(QDialog):
 class BehindHandler(QDialog): #===
     def __init__(self, branch):
         QDialog.__init__(self)
+        self.setWindowTitle('Local branch is behind remote')
         self.branch = branch
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
         self.exec_()
     def loadObjects(self):
-        self.label = QLabel('The local branch is behind the remote branch. Would you like to pull all of the commits ahead of your current state?')
+        self.label = QLabel('The local branch is behind the remote branch. Would you like to pull the remote commits?')
         self.yesBut = QPushButton('Yes')
         self.noBut = QPushButton('No')
         self.yesBut.setMinimumHeight(50)
@@ -770,16 +787,12 @@ class AheadHandler(QDialog): #===
         self.done(1)
     def dontPush(self):
         self.done(0)
-class DivergedHandler(QDialog): #===
-    def __init__(self):
-        QDialog.__init__(self)
-        self.exec_()
+
 class DirtyHandler(QDialog): #===
     '''Class for handling a dirty repository. Display modified/untracked files and allow user to handle them via stash or clean.'''
     def __init__(self, repository):
         QDialog.__init__(self)
         self.repository = repository
-        # self.remote = Remote(repository, 'origin') #=== for checking ahead/behind maybe
         self.setWindowTitle('Dirty Repository Manager')
 
         self.loadObjects()
@@ -808,7 +821,7 @@ class DirtyHandler(QDialog): #===
         info = QVBoxLayout()
         info.addWidget(self.info)
         buttons = QVBoxLayout()
-        #=== status dependent loads
+        #=== status dependent loads, check these!
         buttons.addWidget(self.stashButton)
         if (not self.repository.isBehind() and
             self.repository.isDirty()
