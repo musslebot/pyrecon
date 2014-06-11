@@ -118,7 +118,7 @@ class BranchViewer(QListWidget):
             item = self.BranchItem(branch)
             self.addItem(item)
     def loadColors(self):
-        '''Alternates lightgray and white with green for the current HEAD'''
+        '''Green for the current HEAD'''
         for i in range(self.count()):
             item = self.item(i)
             if (not self.repo.head.is_detached and
@@ -128,8 +128,8 @@ class BranchViewer(QListWidget):
         if self.repo.isDetached():
             '''Add detached head item to list.'''
             item = QListWidgetItem()
-            item.setText('DETACHED HEAD\nYou are currently not on any branch.')
-            item.setToolTip('You may be checking out an old commit!')
+            item.setText('You are not in a branch!')
+            item.setToolTip('You can only see commits older than the one you are on.')
             item.setTextAlignment(Qt.AlignHCenter)
             item.setSizeHint(QSize(self.sizeHint().width(), 30))
             item.setBackground(QColor('red'))
@@ -239,29 +239,28 @@ class CommitViewer(QListWidget):
         self.itemDoubleClicked.connect( self.openMenu )
     def loadCommits(self): #=== avoid remote?
         # Not detached HEAD
-        if (not self.repo.isDetached() and
-            not self.repo.isAhead() and
-            self.repo.head.ref.name in self.repo.git.branch('-r')
-            ):
-            head = self.repo.head.ref
-            # git commits from remote (origin) #===
-            for commit in self.repo.iter_commits('origin/'+str(head.name)):
-                item = self.CommitItem(commit)
-                self.addItem(item)
+        # if (not self.repo.isDetached() and
+        #     not self.repo.isAhead() and
+        #     self.repo.head.ref.name in self.repo.git.branch('-r')
+        #     ):
+        #     head = self.repo.head.ref
+        #     # git commits from remote (origin) #===
+        #     for commit in self.repo.iter_commits('origin/'+str(head.name)):
+        #         item = self.CommitItem(commit)
+        #         self.addItem(item)
         # Detached HEAD or not remote
-        else:
-            for commit in self.repo.iter_commits():
-                item = self.CommitItem(commit)
-                self.addItem(item)
+        # else:
+        for commit in self.repo.iter_commits():
+            item = self.CommitItem(commit)
+            self.addItem(item)
     def loadColors(self):
         for i in range(self.count()):
             item = self.item(i)
             if (item.commit == self.repo.head.commit):
                 item.setBackground(QColor('lightgreen'))
-    def refresh(self): #===
-        if not self.repo.isDetached():
-            self.clear()
-            self.loadCommits()
+    def refresh(self):
+        self.clear()
+        self.loadCommits()
         self.loadColors()
     def openMenu(self, item):
         action = self.menu.exec_( QCursor.pos() )
