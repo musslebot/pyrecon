@@ -14,8 +14,9 @@ class Contour:
         self.points = None
         #Non-attributes
         self.coordSys = None
-        self.image = None # Only used if 'domain1' contour
-        self.transform = None
+        #=== domain1 fix?
+        self.image = None # Only used if image contour
+        self.transform = None 
         self.shape = None
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
@@ -44,7 +45,7 @@ class Contour:
             elif arg.__class__.__name__ == 'Transform':
                 self.transform = arg
             # Image
-            elif arg.__class__.__name__ == 'Image':
+            elif arg.__class__.__name__ == 'Image': #=== domain1 fix?
                 self.image = arg
 # ACCESSORS
     def __eq__(self, other):
