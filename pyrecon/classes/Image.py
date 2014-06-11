@@ -7,6 +7,8 @@ class Image:
         self.red = None
         self.green = None
         self.blue = None
+    #=== domain1 fix
+        #=== add an image contour object 
         #Non-attributes
         self.transform = None
         self._path = None
