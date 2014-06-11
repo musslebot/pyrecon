@@ -57,7 +57,7 @@ def processSectionFile(tree):
 		image = None
 	# Connect 'domain1' contour with section image
 	for contour in contours:
-		if contour.name == 'domain1':
+		if contour.name == 'domain1': #===
 			contour.image = image
 	return attributes, image, contours
 # Process attributes from tree nodes
@@ -382,7 +382,7 @@ def objectToElement(object):
 		return transformToElement(object)
 	elif object.__class__.__name__ == 'ZContour':
 		return zcontourToElement(object)
-def writeSection(section, directory, outpath=None, overwrite=False):
+def writeSection(section, directory, outpath=None, overwrite=False): #=== issue with domain1 stuff (what if section doesn't have domain1)
 	'''Writes <section> to an XML file in directory'''
 	print 'Writing section:',section.name
 	if not outpath: # Will write to file with sections name
@@ -393,17 +393,20 @@ def writeSection(section, directory, outpath=None, overwrite=False):
 	root = objectToElement(section)
 	# Image: Has its own unique Transform, Image, Contour
 	image = objectToElement(section.image)
+	
+	#=== Issue with sections that don't have domain1 contours
 	imageContour = objectToElement([cont for cont in section.contours if cont.name == 'domain1'].pop())
 	imageTransform = objectToElement([cont for cont in section.contours if cont.name == 'domain1'].pop().transform)
 	imageTransform.append(image)
 	imageTransform.append(imageContour)
 	#Append image node to root
 	root.append(imageTransform)
+	
 	# Contours and Transforms
 	# - Build list of unique Transform objects
 	uniqueTransforms = []
 	for contour in section.contours:
-		if contour.name != 'domain1': # ignore image contour
+		if contour.name != 'domain1': # ignore image contour #===
 			unique = True
 			for tform in uniqueTransforms:
 				if tform == contour.transform:
@@ -415,7 +418,7 @@ def writeSection(section, directory, outpath=None, overwrite=False):
 	for transform in uniqueTransforms:
 		transformElement = objectToElement(transform)
 		for contour in section.contours:
-			if contour.name != 'domain1' and contour.transform == transform:
+			if contour.name != 'domain1' and contour.transform == transform: #===
 				cont = objectToElement(contour)
 				transformElement.append(cont)
 		root.append(transformElement)
