@@ -10,7 +10,7 @@ class Image:
     #=== domain1 fix
         #=== add an image contour object 
         #Non-attributes
-        self.transform = None
+        self.transform = None #=== domain1 fix, replace with contour.transform?
         self._path = None
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
