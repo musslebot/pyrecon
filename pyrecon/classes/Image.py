@@ -7,10 +7,8 @@ class Image:
         self.red = None
         self.green = None
         self.blue = None
-    #=== domain1 fix
-        #=== add an image contour object 
         #Non-attributes
-        self.transform = None #=== domain1 fix, replace with contour.transform?
+        self.contour = None #=== d1fixed
         self._path = None
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
@@ -37,14 +35,14 @@ class Image:
                     if key in self.__dict__:
                         self.__dict__[key] = arg[key]
                     # Dict:Transform
-                    elif arg[key].__class__.__name__ == 'Transform':
-                        self.transform = arg[key]
+                    elif arg[key].__class__.__name__ == 'Contour':
+                        self.contour = arg[key]
             # Transform object
             elif arg.__class__.__name__ == 'Transform':
-                self.transform = arg
+                self.contour = arg
 # ACCESSORS
     def __eq__(self, other):
-        return (self.transform == other.transform and
+        return (self.contour == other.contour and
                 self.src == other.src and
                 self.brightness == other.brightness and
                 self.contrast == other.contrast)
