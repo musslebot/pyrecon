@@ -53,19 +53,16 @@ class RepoManager(Repo): #===
     def newBranch(self, name):
         cmd = ['git', 'branch', str(name)]
         return subprocess.check_output(cmd)
-    def rename(self, branch, newName):
+    def rename(self, branch, newName): #=== only local?
         cmd = ['git', 'branch', '-m', str(branch.name), str(newName)]
-        return subprocess.check_output(cmd) #=== only local?
-    def delete(self, branch): #===
+        return subprocess.check_output(cmd)
+    def delete(self, branch):
         # if on branch, switch to master first
         if (not self.isDetached() and self.head.ref.name == branch):
             self.branches.master.checkout()
         # delete branch
         cmd = ['git','branch','-D',str(branch)]
         return subprocess.check_output(cmd)
-    def merge(self): #===
-        '''Merge two git objects'''
-        return
     def status(self):
         cmd = ['git', 'status']
         return subprocess.check_output(cmd)

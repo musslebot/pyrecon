@@ -5,6 +5,7 @@ from viewer import RepoViewer
 def main(repository=None): #===
     '''Pass in a path to git repository... return populated RepositoryViewer object'''
     if repository is None:
+        #=== user should be able to choose to clone, init, or open repo
         done = False
         while not done: #=== user can't close application
             try:
