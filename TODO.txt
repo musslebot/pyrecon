@@ -10,6 +10,8 @@ TODO LIST (in order of high -> low priority)
 * Test if command-line versions still work
 
 mergeTool
+* multithread the checkConflicts() fxn
+* clicking a unique contour should show it (not just conflicts)
 * Need better way to select multiple sections
 * Images need interactability (click-drag scaling, ScrollArea)
 * add note to loadSeries window that describes 1st series as default in cases of unresolved conflicts
@@ -21,3 +23,6 @@ curationTool
 
 calibrationTool
 * rescale series option needs to say that the following directory is output directory
+
+gitTool
+* see bugs
