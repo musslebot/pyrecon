@@ -317,6 +317,7 @@ class SectionContourHandler(QWidget):
 		oB = [] # Unique B
 		for i in range(self.outUniqueB.count()):
 			oB.append(self.outUniqueB.item(i))
+	#=== domain1 fix
 		# Check for domain1
 		if ('domain1' not in [item.contour1.name for item in oO] and
 		'domain1' not in [item.contour.name for item in oA] and

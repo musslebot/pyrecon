@@ -32,7 +32,7 @@ def processSeriesFile(tree):
 				zcontours = []
 			zcontours.append(zcontour)
 	return attributes, contours, zcontours
-def processSectionFile(tree):
+def processSectionFile(tree): #=== domain1 fix
 	'''Returns attribute dictionary, image object, and contour list associated with a Section's XML <tree>'''
 	root = tree.getroot()
 	attributes = sectionAttributes(root)
@@ -55,6 +55,7 @@ def processSectionFile(tree):
 		image = images.pop()
 	except:
 		image = None
+	#=== domain1 fix
 	# Connect 'domain1' contour with section image
 	for contour in contours:
 		if contour.name == 'domain1': #===
@@ -406,7 +407,7 @@ def writeSection(section, directory, outpath=None, overwrite=False): #=== issue 
 	# - Build list of unique Transform objects
 	uniqueTransforms = []
 	for contour in section.contours:
-		if contour.name != 'domain1': # ignore image contour #===
+		if contour.name != 'domain1': # ignore image contour #=== domain1 fix
 			unique = True
 			for tform in uniqueTransforms:
 				if tform == contour.transform:
@@ -418,7 +419,7 @@ def writeSection(section, directory, outpath=None, overwrite=False): #=== issue 
 	for transform in uniqueTransforms:
 		transformElement = objectToElement(transform)
 		for contour in section.contours:
-			if contour.name != 'domain1' and contour.transform == transform: #===
+			if contour.name != 'domain1' and contour.transform == transform: #=== domain1 fix
 				cont = objectToElement(contour)
 				transformElement.append(cont)
 		root.append(transformElement)

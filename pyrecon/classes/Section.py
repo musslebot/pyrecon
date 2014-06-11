@@ -7,7 +7,7 @@ class Section:
 		self.thickness = None
 		self.alignLocked = None
 		#Non-attributes
-		self.image = None
+		self.image = None #=== domain1 fix, needs to handle multiple images!
 		self.contours = []
 		self._path = None
 		self.processArguments(args, kwargs)
