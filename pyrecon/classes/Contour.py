@@ -14,8 +14,8 @@ class Contour:
         self.points = None
         #Non-attributes
         self.coordSys = None
-        #=== domain1 fix?
-        self.image = None # Only used if image contour
+        #=== domain1 fix? Get rid of Contour.image?
+        self.image = None # Only used if image contour 
         self.transform = None 
         self.shape = None
         self.processArguments(args, kwargs)
@@ -45,7 +45,7 @@ class Contour:
             elif arg.__class__.__name__ == 'Transform':
                 self.transform = arg
             # Image
-            elif arg.__class__.__name__ == 'Image': #=== domain1 fix?
+            elif arg.__class__.__name__ == 'Image': #=== domain1 fix? get rid?
                 self.image = arg
 # ACCESSORS
     def __eq__(self, other):
@@ -82,7 +82,7 @@ class Contour:
         # Closed trace
         if self.closed == True:
             # If image contour, multiply pts by mag before inverting transform
-            if self.image.__class__.__name__ == 'Image':
+            if self.image.__class__.__name__ == 'Image': #=== domain1 fix? get rid?
                 mag = self.image.mag
                 xvals = [pt[0]*mag for pt in self.points]
                 yvals = [pt[1]*mag for pt in self.points]
