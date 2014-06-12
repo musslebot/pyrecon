@@ -14,13 +14,13 @@ class ZContour:
             try:
                 self.update(arg)
             except:
-                print('Could not process ZContour arg: '+str(arg))
+                print('Could not process ZContour arg:%s\n\t'%str(arg)+str(e))
         # 2) KWARGS
         for kwarg in kwargs:
             try:
                 self.update(kwarg)
             except:
-                print('Could not process ZContour kwarg: '+str(kwarg))
+                print('Could not process ZContour kwarg:%s\n\t'%str(kwarg)+str(e))
     def update(self, *args): #=== KWARGS eventually
         for arg in args:
             # Dictionary

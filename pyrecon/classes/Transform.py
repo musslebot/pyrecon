@@ -13,14 +13,14 @@ class Transform:
         for arg in args:
             try:
                 self.update(arg)
-            except:
-                print('Could not process Transform arg: '+str(arg))
+            except Exception, e:
+                print('Could not process Transform arg:%s\n\t'%str(arg)+str(e))
         # 2) KWARGS
         for kwarg in kwargs:
             try:
                 self.update(kwarg)
             except:
-                print('Could not process Transform kwarg: '+str(kwarg))
+                print('Could not process Transform kwarg:%s\n\t'%str(kwarg)+str(e))
 # MUTATORS
     def update(self, *args): #=== Kwargs eventually
         for arg in args:

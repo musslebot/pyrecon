@@ -24,14 +24,14 @@ class Contour:
         for arg in args:
             try:
                 self.update(arg)
-            except:
-                print('Could not process Contour arg: '+str(arg))
+            except Exception, e:
+                print('Could not process Contour arg:%s\n\t'%str(arg)+str(e))
         # 2) KWARGS
         for kwarg in kwargs:
             try:
                 self.update(kwarg)
-            except:
-                print('Could not process Contour kwarg: '+str(kwarg))
+            except Exception, e:
+                print('Could not process Contour kwarg:%s\n\t'%str(kwarg)+str(e))
 # MUTATORS
     def update(self, *args): #=== Kwargs eventually
         for arg in args:
