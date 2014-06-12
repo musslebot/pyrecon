@@ -93,8 +93,9 @@ class MergeSection:
 		if self.section1.attributes() == self.section2.attributes():
 			self.attributes = self.section1.attributes()
 		# Are images equivalent?
-		if self.section1.image == self.section2.image:
-			self.images = self.section1.image
+		if (len(self.section1.images) == len(self.section2.images) and
+			self.section1.images[-1] == self.section2.images[-1]):
+			self.images = self.section1.images
 		# Are contours equivalent?
 		separatedConts = self.getCategorizedContours(overlaps=True) #=== thread this function
 		self.uniqueA = separatedConts[0]
@@ -167,7 +168,7 @@ class MergeSection:
 		'''Returns a section object from self.attributes, self.images, and self.contours. Defaults any of these items to the self.section1 version if they are None (not resolved).'''
 		return Section(
 			self.attributes if self.attributes is not None else self.section1.attributes(),
-			self.images if self.images is not None else self.section1.image,
+			self.images if self.images is not None else self.section1.images,
 			self.contours if self.contours is not None else self.section1.contours
 			)
 class MergeSeries:
