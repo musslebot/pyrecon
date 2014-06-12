@@ -100,9 +100,9 @@ class SectionImageHandler(QWidget):
 			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
 			self.chooseRight.setStyleSheet('background-color:lightgreen;')
 	def loadObjects(self):
-		# Pixmaps
-		self.pixmap1 = QPixmap(self.merge.section1.image._path+self.merge.section1.image.src).scaled(750,750,aspectMode=Qt.KeepAspectRatio)
-		self.pixmap2 = QPixmap(self.merge.section2.image._path+self.merge.section2.image.src).scaled(750,750,aspectMode=Qt.KeepAspectRatio)
+		# Pixmaps #===d1fixed
+		self.pixmap1 = QPixmap(self.merge.section1.images[-1]._path+self.merge.section1.images[-1].src).scaled(750,750,aspectMode=Qt.KeepAspectRatio)
+		self.pixmap2 = QPixmap(self.merge.section2.images[-1]._path+self.merge.section2.images[-1].src).scaled(750,750,aspectMode=Qt.KeepAspectRatio)
 		if self.pixmap1.isNull() and not self.pixmap2.isNull():
 			self.pixmap1 = QPixmap(self.pixmap2.size().width(),self.pixmap2.size().height()) # empty pixmap, size to pixmap2
 		if self.pixmap2.isNull() and not self.pixmap1.isNull():
@@ -117,8 +117,8 @@ class SectionImageHandler(QWidget):
 		self.imgLabel2 = QLabel()
 		self.imgLabel2.setPixmap( self.pixmap2 )
 		# Image details
-		img1atts = self.merge.section1.image.attributes()
-		img2atts = self.merge.section2.image.attributes()
+		img1atts = self.merge.section1.images[-1].attributes()
+		img2atts = self.merge.section2.images[-1].attributes()
 		self.details1 = QLabel('\n'.join([str(att).upper()+':\t'+str(img1atts[att]) for att in img1atts]))
 		self.details2 = QLabel('\n'.join([str(att).upper()+':\t'+str(img2atts[att]) for att in img2atts]))
 		font = QFont("Arial", 14)
@@ -157,11 +157,11 @@ class SectionImageHandler(QWidget):
 		self.setLayout(container)
 	def choose(self):
 		if self.sender() == self.chooseLeft:
-			self.merge.images = self.merge.section1.image
+			self.merge.images = self.merge.section1.images
 			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
 			self.chooseRight.setStyleSheet(QWidget().styleSheet())
 		elif self.sender() == self.chooseRight:
-			self.merge.images = self.merge.section2.image
+			self.merge.images = self.merge.section2.images
 			self.chooseLeft.setStyleSheet(QWidget().styleSheet())
 			self.chooseRight.setStyleSheet('background-color:lightgreen;')
 # - Contours
@@ -259,7 +259,7 @@ class SectionContourHandler(QWidget):
 		for item in items:
 			if item.__class__.__name__ == 'Contour' or type(item) == type([]):
 				# Item can be a contour or list of 2 contours, they are handled differently in contourTableItem class upon initialization
-				listItem = contourTableItem(item, [self.merge.section1.image,self.merge.section2.image])
+				listItem = contourTableItem(item, [self.merge.section1.images[-1],self.merge.section2.images[-1]])
 				if type(item) == type([]):
 					if item in self.confOvlp: # Conflicting ovlping contour
 						listItem.setBackground(QColor('red'))
@@ -317,15 +317,7 @@ class SectionContourHandler(QWidget):
 		oB = [] # Unique B
 		for i in range(self.outUniqueB.count()):
 			oB.append(self.outUniqueB.item(i))
-	#=== domain1 fix
-		# Check for domain1
-		if ('domain1' not in [item.contour1.name for item in oO] and
-		'domain1' not in [item.contour.name for item in oA] and
-		'domain1' not in [item.contour.name for item in oB]):
-			msg = QMessageBox(self)
-			msg.setText('"domain1" was not found in any output column. The "domain1" contour is essential for correctly mapping contours to their place on the image. Merge aborted.')
-			msg.exec_()
-			return
+
 		# set self.output to chosen contours
 		output = [item.contour for item in oA]+[item.contour for item in oB]
 		for item in oO:
