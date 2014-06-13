@@ -77,13 +77,15 @@ class MergeSection:
 		for arg in args:
 			# Section object
 			if arg.__class__.__name__ == 'Section':
-				if not self.section1:
+				if self.section1 is None:
 					self.section1 = arg
 					self.name = arg.name
-				elif not self.section2:
+				elif self.section2 is None:
 					self.section2 = arg
 				else:
 					print 'MergeSection already contains two Sections...'
+			else:
+				print 'Not a section object:', arg #===
 		for kwarg in kwargs:
 			print kwarg+':',kwargs[kwarg] #===
 
@@ -95,7 +97,7 @@ class MergeSection:
 		# Are images equivalent?
 		if (len(self.section1.images) == len(self.section2.images) and
 			self.section1.images[-1] == self.section2.images[-1]):
-			self.images = self.section1.images
+			self.images = self.section1.images #=== problematic if other images are different
 		# Are contours equivalent?
 		separatedConts = self.getCategorizedContours(overlaps=True) #=== thread this function
 		self.uniqueA = separatedConts[0]
@@ -192,10 +194,10 @@ class MergeSeries:
 		'''Process given arguments.'''
 		for arg in args:
 			if arg.__class__.__name__ == 'Series':
-				if not self.series1:
+				if self.series1 is None:
 					self.series1 = arg
 					self.name = arg.name+'.ser'
-				elif not self.series2:
+				elif self.series2 is None:
 					self.series2 = arg
 				else:
 					print 'MergeSeries already contains two Series...'
