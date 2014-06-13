@@ -237,19 +237,7 @@ class CommitViewer(QListWidget):
         self.setFlow(QListView.LeftToRight)
         self.setAlternatingRowColors(True) #===
         self.itemDoubleClicked.connect( self.openMenu )
-    def loadCommits(self): #=== avoid remote?
-        # Not detached HEAD
-        # if (not self.repo.isDetached() and
-        #     not self.repo.isAhead() and
-        #     self.repo.head.ref.name in self.repo.git.branch('-r')
-        #     ):
-        #     head = self.repo.head.ref
-        #     # git commits from remote (origin) #===
-        #     for commit in self.repo.iter_commits('origin/'+str(head.name)):
-        #         item = self.CommitItem(commit)
-        #         self.addItem(item)
-        # Detached HEAD or not remote
-        # else:
+    def loadCommits(self):
         for commit in self.repo.iter_commits():
             item = self.CommitItem(commit)
             self.addItem(item)
@@ -275,7 +263,11 @@ class CommitViewer(QListWidget):
             self.openStash()
     def newCommit(self): #===
         '''Begin process for making a new commit'''
-        Message('New commit manager coming soon!')
+        if not self.repo.isDirty(untracked=True):
+            Message('No modifications to commit!')
+        else:
+            CommitHandler(self.repo)
+            self.viewer.refreshAll()
     def openStash(self): #===
         '''Open the stash manager'''
         dialog = StashHandler(self.repo)
