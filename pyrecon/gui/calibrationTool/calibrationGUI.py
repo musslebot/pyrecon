@@ -3,7 +3,7 @@ from PySide.QtGui import *
 
 from pyrecon.main import openSeries
 import pyrecon.tools.calibrationTool
-from pyrecon.gui.main import *
+from pyrecon.gui.main import BrowseWidget, SingleSeriesLoad
 
 class calibrationToolStuff(QWidget):
 	def __init__(self, parent=None):
@@ -30,8 +30,7 @@ class calibrationToolStuff(QWidget):
 		main.addWidget( self.runButton )
 		self.setLayout(main)
 	def loadSeries(self):
-		seriesDialog = singleSeriesLoad()
-		seriesDialog.exec_()
+		seriesDialog = SingleSeriesLoad()
 		self.series = openSeries(seriesDialog.output)
 		self.loadButton.setText('Change Series\nCurrent series:'+self.series.name)
 		self.runButton.setStyleSheet(QPushButton().styleSheet())
@@ -47,6 +46,9 @@ class calibrationToolStuff(QWidget):
 				msg.setText('Calibration factor found: '+str(factor))
 				msg.exec_()
 			elif options['rescale']:
+				msg = QMessageBox()
+				msg.setText('This process may take a moment...')
+				msg.exec_()
 				# Perform rescale using findCalFactor as newMag
 				pyrecon.calibrationTool.reScale.main(self.series, factor, options['outDir'])
 				msg = QMessageBox()
@@ -59,6 +61,9 @@ class calibrationToolStuff(QWidget):
 				msg.setText('Nothing to do here... check options.')
 				msg.exec_()
 			elif options['rescale']:
+				msg = QMessageBox()
+				msg.setText('This process may take a moment...')
+				msg.exec_()
 				# Perform rescale using custom cal factor as newMag
 				pyrecon.calibrationTool.reScale.main(self.series, factor, options['outDir'])
 				msg = QMessageBox()
@@ -77,7 +82,7 @@ class calibOptions(QWidget):
 		self.customFactor = QLineEdit()
 		self.customFactor.setText('<calibration factor (float)>')
 		self.reScale = QCheckBox('Rescale series', self)
-		self.dirBrowse = browseWidget()
+		self.dirBrowse = BrowseWidget()
 		self.dirBrowse.hide() # until rescale is checked
 	def loadFunctions(self):
 		self.autoCalFactor.released.connect( self.factorCheck )

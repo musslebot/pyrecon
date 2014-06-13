@@ -17,17 +17,17 @@ def main(ser, newMag, outpath):
     ser.zeroIdentity() 
     for section in ser.sections:# Set mag field and rescale
         # img objects exist in two locations per section:
-        # (1/2): Set newMag for section.image.mag
-        oldMag = section.image.mag
-        section.image.mag = float(newMag)
+        # (1/2): Set newMag for section.images[-1].mag
+        oldMag = section.images[-1].mag
+        section.images[-1].mag = float(newMag)
         scale = newMag/oldMag
-        tformdImgT = scaleImgTForms(section.image.transform, scale)
-        section.image.transform = tformdImgT
+        tformdImgT = scaleImgTForms(section.images[-1].contour.transform, scale)
+        section.images[-1].contour.transform = tformdImgT
         for contour in section.contours:
             # (2/2): Set newMag for contour.img.mag
             if contour.image is not None: # if contour is an image contour...
-                contour.image = section.image #copy section.image to contour.image
-                contour.transform = section.image.transform # copy transform
+                contour.image = section.images[-1] #copy section.images[-1] to contour.image
+                contour.transform = section.images[-1].transform # copy transform
             else: # if not an image contour...
             #...rescale all the points
                 pts = contour.points
