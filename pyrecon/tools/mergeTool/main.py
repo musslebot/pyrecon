@@ -1,9 +1,8 @@
 from pyrecon.classes import Series, Section
 from pyrecon.tools import handleXML as xml
 
-def createMergeSet(series1, series2):
+def createMergeSet(series1, series2): #=== needs multithreading
 	'''This function takes in two Series objects and returns a MergeSet to be used for the mergeTool'''
-
 	mSer = MergeSeries(series1, series2)
 	mSecs = []
 	for i in range( len(series1.sections) ):
@@ -78,26 +77,29 @@ class MergeSection:
 		for arg in args:
 			# Section object
 			if arg.__class__.__name__ == 'Section':
-				if not self.section1:
+				if self.section1 is None:
 					self.section1 = arg
 					self.name = arg.name
-				elif not self.section2:
+				elif self.section2 is None:
 					self.section2 = arg
 				else:
 					print 'MergeSection already contains two Sections...'
+			else:
+				print 'Not a section object:', arg #===
 		for kwarg in kwargs:
 			print kwarg+':',kwargs[kwarg] #===
 
-	def checkConflicts(self):
+	def checkConflicts(self): #===
 		'''Automatically sets merged stuff if they are equivalent'''
 		# Are attributes equivalent?
 		if self.section1.attributes() == self.section2.attributes():
 			self.attributes = self.section1.attributes()
 		# Are images equivalent?
-		if self.section1.image == self.section2.image:
-			self.images = self.section1.image
+		if (len(self.section1.images) == len(self.section2.images) and
+			self.section1.images[-1] == self.section2.images[-1]):
+			self.images = self.section1.images #=== problematic if other images are different
 		# Are contours equivalent?
-		separatedConts = self.getCategorizedContours(overlaps=True)
+		separatedConts = self.getCategorizedContours(overlaps=True) #=== thread this function
 		self.uniqueA = separatedConts[0]
 		self.uniqueB = separatedConts[1]
 		self.compOvlps = separatedConts[2]
@@ -105,6 +107,7 @@ class MergeSection:
 		if (len(self.uniqueA+self.uniqueB) == 0 and 
 			len(self.confOvlps) == 0):
 			self.contours = self.section1.contours
+			
 	def isDone(self):
 		'''Boolean indicating status of merge.'''
 		return (self.attributes is not None and
@@ -117,6 +120,7 @@ class MergeSection:
 				self.contours is not None).count(True)
 		
 	# mergeTool functions
+	#=== MULTITHREAD THIS FUNCTION!!!!!!!
 	def getCategorizedContours(self, threshold=(1+2**(-17)), sameName=True, overlaps=False):
 		'''Returns lists of mutually overlapping contours between two Section objects.'''
 		compOvlps = [] # Pairs of completely (within threshold) overlapping contours 
@@ -166,7 +170,7 @@ class MergeSection:
 		'''Returns a section object from self.attributes, self.images, and self.contours. Defaults any of these items to the self.section1 version if they are None (not resolved).'''
 		return Section(
 			self.attributes if self.attributes is not None else self.section1.attributes(),
-			self.images if self.images is not None else self.section1.image,
+			self.images if self.images is not None else self.section1.images,
 			self.contours if self.contours is not None else self.section1.contours
 			)
 class MergeSeries:
@@ -190,10 +194,10 @@ class MergeSeries:
 		'''Process given arguments.'''
 		for arg in args:
 			if arg.__class__.__name__ == 'Series':
-				if not self.series1:
+				if self.series1 is None:
 					self.series1 = arg
 					self.name = arg.name+'.ser'
-				elif not self.series2:
+				elif self.series2 is None:
 					self.series2 = arg
 				else:
 					print 'MergeSeries already contains two Series...'

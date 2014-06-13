@@ -12,8 +12,14 @@ LIST OF BUGS (in order of high -> low priority)
  > problems when writing over excel workbook with same name
 
 * mergeTool:
+ > wont write if domain1 is not there! check classes too
+ > reverse traces and their counterpart showing conflicts in countours
  > need optimization for overlap checking
- > overwriting doesnt work with sections
  > overlapping contours are written out using the first (left) series stuff (border, fill, etc.)
+ > writing files has different permissions?
 
+* gitTool:
+ > auto choose savedir in mergeTool
 
+* handleXML:
+ > writeSection needs domain1 handling

@@ -34,32 +34,40 @@ def processSeriesFile(tree):
 	return attributes, contours, zcontours
 def processSectionFile(tree):
 	'''Returns attribute dictionary, image object, and contour list associated with a Section's XML <tree>'''
+	# Process attributes
 	root = tree.getroot()
 	attributes = sectionAttributes(root)
+
 	# Process images and contours
 	images = []
 	contours = None
 	for transform in root:
+		# make Transform object
 		tForm = Transform( transformAttributes(transform) )
-		for child in transform:
-			if child.tag == 'Image':
-				img = Image( imageAttributes(child), tForm )
+		children = [child for child in transform]
+		
+		# Image transform node
+		img = [child for child in children if child.tag == 'Image']
+		if len(img) > 0:
+			img = img.pop()
+			img = Image( imageAttributes(img) )
+			imgContour = [child for child in children if child.tag == 'Contour']
+			if len(imgContour) > 0:
+				imgContour = imgContour.pop()
+				contour = Contour( contourAttributes(imgContour), tForm )
+				contour.image = img # set contour's image to the image
+				img.contour = contour # set image's contour to the contour
 				images.append(img)
-			elif child.tag == 'Contour':
-				cont = Contour( contourAttributes(child), tForm)
-				if contours == None:
-					contours = []
-				contours.append(cont)
-	# Get first image from images list
-	try:
-		image = images.pop()
-	except:
-		image = None
-	# Connect 'domain1' contour with section image
-	for contour in contours:
-		if contour.name == 'domain1':
-			contour.image = image
-	return attributes, image, contours
+		# Non-Image Transform Node
+		else:
+			for child in children:
+				if child.tag == 'Contour':
+					cont = Contour( contourAttributes(child), tForm )
+					if contours == None:
+						contours = []
+					contours.append( cont )
+	return attributes, images, contours
+
 # Process attributes from tree nodes
 def contourAttributes(node):
 	try: # Contours in Sections
@@ -389,36 +397,40 @@ def writeSection(section, directory, outpath=None, overwrite=False):
 		if str(directory[-1]) != '/':
 			directory += '/'
 		outpath = str(directory)+str(section.name)
+	
 	# Make root (Section attributes: index, thickness, alignLocked)
 	root = objectToElement(section)
-	# Image: Has its own unique Transform, Image, Contour
-	image = objectToElement(section.image)
-	imageContour = objectToElement([cont for cont in section.contours if cont.name == 'domain1'].pop())
-	imageTransform = objectToElement([cont for cont in section.contours if cont.name == 'domain1'].pop().transform)
-	imageTransform.append(image)
-	imageTransform.append(imageContour)
-	#Append image node to root
-	root.append(imageTransform)
-	# Contours and Transforms
+	
+	# Add Transform nodes for images (assumes they can all have different tform)
+	for image in section.images:
+		trnsfrm = objectToElement( image.contour.transform )
+		img = objectToElement( image ) # image as XML output node
+		cntr = objectToElement( image.contour )
+		trnsfrm.append(img)
+		trnsfrm.append(cntr)
+		root.append(trnsfrm) # append images transform node to XML file
+
+	# Non-Image Contours
 	# - Build list of unique Transform objects
 	uniqueTransforms = []
 	for contour in section.contours:
-		if contour.name != 'domain1': # ignore image contour
-			unique = True
-			for tform in uniqueTransforms:
-				if tform == contour.transform:
-					unique = False
-					break
-			if unique:
-				uniqueTransforms.append(contour.transform)
+		unique = True
+		for tform in uniqueTransforms:
+			if tform == contour.transform:
+				unique = False
+				break
+		if unique:
+			uniqueTransforms.append(contour.transform)
+
 	# - Add contours to their equivalent Transform objects
 	for transform in uniqueTransforms:
 		transformElement = objectToElement(transform)
 		for contour in section.contours:
-			if contour.name != 'domain1' and contour.transform == transform:
+			if contour.transform == transform:
 				cont = objectToElement(contour)
 				transformElement.append(cont)
 		root.append(transformElement)
+
 	# Make tree and write
 	elemtree = ET.ElementTree(root)
 	if os.path.exists(outpath) and not overwrite:

@@ -8,7 +8,7 @@ class Image:
         self.green = None
         self.blue = None
         #Non-attributes
-        self.transform = None
+        self.contour = None #=== d1fixed
         self._path = None
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
@@ -16,14 +16,14 @@ class Image:
         for arg in args:
             try:
                 self.update(arg)
-            except:
-                print('Could not process Image arg: '+str(arg))
+            except Exception, e:
+                print('Could not process Image arg:%s\n\t'%str(arg)+str(e))
         # 2) KWARGS
         for kwarg in kwargs:
             try:
                 self.update(kwarg)
-            except:
-                print('Could not process Image kwarg: '+str(kwarg)) 
+            except Exception, e:
+                print('Could not process Image kwarg:%s\n\t'%str(kwarg)+str(e)) 
 # MUTATORS  
     def update(self, *args): #=== **kwargs eventually
         '''Changes Section data from arguments.'''
@@ -35,14 +35,14 @@ class Image:
                     if key in self.__dict__:
                         self.__dict__[key] = arg[key]
                     # Dict:Transform
-                    elif arg[key].__class__.__name__ == 'Transform':
-                        self.transform = arg[key]
+                    elif arg[key].__class__.__name__ == 'Contour':
+                        self.contour = arg[key]
             # Transform object
             elif arg.__class__.__name__ == 'Transform':
-                self.transform = arg
+                self.contour = arg
 # ACCESSORS
     def __eq__(self, other):
-        return (self.transform == other.transform and
+        return (self.contour == other.contour and
                 self.src == other.src and
                 self.brightness == other.brightness and
                 self.contrast == other.contrast)
