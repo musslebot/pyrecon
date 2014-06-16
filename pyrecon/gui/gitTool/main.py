@@ -1,20 +1,16 @@
 from PySide.QtGui import QApplication, QMessageBox
-from dialogs import BrowseRepository, Message
+from dialogs import RepoHandler, Message
 from viewer import RepoViewer
 
 def main(repository=None): #===
     '''Pass in a path to git repository... return populated RepositoryViewer object'''
     if repository is None:
-        #=== user should be able to choose to clone, init, or open repo
-        done = False
-        while not done: #=== user can't close application
-            try:
-                browse = BrowseRepository()
-                repo = RepoViewer( browse.output )
-                done = True
-            except Exception, e:
-                msg = Message('Error loading repository:\n'+str(e))
-    return repo
+        helper = RepoHandler()
+    try:
+        print helper.repo #===
+        return RepoViewer(helper.repo)
+    except Exception, e:
+        Message('Error loading repository!\nReason:\n\t'+str(e))
 
 #=== TEST SCRIPT
 if __name__ == '__main__':

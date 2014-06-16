@@ -876,68 +876,139 @@ class DirtyHandler(QDialog): #=== double-check everything
 
 # Handlers for connecting gitTool to a repository
 class RepoHandler(QDialog):
+    class BrowseRepository(QDialog): #===
+        def __init__(self):
+            QDialog.__init__(self)
+            self.setWindowTitle('Browse for your repository')
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+            self.exec_()
+        def loadObjects(self):
+            self.path = BrowseWidget()
+            self.doneBut = QPushButton()
+        def loadFunctions(self):
+            self.doneBut.setMinimumHeight(50)
+            self.doneBut.setText('Open Repository')
+            self.doneBut.clicked.connect( self.finish )
+        def loadLayout(self):
+            main = QVBoxLayout()
+            main.addWidget(self.path)
+            main.addWidget(self.doneBut)
+            self.setLayout(main)
+        def finish(self):
+            self.output = str(self.path.path.text())
+            if 'Enter or browse' not in self.output or self.output == '':
+                self.done(1)
+            else:
+                msg=QMessageBox()
+                msg.setText('Invalid output directory: '+str(self.output))
+                msg.exec_()
+                return
+    class CloneRequest(QDialog): #===
+        '''Request location of remote repository'''
+        def __init__(self):
+            QDialog.__init__(self)
+            self.setWindowTitle('Clone a remote repository')
+            self.loadObjects()
+            self.loadFunctions()
+            self.loadLayout()
+            self.exec_()
+        def loadObjects(self):
+            self.label = QLabel('Enter the path to the remote repository:')
+            self.remotePath = QLineEdit()
+            self.dirLabel = QLabel('Browse for location to clone repository:')
+            self.path = BrowseWidget()
+            self.doneBut = QPushButton('Continue')
+            self.cancelBut = QPushButton('Cancel')
+        def loadFunctions(self):
+            self.doneBut.setMinimumHeight(50)
+            self.doneBut.clicked.connect( self.finish )
+            self.cancelBut.clicked.connect( self.finish )
+        def loadLayout(self):
+            container = QVBoxLayout()
+            container.addWidget(self.label)
+            container.addWidget(self.remotePath)
+            container.addWidget(self.dirLabel)
+            container.addWidget(self.path)
+            container.addWidget(self.doneBut)
+            self.setLayout(container)
+        def finish(self): #===
+            msg = QMessageBox()
+            if self.sender() == self.cancelBut:
+                msg.setText('Setting up remote repository has been aborted...')
+                msg.exec_()
+                self.done(0)
+            else:
+                # check if appropriate
+                try:
+                    os.chdir(self.path.path.text())
+                    Message('Depending on the contents of the repository, the cloning process may take several minutes. Please be patient - you will be notified when cloning is complete.')
+                    ret = subprocess.check_output(['git','clone',str(self.remotePath.text())])
+                    Message('Finished\n'+str(ret))
+                    self.output = os.getcwd() #=== not being properly assigned, needs to go into repo
+                    self.done(1)
+                except BaseException, e:
+                    msg.setText('Error:\n\n'+str(e))
+                    msg.exec_()
+                    return
+    # class InitRepository(QDialog): #===
+    #     '''Initialize a new repository.'''
+    #     def __init__(self):
+    #         QDialog.__init__(self)
+    #         self.setWindowTitle('Initialize a repository')
+    #         self.loadObjects()
+    #         self.loadFunctions()
+    #         self.loadLayout()
+    #         self.exec_()
     def __init__(self):
         QDialog.__init__(self)
-        self.setWindowTitle('gitTool Repository Handler')
-class RemoteRequest(QDialog): #===
-    '''Request location of remote repository'''
-    def __init__(self):
-        QDialog.__init__(self)
+        self.setWindowTitle('gitTool Repository Loader')
+        self.repo=None # This will be populated if succesful
         self.loadObjects()
         self.loadFunctions()
         self.loadLayout()
         self.exec_()
     def loadObjects(self):
-        self.label = QLabel('Enter the path to the remote repository:')
-        self.remotePath = QLineEdit()
-        self.doneBut = QPushButton('Continue')
+        self.browseBut = QPushButton('Browse for local repository')
+        self.cloneBut = QPushButton('Clone a remote repository')
+        # self.initBut = QPushButton('Initialize a new repository')
+        self.cancelBut = QPushButton('Cancel')
+        # Button sizing
+        self.browseBut.setMinimumHeight(50)
+        self.cloneBut.setMinimumHeight(50)
+        # self.initBut.setMinimumHeight(50)
+        self.cancelBut.setMinimumHeight(50)
     def loadFunctions(self):
-        self.doneBut.setMinimumHeight(50)
-        self.doneBut.clicked.connect( self.finish )
+        self.browseBut.clicked.connect( self.browse )
+        self.cloneBut.clicked.connect( self.clone )
+        # self.initBut.clicked.connect( self.init )
+        self.cancelBut.clicked.connect( self.cancel )
+        # tooltips
+        self.browseBut.setToolTip('Locate the repository on your local computer')
+        self.cloneBut.setToolTip('Close a repository to your local computer using the remote repository\'s address')
+        # self.initBut.setToolTip('Create a new repository and connect it to a remote server')
+        self.cancelBut.setToolTip('Cancel and close')
     def loadLayout(self):
         container = QVBoxLayout()
-        container.addWidget(self.label)
-        container.addWidget(self.remotePath)
-        container.addWidget(self.doneBut)
+        container.addWidget(self.browseBut)
+        container.addWidget(self.cloneBut)
+        # container.addWidget(self.initBut)
+        container.addWidget(self.cancelBut)
         self.setLayout(container)
-    def finish(self): #===
-        # check if appropriate
-        msg = QMessageBox()
-        try:
-            subprocess.call(['git','remote','add','origin',str(self.remotePath.text())])
-            subprocess.call(['git','branch','-u','origin'])
-            self.done(1)
-        except BaseException, e:
-            msg.setText('Error:\n\n'+str(e))
-            msg.exec_()
-            return
+    def browse(self): #===
+        handler = self.BrowseRepository()
+        self.repo = handler.output
+        self.done(1)
+    def clone(self): #===
+        handler = self.CloneRequest()
+        self.repo = handler.output
+        self.done(1)
+    # def init(self): #===
+    #     handler = self.InitRepository()
+    #     return
+    def cancel(self):
+        Message('Cancelling gitTool')
+        self.done(0)
 
-class BrowseRepository(QDialog): #===
-    def __init__(self):
-        QDialog.__init__(self)
-        self.setWindowTitle('Browse for your repository')
-        self.loadObjects()
-        self.loadFunctions()
-        self.loadLayout()
-        self.exec_()
-    def loadObjects(self):
-        self.path = BrowseWidget()
-        self.doneBut = QPushButton()
-    def loadFunctions(self):
-        self.doneBut.setMinimumHeight(50)
-        self.doneBut.setText('Open Repository')
-        self.doneBut.clicked.connect( self.finish )
-    def loadLayout(self):
-        main = QVBoxLayout()
-        main.addWidget(self.path)
-        main.addWidget(self.doneBut)
-        self.setLayout(main)
-    def finish(self):
-        self.output = str(self.path.path.text())
-        if 'Enter or browse' not in self.output or self.output == '':
-            self.done(1)
-        else:
-            msg=QMessageBox()
-            msg.setText('Invalid output directory: '+str(self.output))
-            msg.exec_()
-            return
+        
