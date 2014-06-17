@@ -124,7 +124,8 @@ class CommitHandler(QDialog):
             self.repository = repository
             self.repository.head.reset() # Unstage possible staged files
             # Get modified/untracked file names #=== what if detached?
-            self.modified = [str(diff.a_blob.name) for diff in self.repository.head.commit.diff(None)]
+            self.modified = [str(diff.a_blob.name) for diff in self.repository.head.commit.diff(None) if str(diff.a_blob.name) not in subprocess.check_output(['git','ls-files','-d'])]
+            self.deleted = [str(diff.a_blob.name)+' (removed)' for diff in self.repository.head.commit.diff(None) if str(diff.a_blob.name) in subprocess.check_output(['git','ls-files','-d'])]
             self.untracked = self.repository.untracked_files
             self.loadObjects()
             self.loadFunctions()
@@ -132,7 +133,7 @@ class CommitHandler(QDialog):
         def loadObjects(self):
             self.modLabel = QLabel('Modified files')
             self.modifiedList = QListWidget()
-            self.modifiedList.addItems(self.modified)
+            self.modifiedList.addItems(self.modified+self.deleted)
             self.untLabel = QLabel('Untracked (new) files')
             self.untrackedList = QListWidget()
             self.untrackedList.addItems(self.untracked)
@@ -274,9 +275,14 @@ class CommitHandler(QDialog):
                 msg.setInformativeText(str(e))
                 msg.exec_()
                 return
-        # Get list of files to be pushed as new version
-        outFiles = [outputList.item(row).text() for row in xrange(outputList.count())]
+        # Get list of files to be added to index
+        outFiles = [outputList.item(row).text() for row in xrange(outputList.count()) if '(removed)' not in outputList.item(row).text()]
         self.repository.index.add(outFiles) # Add them to index
+        # Get list of files to be removed from index
+        delFiles = [outputList.item(row).text().replace(' (removed)','') for row in xrange(outputList.count()) if '(removed)' in outputList.item(row).text()]
+        # Remove them from index
+        for delFile in delFiles:
+            subprocess.call(['git','rm',str(delFile)])
         # Get version description
         desc = CommitHandler.MessageManager()
         description = desc.message.text()
@@ -540,13 +546,14 @@ class MergeHandler(QDialog): #=== Simplify this!
             # MergeTool
             mergeSet = createMergeSet(ser1,ser2)
             mergeGui = MergeSetWrapper(mergeSet)
+            #=== overwrite save button and 'left/right' labels
             mergeDialog = QDialog() # To make it popup in a window
             container = QHBoxLayout()
             container.addWidget(mergeGui)
             mergeDialog.setLayout(container)
             mergeDialog.setWindowTitle('MergeTool - git')
             mergeDialog.exec_()
-            self.done(1)
+            # self.done(1)
         except BaseException, e:
             msg = QMessageBox()
             msg.setText('Could not start mergeTool!\n\nReason:\n'+str(e))

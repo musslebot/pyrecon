@@ -142,6 +142,8 @@ class BranchViewer(QListWidget):
     def openMenu(self, item):
         action = self.menu.exec_( QCursor.pos() )
         if action.text() == 'Checkout':
+            if self.repo.isDirty(): #=== untracked too?
+                DirtyHandler(self.repo)
             self.repo.checkout(branch=item.branch)
             self.viewer.refreshAll()
         elif action.text() == 'Rename':
@@ -191,10 +193,8 @@ class BranchViewer(QListWidget):
             Message('Branch creation aborted...')
     def mergeBranches(self):
         dialog = MergeHandler(self.repo)
-        if dialog.result():
+        if self.repo.isDirty(): #===
             CommitHandler(self.repo)
-        else:
-            Message('mergeTool indicates that the merge was not successful...')
         self.viewer.refreshAll()
 
 class CommitViewer(QListWidget):
