@@ -100,7 +100,7 @@ class SectionImageHandler(QWidget):
 			self.chooseLeft.setStyleSheet('background-color:lightgreen;')
 			self.chooseRight.setStyleSheet('background-color:lightgreen;')
 	def loadObjects(self):
-		# Pixmaps #===d1fixed
+		# Pixmaps
 		self.pixmap1 = QPixmap(self.merge.section1.images[-1]._path+self.merge.section1.images[-1].src).scaled(750,750,aspectMode=Qt.KeepAspectRatio)
 		self.pixmap2 = QPixmap(self.merge.section2.images[-1]._path+self.merge.section2.images[-1].src).scaled(750,750,aspectMode=Qt.KeepAspectRatio)
 		if self.pixmap1.isNull() and not self.pixmap2.isNull():
@@ -517,20 +517,32 @@ class contourTableItem(QListWidgetItem):
 			self.setText(self.contour1.name)
 		else:
 			self.contour = contour
+			self.image = images[0]
 			self.setText(contour.name)
 	def clicked(self):
 		item = self
-		msg = resolveOvlp(item)
-		resolution = msg.result() # msg returns an int referring to the selected contour
-		if resolution == 1:
-			self.contour = self.contour1
-			self.setBackground(QColor('lightgreen'))
-		elif resolution == 2:
-			self.contour = self.contour2
-			self.setBackground(QColor('lightgreen'))
-		elif resolution == 3:
-			self.contour = [self.contour1, self.contour2]
-			self.setBackground(QColor('lightgreen'))
+		if self.contour is not None: # single contour
+			try:
+				pic = contourPixmap(self.image, self.contour)
+			except:
+				pic = contourPixmap(self.image1, self.contour)
+			a = QVBoxLayout()
+			a.addWidget(pic)
+			dia = QDialog()
+			dia.setLayout(a)
+			dia.exec_()
+		else: # Conflicting or overlapping
+			msg = resolveOvlp(item)
+			resolution = msg.result() # msg returns an int referring to the selected contour
+			if resolution == 1:
+				self.contour = self.contour1
+				self.setBackground(QColor('lightgreen'))
+			elif resolution == 2:
+				self.contour = self.contour2
+				self.setBackground(QColor('lightgreen'))
+			elif resolution == 3:
+				self.contour = [self.contour1, self.contour2]
+				self.setBackground(QColor('lightgreen'))
 	def forceResolution(self, integer):
 		if int(integer) == 1:
 			self.contour = self.contour1
