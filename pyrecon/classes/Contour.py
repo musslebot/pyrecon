@@ -122,6 +122,9 @@ class Contour:
             return 0
         # Closed contours
         if self.closed:
+            # check if both are consistent directions (cw/ccw) to prevent reverse contours from conflicting with normal ones
+            if self.isReverse() != other.isReverse():
+                return 0
             AoU = self.shape.union( other.shape ).area
             AoI = self.shape.intersection( other.shape ).area
             if AoI == 0:
