@@ -78,6 +78,9 @@ class PyreconMainWindow(QMainWindow):
         self.excelSelector.setWidget( self.excelTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.excelSelector)
     def loadGitTool(self):
+        # importing mergeTool stuff here was the only way to get it to work
+        from pyrecon.tools.mergeTool.main import createMergeSet
+        from pyrecon.gui.mergeTool.main import MergeSetWrapper
         from pyrecon.gui.gitTool.main import main as gitMain
         self.setCentralWidget( gitMain() ) 
 
