@@ -505,6 +505,20 @@ class MergeHandler(QDialog): #=== Simplify this!
         elif self.sender() == self.dstBranchSelect: # Update dst commits
             self.dstCommitSelect.clear()
             self.dstCommitSelect.addItems(['Most Recent']+[com.message for com in commits])
+    def save(self): #===
+        print 'this is the mergeDialog save' #===
+        if self.mergeGui.navigator.checkConflicts():
+            self.mergeGui.navigator.writeMergeObjects(self.repository.working_dir)
+        #===
+        msg = QMessageBox()
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg.setText('Would you like to close mergeTool?')
+        ret = msg.exec_()
+        if ret == QMessageBox.Yes:
+            self.parentWidget().close()
+            self.parentWidget().parentWidget().done(1) #=== doesnt work from MainWindow ??
+        elif ret == QMessageBox.No:
+            return
     def beginMergeTool(self, srcCommit=None, dstCommit=None):
         try:
             #=== this process needs to be improved... namely, the checkConflicts() function takes way too long to determine overlap conflicts
@@ -545,11 +559,13 @@ class MergeHandler(QDialog): #=== Simplify this!
             
             # MergeTool
             mergeSet = createMergeSet(ser1,ser2)
-            mergeGui = MergeSetWrapper(mergeSet)
-            #=== overwrite save button and 'left/right' labels
+            self.mergeGui = MergeSetWrapper(mergeSet)
+            # Overwrite save button, write to self.repository.working_dir
+            self.mergeGui.navigator.saveButton.clicked.connect( self.save )
+            print 'save maybe overwritten' #===
             mergeDialog = QDialog() # To make it popup in a window
             container = QHBoxLayout()
-            container.addWidget(mergeGui)
+            container.addWidget(self.mergeGui)
             mergeDialog.setLayout(container)
             mergeDialog.setWindowTitle('MergeTool - git')
             mergeDialog.exec_()
