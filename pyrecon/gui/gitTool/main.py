@@ -7,12 +7,11 @@ def main(repository=None): #===
     if repository is None:
         helper = RepoHandler()
     try:
-        print helper.repo #===
+        print 'helper.repo', helper.repo #===
         return RepoViewer(helper.repo)
     except Exception, e:
         Message('Error loading repository!\nReason:\n\t'+str(e))
 
-#=== TEST SCRIPT
 if __name__ == '__main__':
     app = QApplication.instance()
     if app == None:
