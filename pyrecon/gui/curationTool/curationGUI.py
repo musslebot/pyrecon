@@ -31,7 +31,7 @@ class curationToolStuff(QWidget):
 		main.addWidget( self.runButton )
 		self.setLayout(main)
 	def loadSeries(self):
-		seriesDialog = singleSeriesLoad()
+		seriesDialog = SingleSeriesLoad()
 		seriesDialog.exec_()
 		self.series = openSeries(seriesDialog.output)
 		self.loadButton.setText('Change Series\nCurrent series:'+self.series.name)
