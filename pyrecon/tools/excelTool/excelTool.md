@@ -11,11 +11,14 @@ import pyrecon
 pyrecon.start()
 </pre>
 
-< insert pic 1
-
 Open the excelTool by clicking on Tools > excelTool
+![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/excelTool/excelTool1.jpg "excelTool1")
 
-< insert pic 2
+Browse for your .ser file
+![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/excelTool/exceltool2.jpg "excelTool2")
+
+Browse for a location in which to save your spreadsheet
+![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/excelTool/exceltool3.jpg "excelTool3")
 
 
 
