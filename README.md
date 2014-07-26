@@ -37,6 +37,7 @@ To start graphical tool loader, use commands in python shell:
     * `cmake`
     * `libshiboken-dev`
 * Install [PySide](http://qt-project.org/wiki/PySide)
+* You may have to install numpy via pip: <code>pip install numpy</code>
 * Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from its parent folder
 
 ### Windows
