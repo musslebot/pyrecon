@@ -20,5 +20,7 @@ Browse for your .ser file
 Browse for a location in which to save your spreadsheet
 ![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/excelTool/exceltool3.jpg "excelTool3")
 
+Click the 'Create Excel Workbook' button and wait for the process to finish
+
 
 
