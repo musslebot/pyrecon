@@ -38,10 +38,10 @@ To start graphical tool loader, use commands in python shell:
     * `libshiboken-dev`
 * Install [PySide](http://qt-project.org/wiki/PySide)
 * You may have to install other packages via pip if errors arise:
-<code>
+<pre>
 pip install numpy
 pip install six
-</code>
+</pre>
 * Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from its parent folder
 
 ### Windows
