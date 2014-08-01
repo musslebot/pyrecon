@@ -7,11 +7,11 @@ Date Created: 3/7/2013<br>
 # Overview
 [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) provides easy access to data in XML files associated with the program [RECONSTRUCT](http://synapses.clm.utexas.edu/tools/reconstruct/reconstruct.stm).
 This package also contains several tools for managing this data:
-* gitTool - Reduced functionality UI for interacting with a git repository containing a Series
-* mergeTool - merge series together with built-in conflict resolution (graphical or non-graphical)
-* excelTool - output data into excel workbooks (.xlsx)
-* calibrationTool - rescale contours representing images in a section
-* curationTool - check for various properties of objects in a series
+* [gitTool](https://github.com/wtrdrnkr/pyrecon/blob/docs/pyrecon/tools/gitTool/gitTool.md) - Reduced functionality UI for interacting with a git repository containing a Series
+* [mergeTool](https://github.com/wtrdrnkr/pyrecon/blob/docs/pyrecon/tools/mergeTool/mergeTool.md) - merge series together with built-in conflict resolution (graphical or non-graphical)
+* [excelTool](https://github.com/wtrdrnkr/pyrecon/blob/docs/pyrecon/tools/excelTool/excelTool.md) - output data into excel workbooks (.xlsx)
+* [calibrationTool](https://github.com/wtrdrnkr/pyrecon/blob/docs/pyrecon/tools/calibrationTool/calibrationTool.md) - rescale contours representing images in a section
+* [curationTool](https://github.com/wtrdrnkr/pyrecon/blob/docs/pyrecon/tools/curationTool/curationTool.md) - check for various properties of objects in a series
 
 The functions/tools already in place can be used to develop solutions to a wide range of problems associated with RECONSTRUCT data.
 
