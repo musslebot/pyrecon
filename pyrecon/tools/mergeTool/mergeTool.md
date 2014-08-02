@@ -12,7 +12,7 @@ import pyrecon
 pyrecon.start()
 </pre>
 
-Open the excelTool by clicking on Tools > mergeTool
+Open the mergeTool by clicking on Tools > mergeTool
 
 Browse or enter the path to the two separate .ser files you wish to merge and click 'Load Series'
 
