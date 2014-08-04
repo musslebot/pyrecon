@@ -36,6 +36,11 @@ To start graphical tool loader, use commands in python shell:
     * `libxslt-dev`
     * `cmake`
     * `libshiboken-dev`
+* Next, from the pyrecon directory, run the following command in a terminal:
+<pre>
+./install_script.sh
+</pre>
+
 * Install [PySide](http://qt-project.org/wiki/PySide)
 * Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from its parent folder
 
