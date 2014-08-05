@@ -26,8 +26,4 @@ echo '>>> shapely installed <<<' &&
 easy_install lxml &&
 echo '>>> lxml installed <<<' &&
 easy_install openpyxl &&
-echo '>>> openpyxl installed <<<' &&
-echo 'Installing PySide... patience is a virtue (so they say)' &&
-easy_install pyside &&
-echo 'Phew... Installing PyRECONSTRUCT now :)'
-python setup.py install
+echo '>>> openpyxl installed <<<'

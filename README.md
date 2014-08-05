@@ -23,26 +23,14 @@ To start graphical tool loader, use commands in python shell:
 *The most stable version can also be found here: [PyPI](https://pypi.python.org/pypi/PyRECONSTRUCT) (Python Package Index)*
 
 ### Linux
-* Install the following dependencies (through `apt-get` or other package manager):
-    * `python-dev`
-    * `python-setuptools`
-    * `libgeos-dev`
-    * `libblas-dev`
-    * `liblapack-dev`
-    * `libfreetype6-dev`
-    * `libpng-dev`
-    * `gfortran`
-    * `libxml2-dev`
-    * `libxslt-dev`
-    * `cmake`
-    * `libshiboken-dev`
-* Next, from the pyrecon directory, run the following command in a terminal:
+* You must install all of the necessary dependencies/packages that PyRECONSTRUCT depends on. I have placed all of the necessary components into a single file (install_script.sh). If this file no longer works, please send me an email so that I can update it.
+* <b>From the top-level pyrecon directory,</b> run the following commands in a terminal:
 <pre>
-./install_script.sh
+(sudo) ./install_depends.sh  # Installs linux packages may need sudo access)
+./install_prereqs.sh  # Installs python packages (easy_install)
+(sudo) ./install_pyside.sh  # Install PySide (may need sudo access)
+python setup.py install
 </pre>
-
-* Install [PySide](http://qt-project.org/wiki/PySide)
-* Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from its parent folder
 
 ### Windows
 * Send me a message for the PyRECONSTRUCT Windows Installer.exe -- filesize is too large to keep in GitHub
