@@ -11,13 +11,13 @@ import pyrecon
 pyrecon.start()
 </pre>
 
-Open the excelTool by clicking on Tools > excelTool
+Open the excelTool by clicking on Tools > excelTool<br>
 ![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/excelTool/images/exceltool1.jpg "excelTool1")
 
-Browse for your .ser file
+Browse for your .ser file<br>
 ![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/excelTool/images/exceltool2.jpg "excelTool2")
 
-Browse for a location in which to save your spreadsheet
+Browse for a location in which to save your spreadsheet<br>
 ![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/excelTool/images/exceltool3.jpg "excelTool3")
 
 Click the 'Create Excel Workbook' button and wait for the process to finish
