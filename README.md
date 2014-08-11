@@ -22,7 +22,7 @@ To start graphical tool loader, use commands in python shell:
 *The most stable version can also be found here: [PyPI](https://pypi.python.org/pypi/PyRECONSTRUCT) (Python Package Index)*
 
 ### Linux
-* <b>From the top-level pyrecon directory,</b> run the following commands in a terminal:
+* From the <b>top-level</b> pyrecon directory, run the following commands in a terminal:
 <pre>
 sudo ./install_depends.sh  # Installs linux package dependencies
 ./install_prereqs.sh  # Installs python packages
