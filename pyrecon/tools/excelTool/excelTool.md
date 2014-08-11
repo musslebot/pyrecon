@@ -12,7 +12,7 @@ pyrecon.start()
 </pre>
 
 Open the excelTool by clicking on Tools > excelTool
-![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/excelTool/images/excelTool1.jpg "excelTool1")
+![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/excelTool/images/exceltool1.jpg "excelTool1")
 
 Browse for your .ser file
 ![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/excelTool/images/exceltool2.jpg "excelTool2")
