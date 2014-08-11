@@ -3,7 +3,6 @@
 Authors: Michael Musslewhite, Larry Lindsey<br>
 Date Created: 3/7/2013<br>
 
-
 # Overview
 [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) provides easy access to data in XML files associated with the program [RECONSTRUCT](http://synapses.clm.utexas.edu/tools/reconstruct/reconstruct.stm).
 This package also contains several tools for managing this data:
@@ -23,28 +22,13 @@ To start graphical tool loader, use commands in python shell:
 *The most stable version can also be found here: [PyPI](https://pypi.python.org/pypi/PyRECONSTRUCT) (Python Package Index)*
 
 ### Linux
-* Install the following dependencies (through `apt-get` or other package manager):
-    * `python-dev`
-    * `python-setuptools`
-    * `libgeos-dev`
-    * `libblas-dev`
-    * `liblapack-dev`
-    * `libfreetype6-dev`
-    * `libpng-dev`
-    * `gfortran`
-    * `libxml2-dev`
-    * `libxslt-dev`
-    * `cmake`
-    * `libshiboken-dev`
-* Install [PySide](http://qt-project.org/wiki/PySide)
-* You may have to install other packages via pip if errors arise:
+* <b>From the top-level pyrecon directory,</b> run the following commands in a terminal:
 <pre>
-pip install numpy
-pip install six
+sudo ./install_depends.sh  # Installs linux package dependencies
+./install_prereqs.sh  # Installs python packages
+sudo ./install_pyside.sh  # Install PySide
+python setup.py install
 </pre>
-* Install [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) by running `python setup.py install` from its parent folder
 
 ### Windows
 * Send me a message for the PyRECONSTRUCT Windows Installer.exe -- filesize is too large to keep in GitHub
-
-
