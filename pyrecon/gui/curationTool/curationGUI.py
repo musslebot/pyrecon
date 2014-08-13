@@ -2,7 +2,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 from pyrecon.main import openSeries
-from pyrecon.gui.main import *
+from pyrecon.gui.main import SingleSeriesLoad
 import pyrecon.tools.curationTool
 
 class curationToolStuff(QWidget):
@@ -32,7 +32,6 @@ class curationToolStuff(QWidget):
 		self.setLayout(main)
 	def loadSeries(self):
 		seriesDialog = SingleSeriesLoad()
-		seriesDialog.exec_()
 		self.series = openSeries(seriesDialog.output)
 		self.loadButton.setText('Change Series\nCurrent series:'+self.series.name)
 		self.runButton.setStyleSheet(QPushButton().styleSheet())

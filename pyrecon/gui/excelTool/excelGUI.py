@@ -91,17 +91,28 @@ class excelToolWindow(QWidget):
                     self.savePathLine.setText(path)
                 self.goButton.setFlat(False)
     def checkAndFinish(self):
-        self.seriesPath = self.seriesPathLine.text()
-        self.savePath = self.savePathLine.text()
-        if '.ser' not in self.seriesPath:
-            msg = QMessageBox(self)
-            msg.setText('Invalid series file -- Please try again.')
-            msg.show()
-        if self.savePath == 'Enter or browse path to save excel workbook' or '/' not in self.savePath:
-            msg = QMessageBox(self)
-            msg.setText('Invalid save path!')
-            msg.show()
-        else:
-            excelTool.main(str(self.seriesPath), str(self.savePath))
-            self.close()
+        try:
+            self.seriesPath = self.seriesPathLine.text()
+            self.savePath = self.savePathLine.text()
+            if '.ser' not in self.seriesPath:
+                msg = QMessageBox(self)
+                msg.setText('Invalid series file -- Please try again.')
+                msg.show()
+            if self.savePath == 'Enter or browse path to save excel workbook' or '/' not in self.savePath:
+                msg = QMessageBox(self)
+                msg.setText('Invalid save path!')
+                msg.show()
+            else:
+                msg = QMessageBox()
+                msg.setText('This process may take a moment... please be patient.')
+                msg.exec_()
+                excelTool.main(str(self.seriesPath), str(self.savePath))
+                msg = QMessageBox()
+                msg.setText('Finished!\nSaved to: %s'%str(self.savePath))
+                msg.exec_()
+                self.close()
+        except Exception, e:
+            msg = QMessageBox()
+            msg.setText('Error:\n\t'+str(e))
+            msg.exec_()
     

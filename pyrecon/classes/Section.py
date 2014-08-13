@@ -7,7 +7,7 @@ class Section:
 		self.thickness = None
 		self.alignLocked = None
 		#Non-attributes
-		self.image = None
+		self.images = [] #=== d1fixed
 		self.contours = []
 		self._path = None
 		self.processArguments(args, kwargs)
@@ -17,14 +17,14 @@ class Section:
 		for arg in args:
 			try:
 				self.update(arg)
-			except:
-				print('Could not process Section arg: '+str(arg))
+			except Exception, e:
+				print('Could not process Section arg: %s\n\t'%str(arg)+str(e))
 		# 2) KWARGS #===
 		for kwarg in kwargs:
 			try:
 				self.update(kwarg)
-			except:
-				print('Could not process Section kwarg: '+str(kwarg))
+			except Exception, e:
+				print('Could not process Section kwarg:%s\n\t'%str(kwarg)+str(e))
 # MUTATORS
 	def update(self, *args): #=== **kwargs eventually, need a way to choose overwrite or append to contours
 		'''Changes Section data from arguments. Assesses type of argument then determines where to place it.'''
@@ -39,12 +39,12 @@ class Section:
 					elif type(arg[key]) == type([]):
 						for item in arg[key]:
 							if item.__class__.__name__ == 'Image':
-								self.image = item
+								self.images.append(item)
 							elif item.__class__.__name__ == 'Contour':
 								self.contours.append(item)
 					# Dict:Image
 					elif arg[key].__class__.__name__ == 'Image':
-						self.image = arg[key]
+						self.images.append(arg[key]) #=== d1fixed
 					# Dict:Contour
 					elif arg[key].__class__.__name__ == 'Contour':
 						self.contours.append(arg[key])
@@ -61,16 +61,16 @@ class Section:
 				self.contours.append(arg)
 			# Image argument
 			elif arg.__class__.__name__ == 'Image':
-				self.image = arg
+				self.images.append(arg) #=== d1fixed
 			# List argument
 			elif type(arg) == type([]):
 				for item in arg:
 					if item.__class__.__name__ == 'Contour':
 						self.contours.append(item)
 					elif item.__class__.__name__ == 'Image':
-						self.image = item
-		if self.image.__class__.__name__ == 'Image':
-			self.image._path = self._path
+						self.images.append(item)
+		for img in self.images:
+			img._path = self._path
 	def popShapes(self):
 		for contour in self.contours:
 			contour.popShape()
@@ -78,12 +78,12 @@ class Section:
 	def __len__(self):
 		'''Return number of contours in Section object'''
 		return len(self.contours)
-	def __eq__(self, other):
+	def __eq__(self, other): #=== images eval correctly?
 		'''Allows use of == between multiple objects'''
 		return (self.thickness == other.thickness and
 				self.index == other.thickness and
 				self.alignLocked == other.alignLocked and
-				self.image == other.image and
+				self.images == other.images and #=== d1fixed
 				self.contours == other.contours)
 	def __ne__(self, other):
 		'''Allows use of != between multiple objects'''
@@ -96,8 +96,8 @@ class Section:
 			return (self.thickness == other.thickness and
 					self.index == other.index and
 					self.alignLocked == other.alignLocked)
-		elif eqType.lower() in ['images', 'image']:
-			return (self.image == other.image)
+		elif eqType.lower() in ['images', 'image', 'img']:
+			return (self.images == other.images) #=== d1fixed
 		elif eqType.lower() in ['contours', 'contour']:
 			return (self.contours == other.contours)
 	def attributes(self):

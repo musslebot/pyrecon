@@ -1,5 +1,5 @@
 __all__ = [
-			'mergeGUI',
+			'main',
 			'sectionHandlers',
 			'seriesHandlers',
 ]

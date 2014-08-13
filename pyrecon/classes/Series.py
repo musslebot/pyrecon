@@ -101,13 +101,13 @@ class Series:
         # 1) ARGS
         try:
             self.update(*args)
-        except:
-            print('Could not process Series arg: '+str(args))
+        except Exception, e:
+            print('Could not process Series arg:%s\n\t'%str(args)+str(e))
         # 2) KWARGS
         try:
             self.update(**kwargs)
-        except:
-            print('Could not process Series kwarg: '+str(kwargs))
+        except Exception, e:
+            print('Could not process Series kwarg:%s\n\t'%str(kwargs)+str(e))
 # MUTATORS
     def update(self, *args, **kwargs):
         for arg in args:

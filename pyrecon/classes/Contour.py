@@ -14,8 +14,8 @@ class Contour:
         self.points = None
         #Non-attributes
         self.coordSys = None
-        self.image = None # Only used if 'domain1' contour
-        self.transform = None
+        self.image = None # Only used if image contour 
+        self.transform = None 
         self.shape = None
         self.processArguments(args, kwargs)
     def processArguments(self, args, kwargs):
@@ -23,14 +23,14 @@ class Contour:
         for arg in args:
             try:
                 self.update(arg)
-            except:
-                print('Could not process Contour arg: '+str(arg))
+            except Exception, e:
+                print('Could not process Contour arg:%s\n\t'%str(arg)+str(e))
         # 2) KWARGS
         for kwarg in kwargs:
             try:
                 self.update(kwarg)
-            except:
-                print('Could not process Contour kwarg: '+str(kwarg))
+            except Exception, e:
+                print('Could not process Contour kwarg:%s\n\t'%str(kwarg)+str(e))
 # MUTATORS
     def update(self, *args): #=== Kwargs eventually
         for arg in args:
@@ -51,11 +51,11 @@ class Contour:
         '''Allows use of == between multiple contours.'''
         comparisonDict1 = {}
         for key in self.__dict__:
-            if key not in ['shape','comment','hidden']:
+            if key not in ['shape','comment','hidden','image']:
                 comparisonDict1[key] = self.__dict__[key]
         comparisonDict2 = {}
         for key in other.__dict__:
-            if key not in ['shape','comment','hidden']:
+            if key not in ['shape','comment','hidden','image']:
                 comparisonDict2[key] = other.__dict__[key]
         return (comparisonDict1 == comparisonDict2)
     def __ne__(self, other):
@@ -122,6 +122,9 @@ class Contour:
             return 0
         # Closed contours
         if self.closed:
+            # check if both are consistent directions (cw/ccw) to prevent reverse contours from conflicting with normal ones
+            if self.isReverse() != other.isReverse():
+                return 0
             AoU = self.shape.union( other.shape ).area
             AoI = self.shape.intersection( other.shape ).area
             if AoI == 0:
@@ -168,7 +171,8 @@ class Contour:
         return series.getFlatArea(self.name)
     def isReverse(self):
         '''Returns true if contour is a reverse trace (negative area)'''
-        self.popShape()
+        if self.shape is None:
+            self.popShape()
         if self.closed:
             ring = LinearRing(self.shape.exterior.coords) # convert polygon to ring
             return not ring.is_ccw # For some reason, the opposite is true (image vs biological coordinate system?)

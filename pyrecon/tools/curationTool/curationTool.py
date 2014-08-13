@@ -61,7 +61,7 @@ def findDistantTraces(series, threshold, printOut=True):
 	else:
 		output = []
 		output.append('-------------------------------------------------')
-		output.append(str('Locating distant traces (treshold: +/-%d sections):'%threshold))
+		output.append(str('Locating distant traces (threshold: +/-%d sections):'%threshold))
 		output.append('-------------------------------------------------')
 		for sec in sorted(distantDict):
 			output.append('Section index: '+str(sec))
