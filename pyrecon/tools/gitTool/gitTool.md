@@ -22,14 +22,14 @@ pyrecon.start()
 Open the gitTool by clicking on Tools > gitTool
 
 The following pop-up will appear:<br>
-![alt text](https://github.com/wtrdrnkr/pyrecon/tree/master/pyrecon/tools/gitTool/images/browseandclone.png "browse and clone")<br>
+![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/gitTool/images/browseandclone.png "browse and clone")<br>
 
 To open a `repository` that exists on your machine, click the Browse button and search your computer for the repository
 
 To `clone` a `repository` that exists elsewhere (a `remote repository`), click the Clone button and enter the address to the remote repository
 
 You will now be presented with a window that displays the current state of your repository and provides functions for interacting with your project:<br>
-![alt text](https://github.com/wtrdrnkr/pyrecon/tree/master/pyrecon/tools/gitTool/images/repoviewer.png "repo viewer")<br>
+![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/gitTool/images/repoviewer.png "repo viewer")<br>
 
 * The most important feature of gitTool is the <b>Sync with remote</b> button. Each user will be working on their own local repository independently but must consistently `push` their new `commits` to the `remote repository` or `pull` others' `commits` from the `remote repository` in order to maintain a fluid, shared project.
  * More information about syncing is shown in the Sync section, below
@@ -45,7 +45,7 @@ You will now be presented with a window that displays the current state of your 
 Sync
 ---
 After clicking Sync with remote, the Sync Manager window will appear:<br>
-![alt text](https://github.com/wtrdrnkr/pyrecon/tree/master/pyrecon/tools/gitTool/images/syncmanager.png "sync manager")<br>
+![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/gitTool/images/syncmanager.png "sync manager")<br>
 The left pane shows `local branches` and the right shows `remote branches`. They are color-coded according to their relative status as follows:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Green</b> - local/remote are up-to-date<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Yellow</b> - local/remote are out of sync<br>
