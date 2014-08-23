@@ -53,6 +53,10 @@ The left pane shows `local branches` and the right shows `remote branches`. They
 
 Merge
 ---
+GitTool's merge process can be initiated by clicking Branch Options, then merge ##############
+
+Git's merge process has been overridden with PyRECONSTRUCT's own mergeTool. For more information about the mergeTool, view the [mergeTtool README](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/mergeTool/mergeTool.md)
+
 
 
 
