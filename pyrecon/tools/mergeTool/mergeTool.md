@@ -27,7 +27,7 @@ To resolve a conflict click on a series or section file in the left navigation w
 Here is an example of conflict contours, viewed with clicking the Contours tab:<br>
 ![alt text](https://github.com/wtrdrnkr/pyrecon/raw/master/pyrecon/tools/mergeTool/images/mergeTool-overlaps.png "Step 2")
 <br>
-Contours that will be output to the new, merged series occupy the bottom half of the window. Contours that are not yet output occupy the top half. To move a contour to the output series, click on the contour to highlight it, then click Move Selected. *NOTE: (Contours only) the Save Current Status button must be clicked in order to ensure that the updates will be output.
+Contours that will be output to the new, merged series occupy the bottom half of the window. Contours that are not yet output occupy the top half. To move a contour to the output series, click on the contour to highlight it, then click Move Selected. <b>*NOTE: (Contours only) the Save Current Status button must be clicked in order to ensure that the contour resolutions will be retained for output.</b>
 <br>
 The picture above shows two conflicting contours. To resolve them, double-click the item to bring up a resolution window:
 <br>
@@ -53,12 +53,13 @@ Any conflicts that have not been resolved will appear in a confirmation window: 
 <br>
 Choose a directory in which to save your series and click Write Series.
 <br>
-Congratulations on your new series!
+Congratulations on your newly saved series!
 <br>
-Double-click a section to bring up the quick-merge menu options:
- - Select all left - All conflicts resolve to the left series
- - Select all right - All conflicts resolve to the right series
- - Select both contours, left atts and images - All contour conflicts choose both left and right. Attribute and image conflicts choose the left series
- - Select both contours, right atts and images -- All contour conflicts choose both left and right. Attribute and image conflicts choose the right series
+
+<b>Double-click a section to bring up the quick-merge menu options:</b>
+ - <b>Select all left</b> - All conflicts resolve to the left series
+ - <b>Select</b> all right - All conflicts resolve to the right series
+ - <b>Select</b> both contours, left atts and images - All contour conflicts choose both left and right. Attribute and image conflicts choose the left series
+ - <b>Select</b> both contours, right atts and images -- All contour conflicts choose both left and right. Attribute and image conflicts choose the right series
 *To select more than one file for quick-merge: select the first file, then hold shift and double-click the last file you wish to quick-merge.
 
