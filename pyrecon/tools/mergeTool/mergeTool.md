@@ -58,8 +58,9 @@ Congratulations on your newly saved series!
 
 <b>Double-click a section to bring up the quick-merge menu options:</b>
  - <b>Select all left</b> - All conflicts resolve to the left series
- - <b>Select</b> all right - All conflicts resolve to the right series
- - <b>Select</b> both contours, left atts and images - All contour conflicts choose both left and right. Attribute and image conflicts choose the left series
- - <b>Select</b> both contours, right atts and images -- All contour conflicts choose both left and right. Attribute and image conflicts choose the right series
-*To select more than one file for quick-merge: select the first file, then hold shift and double-click the last file you wish to quick-merge.
+ - <b>Select all right</b> - All conflicts resolve to the right series
+ - <b>Select both contours, left atts and images</b> - All contour conflicts choose both left and right. Attribute and image conflicts choose the left series
+ - <b>Select both contours, right atts and images</b> - All contour conflicts choose both left and right. Attribute and image conflicts choose the right series
+ <br>
+<b>*To select more than one file for quick-merge: select the first file, then hold shift and double-click the last file you wish to quick-merge.</b>
 
