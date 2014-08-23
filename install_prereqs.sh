@@ -1,29 +1,29 @@
 #!/bin/bash
-easy_install numpy &&
+pip install numpy &&
 echo '>>> numpy installed <<<' &&
-easy_install six &&
+pip install six &&
 echo '>>> six installed <<<' &&
-easy_install pandas &&
+pip install pandas &&
 echo '>>> pandas installed <<<' &&
-easy_install cython &&
+pip install cython &&
 echo '>>> cython installed <<<' &&
-easy_install scipy &&
+pip install scipy &&
 echo '>>> scipy installed <<<' &&
-easy_install matplotlib &&
+pip install matplotlib &&
 echo '>>> matplotlib installed <<<' &&
-easy_install ipython &&
+pip install ipython &&
 echo '>>> ipython installed <<<' &&
-easy_install sympy &&
+pip install sympy &&
 echo '>>> sympy installed <<<' &&
-easy_install GitPython &&
+pip install GitPython &&
 echo '>>> GitPython installed <<<' &&
-easy_install nose &&
+pip install nose &&
 echo '>>> nose installed <<<' &&
-easy_install scikit-image &&
+pip install scikit-image &&
 echo '>>> scikit-image installed <<<' &&
-easy_install shapely &&
+pip install shapely &&
 echo '>>> shapely installed <<<' &&
-easy_install lxml &&
+pip install lxml &&
 echo '>>> lxml installed <<<' &&
-easy_install openpyxl &&
+pip install openpyxl &&
 echo '>>> openpyxl installed <<<'
