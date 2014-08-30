@@ -1,5 +1,12 @@
 Visit the [GitHub repo](https://github.com/wtrdrnkr/pyrecon) for additional detail
 
+Version 2.2.X
+===
+> 2.2.0
+---
+* gitTool is released!
+* Major improvements to the tool instructions are underway and almost complete
+
 Version 2.1.X
 ===
 > 2.1.0
