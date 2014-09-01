@@ -49,13 +49,13 @@ After clicking Sync with remote, the Sync Manager window will appear:<br>
 The left pane shows `local branches` and the right shows `remote branches`. They are color-coded according to their relative status as follows:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Green</b> - local/remote are up-to-date<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Yellow</b> - local/remote are out of sync<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Red</b> - this branch does not exist in the repository<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Red</b> - this branch does not exist in the other repository<br>
 
 Merge
 ---
-GitTool's merge process can be initiated by clicking Branch Options, then merge ##############
+GitTool's merge process can be initiated by clicking Branch Options, then merge
 
-Git's merge process has been overridden with PyRECONSTRUCT's own mergeTool. For more information about the mergeTool, view the [mergeTtool README](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/mergeTool/mergeTool.md)
+Git's merge process has been overridden with PyRECONSTRUCT's own mergeTool. For more information about the mergeTool, view the [mergeTool README](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/mergeTool/mergeTool.md)
 
 
 
