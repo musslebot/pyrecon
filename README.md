@@ -26,7 +26,7 @@ To start graphical tool loader, use commands in python shell:
 <pre>
 sudo ./install_depends.sh  # Installs linux package dependencies
 ./install_prereqs.sh  # Installs python packages
-sudo ./install_pyside.sh  # Install PySide
+sudo pip install -e git+https://github.com/PySide/pyside-setup.git#egg=PySide
 python setup.py install
 </pre>
 
