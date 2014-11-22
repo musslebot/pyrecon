@@ -1,29 +1,29 @@
 #!/bin/bash
+echo '>>> installing numpy <<<' &&
 pip install numpy &&
-echo '>>> numpy installed <<<' &&
+echo '>>> installing six <<<' &&
 pip install six &&
-echo '>>> six installed <<<' &&
+echo '>>> installing pandas <<<' &&
 pip install pandas &&
-echo '>>> pandas installed <<<' &&
+echo '>>> installing cython <<<' &&
 pip install cython &&
-echo '>>> cython installed <<<' &&
+echo '>>> installing scipy <<<' &&
 pip install scipy &&
-echo '>>> scipy installed <<<' &&
+echo '>>> installing matplotlib <<<' &&
 pip install matplotlib &&
-echo '>>> matplotlib installed <<<' &&
+echo '>>> installing ipython <<<' &&
 pip install ipython &&
-echo '>>> ipython installed <<<' &&
+echo '>>> installing sympy <<<' &&
 pip install sympy &&
-echo '>>> sympy installed <<<' &&
+echo '>>> installing GitPython <<<' &&
 pip install GitPython &&
-echo '>>> GitPython installed <<<' &&
+echo '>>> installing nose <<<' &&
 pip install nose &&
-echo '>>> nose installed <<<' &&
+echo '>>> installing scikit-image <<<' &&
 pip install scikit-image &&
-echo '>>> scikit-image installed <<<' &&
+echo '>>> installing shapely <<<' &&
 pip install shapely &&
-echo '>>> shapely installed <<<' &&
+echo '>>> installing lxml <<<' &&
 pip install lxml &&
-echo '>>> lxml installed <<<' &&
+echo '>>> installing openpyxl <<<'
 pip install openpyxl &&
-echo '>>> openpyxl installed <<<'
