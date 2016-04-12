@@ -1,12 +1,13 @@
 __all__ = [
-	'Contour',
-	'Image',
-	'MultiSectionContour',
-	'Section',
-	'Series',
-	'Transform',
-	'ZContour'
-	]
+    'Contour',
+    'Image',
+    'MultiSectionContour',
+    'Section',
+    'Series',
+    'Transform',
+    'ZContour'
+]
+
 
 from Contour import *
 from Image import *

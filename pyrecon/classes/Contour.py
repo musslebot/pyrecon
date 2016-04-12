@@ -1,8 +1,14 @@
-from shapely.geometry import Polygon, LineString, box, LinearRing
+"""Contour."""
 import math
 
-class Contour:
+from shapely.geometry import Polygon, LineString, box, LinearRing
+
+
+class Contour(object):
+    """Class representing a RECONSTRUCT Contour."""
+
     def __init__(self, *args, **kwargs):
+        """Apply given keyword arguments as instance attributes."""
         self.name = None
         self.comment = None
         self.hidden = None
@@ -12,30 +18,36 @@ class Contour:
         self.border = None
         self.fill = None
         self.points = None
-        #Non-attributes
+        # Non-attributes
         self.coordSys = None
-        self.image = None # Only used if image contour 
-        self.transform = None 
+        self.image = None  # Only used if image contour
+        self.transform = None
         self.shape = None
         self.processArguments(args, kwargs)
+
     def processArguments(self, args, kwargs):
+        """Apply any custom args/kwargs to the instance."""
         # 1) ARGS
         for arg in args:
             try:
                 self.update(arg)
-            except Exception, e:
-                print('Could not process Contour arg:%s\n\t'%str(arg)+str(e))
+            except Exception as e:
+                print "Could not process Contour arg:{}\n\t".format(
+                    str(arg) + str(e))
         # 2) KWARGS
         for kwarg in kwargs:
             try:
                 self.update(kwarg)
-            except Exception, e:
-                print('Could not process Contour kwarg:%s\n\t'%str(kwarg)+str(e))
+            except Exception as e:
+                print "Could not process Contour kwarg:{}\n\t".format(
+                    str(kwarg) + str(e))
+
 # MUTATORS
-    def update(self, *args): #=== Kwargs eventually
+    def update(self, *args):  # TODO: Kwargs eventually
+        """Method for updating instance with arbitrary objects."""
         for arg in args:
             # Dictionary
-            if type(arg) == type({}):
+            if isinstance(arg, dict):
                 for key in arg:
                     # Dict:attributes
                     if key in self.__dict__:
@@ -46,139 +58,194 @@ class Contour:
             # Image
             elif arg.__class__.__name__ == 'Image':
                 self.image = arg
+
 # ACCESSORS
     def __eq__(self, other):
-        '''Allows use of == between multiple contours.'''
-        comparisonDict1 = {}
+        """Allow use of == between multiple contours."""
+        ignore = ['shape', 'comment', 'hidden', 'image']
+
+        comparison_dict1 = {}
         for key in self.__dict__:
-            if key not in ['shape','comment','hidden','image']:
-                comparisonDict1[key] = self.__dict__[key]
-        comparisonDict2 = {}
+            if key not in ignore:
+                comparison_dict1[key] = self.__dict__[key]
+
+        comparison_dict2 = {}
         for key in other.__dict__:
-            if key not in ['shape','comment','hidden','image']:
-                comparisonDict2[key] = other.__dict__[key]
-        return (comparisonDict1 == comparisonDict2)
+            if key not in ignore:
+                comparison_dict2[key] = other.__dict__[key]
+        return (comparison_dict1 == comparison_dict2)
+
     def __ne__(self, other):
-        '''Allows use of != between multiple contours.'''
+        """Allow use of != between multiple contours."""
         return not self.__eq__(other)
+
 # transform/shape operations
     def convertToBioCoords(self, mag):
-        '''converts points to biological coordinate system and performs appropraite updates to shape.'''
+        """Convert points to biological coordinate system and update shape."""
         if self.coordSys == 'bio':
             return 'Already in biological coordinate system -- abort.'
         self.points = self.transform.worldpts(self.points, mag)
         self.coordSys = 'bio'
-        self.popShape() # repopulate shape
+        self.popShape()  # repopulate shape
+
     def convertToPixCoords(self, mag):
-        '''Converts points to pixel coordinate system and performs appropraite updates to shape.'''
+        """Convert points to pixel coordinate system and update shape."""
         if self.coordSys == 'pix':
             return 'Already in pixel coordinate system -- abort.'
         self.points = self.transform.imagepts(self.points, mag)
         self.coordSys = 'pix'
-        self.popShape() # repopulate shape
+        self.popShape()  # repopulate shape
+
     def popShape(self):
-        '''Adds polygon object (shapely) to self._shape'''
+        """Add polygon object (shapely) to self._shape."""
         # Closed trace
-        if self.closed == True:
+        if self.closed:
             # If image contour, multiply pts by mag before inverting transform
             if self.image.__class__.__name__ == 'Image':
                 mag = self.image.mag
-                xvals = [pt[0]*mag for pt in self.points]
-                yvals = [pt[1]*mag for pt in self.points]
-                pts = zip(xvals,yvals)
+                xvals = [pt[0] * mag for pt in self.points]
+                yvals = [pt[1] * mag for pt in self.points]
+                pts = zip(xvals, yvals)
             else:
                 if len(self.points) < 3:
                     return None
                 pts = self.points
-            self.shape = Polygon( self.transform.worldpts(pts) ) #===
+            self.shape = Polygon(self.transform.worldpts(pts))  # TODO
         # Open trace
-        elif self.closed == False and len(self.points)>1:
-            self.shape = LineString( self.transform.worldpts(self.points) ) #===
+        elif self.closed is False and len(self.points) > 1:
+            self.shape = LineString(
+                self.transform.worldpts(self.points))  # TODO
         else:
-            print('\nInvalid shape characteristics: '+self.name)
-            print('Quit for debug')
-            quit() # for dbugging
+            print "\nInvalid shape characteristics: {}".format(self.name)
+            print "Quit for debug"
+            quit()  # for dbugging
+
     def box(self):
-        '''Returns bounding box of shape (shapely) library'''
-        if self.shape != None:
+        """Return bounding box of shape (shapely) library."""
+        if self.shape:
             minx, miny, maxx, maxy = self.shape.bounds
             return box(minx, miny, maxx, maxy)
         else:
-            print('NoneType for shape: '+self.name)
+            print "NoneType for shape: ".format(self.name)
+
 # mergeTool functions
-    def overlaps(self, other, threshold=(1+2**(-17))):
-        '''Return 0 if no overlap.
-        For closed traces: return 1 if AoU/AoI < threshold, return AoU/AoI if not < threshold
-        For open traces: return 0 if # pts differs or distance between parallel pts > threshold
-                         return 1 otherwise'''
-        if self.shape == None:self.popShape()
-        if other.shape == None:other.popShape()
+    def overlaps(self, other, threshold=(1 + 2**(-17))):
+        """Return 0 if no overlap.
+
+        For closed traces:
+            * 1 if area_of_union/area_of_intersection < threshold,
+            * area_of_union/area_of_intersection if not < threshold
+        For open traces:
+            * 0 if # pts differs or distance between parallel pts > threshold
+            * 1 otherwise
+        """
+        if not self.shape:
+            self.popShape()
+        if not other.shape:
+            other.popShape()
         # Check bounding box (reduces comp. time for non-overlapping contours)
-        if (not self.box().intersects(other.box()) and
-            not self.box().touches(other.box()) ):
+        this_box = self.box()
+        other_box = other.box()
+        if not this_box.intersects(other_box) and \
+                not this_box.touches(other_box):
             return 0
         # Check if both same type of contour
         if self.closed != other.closed:
             return 0
         # Closed contours
         if self.closed:
-            # check if both are consistent directions (cw/ccw) to prevent reverse contours from conflicting with normal ones
+            # check if both are consistent directions (cw/ccw) to prevent
+            # reverse contours from conflicting with normal ones
             if self.isReverse() != other.isReverse():
                 return 0
-            AoU = self.shape.union( other.shape ).area
-            AoI = self.shape.intersection( other.shape ).area
-            if AoI == 0:
+            area_of_union = self.shape.union(other.shape).area
+            area_of_intersection = self.shape.intersection(other.shape).area
+            if area_of_intersection == 0:
                 return 0
-            elif AoU/AoI >= threshold: #===
-                return AoU/AoI # Returns actual value, not 0 or 1
-            elif AoU/AoI < threshold:
+            elif area_of_union / area_of_intersection >= threshold:  # TODO
+                # Returns actual value, not 0 or 1
+                return area_of_union / area_of_intersection
+            elif area_of_union / area_of_intersection < threshold:
                 return 1
         # Open contours
         if not self.closed:
-            if len( self.points ) != len( other.points ):
+            if len(self.points) != len(other.points):
                 return 0
+
             def distance(pt0, pt1):
-                return math.sqrt( (pt0[0] - pt1[0])**2 + (pt0[1] - pt1[1])**2 )
+                return math.sqrt((pt0[0] - pt1[0])**2 + (pt0[1] - pt1[1])**2)
+
             # Lists of world coords to compare
             a = self.transform.worldpts(self.points)
             b = other.transform.worldpts(other.points)
-            distlist = [distance(a[i],b[i]) for i in range(len(self.points))] 
+            distlist = [distance(a[i], b[i]) for i in range(len(self.points))]
             for elem in distlist:
                 if elem > threshold:
                     return 0
         return 1
+
 # curationTool functions
     def getLength(self):
-        '''Returns the sum of all line segments in the contour object'''
+        """Return the sum of all line segments in the contour object."""
         length = 0
-        for index in range( len(self.points) ):
-            if index+1 >= len(self.points): # stop when outside index range
+        for index in range(len(self.points)):
+            if index + 1 >= len(self.points):
+                # stop when outside index range
                 break
             pt = self.points[index]
-            nextPt = self.points[index+1]
-            length += (((nextPt[0]-pt[0])**2)+((nextPt[1]-pt[1])**2))**(0.5)
-        if self.closed: # If closed object, add distance between 1st and last pt too
-            length += (((self.points[0][0]-self.points[-1][0])**2)+((self.points[0][1]-self.points[-1][1])**2))**(0.5)
-        return length #=== sqrt is taxing computation; reimplement with 1 sqrt at end?
+            next_pt = self.points[index + 1]
+            length += (((next_pt[0] - pt[0])**2) + ((next_pt[1] - pt[1])**2))**(0.5)
+        if self.closed:
+            # If closed object, add distance between 1st and last pt too
+            length += (((self.points[0][0] - self.points[-1][0])**2) + ((self.points[0][1] - self.points[-1][1])**2))**(0.5)
+        # TODO: sqrt is taxing computation; reimplement with 1 sqrt at end?
+        return length
+
     def getStartEndCount(self, series):
-        '''Returns the start, end, and count values for this contour in given series. Determined by self.name only'''
+        """Return the start, end, and count for this Contour in given Series.
+
+        * Uses name to determine same Contour in different Sections
+        """
         return series.getStartEndCount(self.name)
+
     def getVolume(self, series):
+        """Return volume of this Contour in an entire Series.
+
+        * Uses name to determine same Contour in different Sections
+        """
         return series.getVolume(self.name)
+
     def getSurfaceArea(self, series):
+        """Return surface area of this Contour in an entire Series.
+
+        * Uses name to determine same Contour in different Sections
+        """
         return series.getSurfaceArea(self.name)
+
     def getFlatArea(self, series):
+        """Return FlatArea of this Contour in an entire Series.
+
+        * Uses name to determine same Contour in different Sections
+        """
         return series.getFlatArea(self.name)
+
     def isReverse(self):
-        '''Returns true if contour is a reverse trace (negative area)'''
-        if self.shape is None:
+        """Return true if contour is a reverse trace (negative area).
+
+        * Uses name to determine same Contour in different Sections
+        """
+        if not self.shape:
             self.popShape()
         if self.closed:
-            ring = LinearRing(self.shape.exterior.coords) # convert polygon to ring
-            return not ring.is_ccw # For some reason, the opposite is true (image vs biological coordinate system?)
+            # convert polygon to ring
+            # For some reason, the opposite is true (image vs biological
+            # coordinate system?)
+            ring = LinearRing(self.shape.exterior.coords)
+            return not ring.is_ccw
         else:
             return False
+
     def isInvalid(self):
-        '''Returns true if this is an invalid contour.'''
+        """Return true if this is an invalid Contour."""
         if self.closed and len(self.points) < 3:
             return True

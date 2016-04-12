@@ -1,14 +1,20 @@
-import os, re
-from Section import Section as Section
-# handleXML is imported in Series.update()
+"""Series."""
+import os
+import re
 
-class Series:
+from Section import Section as Section
+
+
+class Series(object):
+    """Class representing a RECONSTRUCT Series."""
+
     def __init__(self, *args, **kwargs):
+        """Set instance attributes with args and kwargs."""
         self.index = None
         self.viewport = None
         self.units = None
         self.autoSaveSeries = None
-        self.autoSaveSection =  None
+        self.autoSaveSection = None
         self.warnSaveSection = None
         self.beepDeleting = None
         self.beepPaging = None
@@ -90,234 +96,269 @@ class Series:
         self.mvmtIncrement = None
         self.ctrlIncrement = None
         self.shiftIncrement = None
-        #Non-attributes
+        # Non-attributes
         self.name = None
         self.path = None
         self.contours = []
         self.zcontours = []
         self.sections = []
         self.processArguments(args, kwargs)
+
     def processArguments(self, args, kwargs):
+        """Update instance with provided args/kwargs."""
         # 1) ARGS
         try:
             self.update(*args)
-        except Exception, e:
-            print('Could not process Series arg:%s\n\t'%str(args)+str(e))
+        except Exception as e:
+            print "Could not process Series arg: {}\n\t".format(
+                str(args) + str(e))
         # 2) KWARGS
         try:
             self.update(**kwargs)
-        except Exception, e:
-            print('Could not process Series kwarg:%s\n\t'%str(kwargs)+str(e))
+        except Exception as e:
+            print "Could not process Series kwarg: {}\n\t".format(
+                str(kwargs) + str(e))
+
 # MUTATORS
     def update(self, *args, **kwargs):
+        """Update instance attributes from arbitrary arguments."""
         for arg in args:
             # String argument
-            if type(arg) == type(''): # Possible path to XML?
+            if isinstance(arg, str):  # Possible path to XML?
                 import pyrecon.tools.handleXML as xml
-                try: # given full path to .ser file
+                try:  # given full path to .ser file
                     self.update(*xml.process(arg))
                     self.path = arg
-                    self.name = arg.split('/')[len(arg.split('/'))-1].replace('.ser','')
-                except: # given directory path instead of path to .ser file
+                    filename = arg.split("/")[len(arg.split("/")) - 1]
+                    self.name = filename.replace(".ser", "")
+                except:  # given directory path instead of path to .ser file
                     path = arg
-                    if path[-1] != '/':
-                        path += '/'
-                    path = path+str([f for f in os.listdir(path) if '.ser' in f].pop())
+                    if path[-1] != "/":
+                        path += "/"
+                    path = path + str(
+                        [f for f in os.listdir(path) if ".ser" in f].pop())
                     self.update(*xml.process(path))
                     self.path = path
-                    self.name = path.split('/')[len(path.split('/'))-1].replace('.ser','')
+                    filename = path.split("/")[len(path.split("/")) - 1]
+                    self.name = filename.replace(".ser", "")
             # Dictionary
-            elif type(arg) == type({}):
+            elif isinstance(arg, {}):
                 for key in arg:
                     if key in self.__dict__:
                         self.__dict__[key] = arg[key]
             # List
-            elif type(arg) == type([]):
+            elif isinstance(arg, list):
                 for item in arg:
                     # Contour
-                    if item.__class__.__name__ == 'Contour':
+                    if item.__class__.__name__ == "Contour":
                         self.contours.append(item)
                     # ZSection
-                    elif item.__class__.__name__ == 'ZContour':
+                    elif item.__class__.__name__ == "ZContour":
                         self.zcontours.append(item)
                     # Section
-                    elif item.__class__.__name__ == 'Section':
+                    elif item.__class__.__name__ == "Section":
                         self.sections.append(item)
             # Contour
-            elif arg.__class__.__name__ == 'Contour':
+            elif arg.__class__.__name__ == "Contour":
                 self.contours.append(arg)
             # ZSection
-            elif arg.__class__.__name__ == 'ZContour':
-                self.zcontours.append(item)         
+            elif arg.__class__.__name__ == "ZContour":
+                self.zcontours.append(item)
             # Section
-            elif arg.__class__.__name__ == 'Section':
+            elif arg.__class__.__name__ == "Section":
                 self.sections.append(arg)
         for kwarg in kwargs:
             # Load sections
-            if 'sections' in kwargs:
-                if kwargs['sections'] == True:
-                    print('Attempting to load sections...'),
+            if "sections" in kwargs:
+                if kwargs["sections"]:
+                    print("Attempting to load sections..."),
                     ser = os.path.basename(self.path)
-                    serfixer = re.compile(re.escape('.ser'), re.IGNORECASE)
-                    sername = serfixer.sub('', ser)
-                    # look for files with 'seriesname'+'.'+'number'
-                    p = re.compile('^'+sername+'[.][0-9]*$')
-                    sectionlist = [f for f in os.listdir(self.path.replace(ser,'')) if p.match(f)]
+                    serfixer = re.compile(re.escape(".ser"), re.IGNORECASE)
+                    sername = serfixer.sub("", ser)
+                    # look for files with "seriesname"+"."+"number"
+                    p = re.compile("^" + sername + "[.][0-9]*$")
+                    sectionlist = [f for f in os.listdir(self.path.replace(ser, "")) if p.match(f)]
                     # create and append Sections for each section file
-                    path = self.path.replace(os.path.basename(self.path),'')
+                    path = self.path.replace(os.path.basename(self.path), "")
                     for sec in sectionlist:
-                        section = Section(path+sec)
-                        if section.index is not None: #===
+                        section = Section(path + sec)
+                        if section.index is not None:  # TODO
                             self.update(section)
                     # sort sections by index
-                    self.sections = sorted(self.sections, key=lambda Section: Section.index)
-                    print(' SUCCESS!')
+                    self.sections = sorted(
+                        self.sections, key=lambda Section: Section.index)
+                    print(" SUCCESS!")
+
 # ACCESSORS
     def attributes(self):
-        '''Returns a dict of this Serie's attributes'''
-        not_attributes = ['name','path','contours','zcontours','sections']
+        """Return a dict of this Series" attributes."""
+        ignore = ["name", "path", "contours", "zcontours", "sections"]
         attributes = {}
         for att in self.__dict__:
-            if att not in not_attributes: # if att is considered a desired attribute
+            if att not in ignore:  # if att is considered a desired attribute
                 attributes[att] = self.__dict__[att]
         return attributes
-    def deleteTraces(self, exceptions=[]):
-        '''Deletes all traces except the regex found in exceptions list'''
+
+    def deleteTraces(self, exceptions=None):
+        """Delete all traces except the regex found in exceptions list"""
+        if not exceptions:
+            exceptions = []
         for section in self.sections:
             for contour in section.contours:
                 for regex in exceptions:
                     if re.compile(regex).match(contour.name):
                         pass
                     else:
-                        print 'Removing:', contour.name
+                        print "Removing: {}".format(contour.name)
                         section.contours.remove(contour)
+
 # calibrationTool functions
     def zeroIdentity(self):
-        '''Converts points for all sections in a series to identity transform'''
+        """Convert points for all Sections to identity transform."""
         for sec in self.sections:
             for c in sec.contours:
-                if c.image is None: # Don't alter image contours i.e. domain1     
+                if c.image is None:
+                    # Don"t alter image contours i.e. domain1
                     c.points = c.transform.worldpts(c.points)
                     c.transform.dim = 0
-                    c.transform.ycoef = [0,0,1,0,0,0]
-                    c.transform.xcoef = [0,1,0,0,0,0]
+                    c.transform.ycoef = [0, 0, 1, 0, 0, 0]
+                    c.transform.xcoef = [0, 1, 0, 0, 0, 0]
                     c._tform = c.transform.tform()
+
 # curationTool functions
     def locateInvalidTraces(self, delete=False):
-        invalidDict = {}
+        """Return a map of invalid traces in this Series."""
+        invalid_dict = {}
         for section in self.sections:
             invalids = []
             for contour in section.contours:
                 if contour.isInvalid():
                     invalids.append(contour.name)
                     if delete:
-                        print 'deleted: ',contour.name,'at section',section.index
+                        print "deleted: {} in Section: {}".format(
+                            contour.name, section.index)
                         section.contours.remove(contour)
             if len(invalids) != 0:
-                invalidDict[section.index] = invalids
-        return invalidDict
+                invalid_dict[section.index] = invalids
+        return invalid_dict
+
     def locateReverseTraces(self):
-        reverseDict = {}
+        """Return a map of reverse traces in this Series."""
+        reverse_dict = {}
         for section in self.sections:
-            revTraces = []
+            reverse_traces = []
             for contour in section.contours:
                 try:
                     if contour.isReverse():
-                        revTraces.append(contour)
+                        reverse_traces.append(contour)
                 except:
-                        print('Invalid contour (%s on section %d) was ignored')%(contour.name, section.index)
-                        print('\t check coordinates in XML file')
-            if len(revTraces) != 0:
-                reverseDict[section.index] = revTraces
-        return reverseDict
+                    print "Invalid! {} on section {}) was ignored".format(
+                        contour.name, section.index)
+                    print("\t check coordinates in XML file")
+            if len(reverse_traces) != 0:
+                reverse_dict[section.index] = reverse_traces
+        return reverse_dict
+
     def locateDistantTraces(self, threshold=7):
-        '''Returns a dictionary of indexes containing traces that exist after <threshold (def: 7)> sections of non-existence'''
+        """Return a map of indexes containing traces that have Section gaps.
+
+        Number of Sections determined by threshold kwarg
+        """
         # Build a list of lists for all the contours in each section
-        allSectionContours = []
+        all_section_contours = []
         for section in self.sections:
             contours = list(set([cont.name for cont in section.contours]))
-            allSectionContours.append(contours)
+            all_section_contours.append(contours)
         # Go through list of contours and check for distances
-        index = int(self.sections[0].index) # correct starting index (can be 0 or 1)
-        distantTraces = {}
-        for sec in range(len(allSectionContours)):
+        index = int(self.sections[0].index)  # correct starting index (can be 0 or 1)
+        distant_traces = {}
+        for sec in range(len(all_section_contours)):
             traces = []
-            for contour in allSectionContours[sec]:
+            for contour in all_section_contours[sec]:
                 # Check above
-                if sec+threshold+1 <= len(self.sections):
+                if sec + threshold + 1 <= len(self.sections):
                     # Check and ignore if in section:section+threshold
-                    sectionToThresholdContours = [] 
-                    for contList in allSectionContours[sec+1:sec+threshold+1]:
-                        sectionToThresholdContours.extend(contList)
-                    if contour not in sectionToThresholdContours:
+                    section_to_threshold_countours = []
+                    for contList in all_section_contours[sec + 1:sec + threshold + 1]:
+                        section_to_threshold_countours.extend(contList)
+                    if contour not in section_to_threshold_countours:
                         # Check if contour is in section+threshold and up
-                        thresholdToEndContours = []
-                        for contList in allSectionContours[sec+threshold+1:]:
-                            thresholdToEndContours.extend(contList)
-                        if contour in thresholdToEndContours:
+                        threshold_to_end_contours = []
+                        for contList in all_section_contours[sec + threshold + 1:]:
+                            threshold_to_end_contours.extend(contList)
+                        if contour in threshold_to_end_contours:
                             traces.append(contour)
                 # Check below
-                if sec-threshold-1 >= 0:
+                if sec - threshold - 1 >= 0:
                     # Check and ignore if in section-threshold:section
-                    minusThresholdToSectionContours = []
-                    for contList in allSectionContours[sec-threshold:sec]:
-                        minusThresholdToSectionContours.extend(contList)
-                    if contour not in minusThresholdToSectionContours:
+                    minus_threshold_to_section_contours = []
+                    for contList in all_section_contours[sec - threshold:sec]:
+                        minus_threshold_to_section_contours.extend(contList)
+                    if contour not in minus_threshold_to_section_contours:
                         # Check if contour is in section-threshold and down
-                        beginToMinusThresholdContours = []
-                        for contList in allSectionContours[:sec-threshold]:
-                            beginToMinusThresholdContours.extend(contList)
-                        if contour in beginToMinusThresholdContours:
+                        begin_to_minus_threshold_contours = []
+                        for contList in all_section_contours[:sec - threshold]:
+                            begin_to_minus_threshold_contours.extend(contList)
+                        if contour in begin_to_minus_threshold_contours:
                             traces.append(contour)
-                # Add traces to distantTraces dictionary
+                # Add traces to distant_traces dictionary
                 if len(traces) != 0:
-                    distantTraces[index] = traces
+                    distant_traces[index] = traces
             index += 1
-        return distantTraces
+        return distant_traces
+
     def locateDuplicates(self):
-        '''Locates overlapping traces of the same name in a section. Returns a dictionary of section numbers with duplicates'''
-        # Build dictionary of sections w/ contours whose name appear more than once in that section
-        duplicateNames = {}
+        """Return a map of section numbers to duplicates.
+
+        Locate overlapping traces of the same name in a section.
+        """
+        # Build dictionary of sections w/ contours whose name appear more than
+        # once in that section
+        dupe_names = {}
         for section in self.sections:
             duplicates = []
-            contourNames = [cont.name for cont in section.contours] # List of contour names
-            # Go through each contour, see if name appears in contourName > 1 time
+            # List of contour names
+            contour_names = [cont.name for cont in section.contours]
+            # Go through each contour, see if name appears multiple times
             for contour in section.contours:
-                if contourNames.count(contour.name) > 1:
+                if contour_names.count(contour.name) > 1:
                     duplicates.append(contour)
             if len(duplicates) != 0:
-                duplicateNames[section.index] = duplicates
-        
-        # Go through each list of >1 contour names and check if actually overlaps
-        duplicateDict = {}
-        for key in duplicateNames:
+                dupe_names[section.index] = duplicates
+
+        # Go through each list of potential dupes contour names and
+        # check if actually overlaps
+        dupe_dict = {}
+        for key in dupe_names:
             duplicates = []
-            for contour in duplicateNames[key]:
-                # Filter contours of same memory address so that overlap isn't tested on itself
-                copyContours = [cont for cont in duplicateNames[key] if id(cont) != id(contour) and cont.name == contour.name]
-                for cont in copyContours:
+            for contour in dupe_names[key]:
+                # Filter contours of same memory address so that overlap isn"t tested on itself
+                copy_contours = [cont for cont in dupe_names[key] if id(cont) != id(contour) and cont.name == contour.name]
+                for cont in copy_contours:
                     try:
-                        if contour.overlaps(cont) == 1: # Perfect overlap (within threshold)
+                        if contour.overlaps(cont) == 1:  # Perfect overlap (within threshold)
                             duplicates.append(cont)
                     except:
-                        print('Invalid contour (%s on section %d) was ignored')%(cont.name, key)
-                        print('\t check coordinates in XML file')
+                        print("Invalid contour (%s on section %d) was ignored") % (cont.name, key)
+                        print("\t check coordinates in XML file")
             if len(duplicates) != 0:
-                duplicateDict[key] = duplicates
-        return duplicateDict
+                dupe_dict[key] = duplicates
+        return dupe_dict
+
 # excelTool functions
     def getObject(self, regex):
-        '''Returns a list of 1 list per section containing all the contour that match the regex'''
+        """Return nested list of Contours, per section, that match regex."""
         objects = []
         for section in self.sections:
             section.append(section.getObject(regex))
-        return objects  
+        return objects
+
     def getObjectLists(self):
-        '''Returns sorted lists of dendrite names, protrusion names, trace names, and a list of other objects in series'''
-        dendrite_expression = 'd[0-9]{2,}' # represents base dendrite name (d##)
-        protrusion_expression = 'd[0-9]{2,}p[0-9]{2,}$' # represents base protrusion name (d##p##)
-        trace_expression = 'd[0-9]{2,}.{1,}[0-9]{2,}' # represents trace name (d##<tracetype>##)
-        
+        """Return sorted lists of objects in a Series, grouped by type."""
+        dendrite_expression = r"d[0-9]{2,}"  # represents base dendrite name (d##)
+        protrusion_expression = r"d[0-9]{2,}p[0-9]{2,}$"  # represents base protrusion name (d##p##)
+        trace_expression = r"d[0-9]{2,}.{1,}[0-9]{2,}"  # represents trace name (d##<tracetype>##)
+
         # Convert expressions to usable regular expressions
         dendrite_expression = re.compile(dendrite_expression)
         protrusion_expression = re.compile(protrusion_expression, re.I)
@@ -331,45 +372,52 @@ class Series:
         for section in self.sections:
             for contour in section.contours:
                 # Dendrite
-                if dendrite_expression.match(contour.name) != None:
-                    dendrites.append(contour.name[0:dendrite_expression.match(contour.name).end()])
+                if dendrite_expression.match(contour.name):
+                    end = dendrite_expression.match(contour.name).end()
+                    dendrites.append(contour.name[0:end])
                 # Protrusion
-                if protrusion_expression.match(contour.name) != None:
+                if protrusion_expression.match(contour.name):
                     protrusions.append(contour.name)
                 # Trace === expand to > 2 digits!
-                if (trace_expression.match(contour.name) != None and
+                if (trace_expression.match(contour.name) and
                     protrusion_expression.match(contour.name) == None):
                     traces.append(contour.name)
                     # Make sure a d##p## exists for this trace
-                    thisProt = contour.name[0:3]+'p'+contour.name[4:6]
-                    if (protrusion_expression.match(thisProt) and
-                        thisProt not in protrusions):
-                        protrusions.append(thisProt)
+                    this_prot = contour.name[0:3] + "p" + contour.name[4:6]
+                    if (protrusion_expression.match(this_prot) and
+                        this_prot not in protrusions):
+                        protrusions.append(this_prot)
                 # Everything else (other)
                 if (dendrite_expression.match(contour.name) == None and
                     protrusion_expression.match(contour.name) == None and
                     trace_expression.match(contour.name) == None):
                     others.append(contour.name)
         return sorted(list(set(dendrites))), sorted(list(set(protrusions))), sorted(list(set(traces))), sorted(list(set(others)))
+
     def getData(self, object_name, data_string):
+        """Return data."""
         string = str(data_string).lower()
-        if string == 'volume':
+        if string == "volume":
             return self.getVolume(object_name)
-        elif string == 'total volume':
+        elif string == "total volume":
             return self.getTotalVolume(object_name)
-        elif string == 'surface area':
+        elif string == "surface area":
             return self.getSurfaceArea(object_name)
-        elif string == 'flat area':
+        elif string == "flat area":
             return self.getFlatArea(object_name)
-        elif string == 'start':
+        elif string == "start":
             return self.getStartEndCount(object_name)[0]
-        elif string == 'end':
+        elif string == "end":
             return self.getStartEndCount(object_name)[1]
-        elif string == 'count':    
+        elif string == "count":
             return self.getStartEndCount(object_name)[2]
+
     def getVolume(self, object_name):
-        '''Returns volume of the object throughout the series. Volume calculated by summing the value obtained by
-        multiplying the area by section thickness over all sections.'''
+        """Return volume of the object throughout the Series.
+
+        Calculated by summing the value obtained by multiplying the area by
+        Section thickness over all sections.
+        """
         vol = 0
         for section in self.sections:
             for contour in section.contours:
@@ -378,9 +426,13 @@ class Series:
                         contour.popShape()
                         vol += (contour.shape.area * section.thickness)
                     except:
-                        print 'getVolume(): Invalid contour:', contour.name, 'in section index:', section.index, '\nCheck XML file and fix before trusting data.\n'
+                        print "getVolume(): Invalid contour: {} in section: {}".format(
+                            contour.name, section.index)
+                        print "Check XML file and fix before trusting data.\n"
         return vol
+
     def getTotalVolume(self, object_name):
+        """Return total volumne, of the given object, in this Series."""
         related_objects = []
         if object_name[-1].isalpha():
             object_name = object_name[:-1]
@@ -390,40 +442,56 @@ class Series:
                     if object_name in contour.name:
                         related_objects.append(contour.name)
         # Find total volume by summing volume for all related objects
-        totVol = 0
+        total_volume = 0
         for obj in list(set(related_objects)):
-            totVol+=self.getVolume(obj)
-        return totVol
+            total_volume += self.getVolume(obj)
+        return total_volume
+
     def getSurfaceArea(self, object_name):
-        '''Returns surface area of the object throughout the series. Surface area calculated by summing
-        the length multiplied by section thickness across sections.'''
-        sArea = 0
+        """Return surface area of the object throughout the Series.
+
+        Calculated by summing the length multiplied by section thickness across
+        sections.
+        """
+        surface_area = 0
         for section in self.sections:
             for contour in section.contours:
                 if contour.name == object_name:
                     try:
-                        sArea += (contour.getLength() * section.thickness)
+                        flat_area = contour.getLength() * section.thickness
+                        surface_area += flat_area
                     except:
-                        print 'getSurfaceArea(): Invalid contour:', contour.name, 'in section index:', section.index, '\nCheck XML file and fix before trusting data.\n'
-        return sArea
+                        print "getSurfaceArea(): Invalid contour: {} in section: {}".format(
+                            contour.name, section.index)
+                        print "Check XML file and fix before trusting data.\n"
+        return surface_area
+
     def getFlatArea(self, object_name):
-        '''Returns the flat area of the object throughout the series. Flat area calculated by summing the area of
-        the object across all sections.'''
-        fArea = 0
+        """Return the flat area of the object throughout the Series.
+
+        Calculated by summing the area of the object across all sections.
+        """
+        flat_area = 0
         for section in self.sections:
             for contour in section.contours:
                 if contour.name == object_name:
                     try:
                         contour.popShape()
                         if contour.closed:
-                            fArea += contour.shape.area
+                            flat_area += contour.shape.area
                         else:
-                            fArea += (contour.getLength() * section.thickness)
+                            length = contour.getLength()
+                            thickness = section.thickness
+                            section_area = length * thickness
+                            flat_area += section_area
                     except:
-                        print 'getFlatArea(): Invalid contour:', contour.name, 'in section index:', section.index, '\nCheck XML file and fix before trusting data.\n'
-        return fArea
+                        print "getFlatArea(): Invalid contour: {} in section: {}".format(
+                            contour.name, section.index)
+                        print "Check XML file and fix before trusting data.\n"
+        return flat_area
+
     def getStartEndCount(self, object_name):
-        '''Returns a tuple containing the start index, end index, and count of the item in series.'''
+        """Return a tuple of start index, end index, and count of object."""
         start = 0
         end = 0
         count = 0
