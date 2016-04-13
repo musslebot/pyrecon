@@ -142,7 +142,7 @@ class Series(object):
                     filename = path.split("/")[len(path.split("/")) - 1]
                     self.name = filename.replace(".ser", "")
             # Dictionary
-            elif isinstance(arg, {}):
+            elif isinstance(arg, dict):
                 for key in arg:
                     if key in self.__dict__:
                         self.__dict__[key] = arg[key]

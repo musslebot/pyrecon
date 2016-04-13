@@ -1,18 +1,18 @@
+from Contour import Contour
+from Image import Image
+from MultiSectionContour import MultiSectionContour
+from Section import Section
+from Series import Series
+from Transform import Transform
+from ZContour import ZContour
+
+
 __all__ = [
-    'Contour',
-    'Image',
-    'MultiSectionContour',
-    'Section',
-    'Series',
-    'Transform',
-    'ZContour'
+    "Contour",
+    "Image",
+    "MultiSectionContour",
+    "Section",
+    "Series",
+    "Transform",
+    "ZContour"
 ]
-
-
-from Contour import *
-from Image import *
-from MultiSectionContour import *
-from Section import *
-from Series import *
-from Transform import *
-from ZContour import *
