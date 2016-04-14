@@ -131,12 +131,12 @@ class MergeSection(object):
     #=== MULTITHREAD THIS FUNCTION!!!!!!!
     def getCategorizedContours(self, threshold=(1 + 2**(-17)), sameName=True, overlaps=False):
         """Returns lists of mutually overlapping contours between two Section objects."""
-        compOvlps = []  # Pairs of completely (within threshold) overlapping contours
-        confOvlps = []  # Pairs of incompletely overlapping contours
+        complete_overlaps = []  # Pairs of completely (within threshold) overlapping contours
+        potential_overlaps = []  # Pairs of incompletely overlapping contours
 
         # Compute overlaps
-        OvlpsA = [] # Section1 contours that have ovlps in section2
-        OvlpsB = [] # Section2 contours that have ovlps in section1
+        sec1_overlaps = []  # Section1 contours that have ovlps in section2
+        sec2_overlaps = []  # Section2 contours that have ovlps in section1
         for contA in self.section1.contours:
             ovlpA = []
             ovlpB = []
@@ -150,34 +150,35 @@ class MergeSection(object):
                     ovlpB.append(contB)
                     if overlaps:
                         if overlap == 1:
-                            compOvlps.append([contA, contB])
+                            complete_overlaps.append([contA, contB])
                         elif overlap > 0:  # Conflicting (non-100%) overlap
-                            confOvlps.append([contA, contB])
+                            potential_overlaps.append([contA, contB])
                 # If not sameName: check all contours, regardless of same name
                 elif not sameName and overlap != 0:
                     ovlpA.append(contA)
                     ovlpB.append(contB)
                     if overlaps:
                         if overlap:
-                            compOvlps.append([contA, contB])
+                            complete_overlaps.append([contA, contB])
                         elif overlap > 0:  # Conflicting (non-100%) overlap
-                            confOvlps.append([contA, contB])
-            OvlpsA.extend(ovlpA)
-            OvlpsB.extend(ovlpB)
+                            potential_overlaps.append([contA, contB])
+            sec1_overlaps.extend(ovlpA)
+            sec2_overlaps.extend(ovlpB)
 
         if overlaps:
             # Return unique conts from section1, unique conts from section2,
             # completely overlapping contours, and incompletely overlapping
             # contours
             return (
-                [cont for cont in self.section1.contours if cont not in OvlpsA],
-                [cont for cont in self.section2.contours if cont not in OvlpsB],
-                compOvlps, confOvlps
+                [cont for cont in self.section1.contours if cont not in sec1_overlaps],
+                [cont for cont in self.section2.contours if cont not in sec2_overlaps],
+                complete_overlaps,
+                potential_overlaps
             )
         else:
             return (
-                [cont for cont in self.section1.contours if cont not in OvlpsA],
-                [cont for cont in self.section2.contours if cont not in OvlpsB]
+                [cont for cont in self.section1.contours if cont not in sec1_overlaps],
+                [cont for cont in self.section2.contours if cont not in sec2_overlaps]
             )
 
     def toSection(self):
