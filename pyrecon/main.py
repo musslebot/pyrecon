@@ -8,17 +8,40 @@ except:
 
 def openSeries(path):
     """Returns a Series object with associated Sections from the same directory."""
-    from pyrecon.classes import Series
     import os
-    # Process <path> and create Series object
-    if ".ser" in path: # Search path for .ser
-        pathToSeries = path
-    else: # or .ser in directory path?
-        if path[-1] != "/":
-            path += "/"
-        pathToSeries = path+str([f for f in os.listdir(path) if ".ser" in f].pop())
-    series = Series(pathToSeries)
-    series.update(sections=True) # find sections in directory
+    import re
+    from pyrecon.classes import Series
+    from pyrecon.tools.reconstruct_reader import process_series_file
+
+    if ".ser" in path:
+        path = os.path.dirname(path)
+
+    # Gather Series from provided path
+    series_files = []
+    for filename in os.listdir(path):
+        if ".ser" in filename:
+            series_files.append(filename)
+    assert len(series_files) == 1, "There is more than one Series file in the provided directory"
+    series_file = series_files[0]
+    series_path = os.path.join(path, series_file)
+
+    series = Series()
+    series.name = series_file.replace(".ser", "")
+    for k, v in process_series_file(series_path).iteritems():
+        if hasattr(series, k):
+            setattr(series, k, v)
+        else:
+            print("Series has no attribute: {}. Skipping.".format(k))
+
+    # Gather Sections from provided path
+    section_regex = re.compile(r"{}.[0-9]+$".format(series.name))
+    sections = []
+    for filename in os.listdir(path):
+        if re.match(section_regex, filename):
+            section = process(os.path.join(path, filename))
+            sections.append(section)
+    series.sections = sorted(sections, key=lambda Section: Section.index)
+
     return series
 
 

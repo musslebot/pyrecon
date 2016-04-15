@@ -4,35 +4,31 @@ from lxml import etree
 from pyrecon.classes import Contour, Image, Transform, ZContour
 
 
-# Process Files
-def process(path):
-    """Process XML file defined by path."""
+def process_series_file(path):
+    """Return a Series object from Series XML file."""
     tree = etree.parse(path)
     root = tree.getroot()
-    if root.tag == "Section":
-        return process_section(tree)
-    elif root.tag == "Series":
-        return process_series(tree)
 
+    data = extract_series_attributes(root)
 
-def process_series(tree):
-    root = tree.getroot()
-    attributes = extract_series_attributes(root)
-    contours = []
-    zcontours = []
+    # Populate Series Contours & ZContours
+    data["contours"] = []
+    data["zcontours"] = []
     for elem in root:
         if elem.tag == "Contour":
+            # TODO: no Contour import
             contour = Contour(series_contour_attributes(elem), None)
-            contours.append(contour)
+            data["contours"].append(contour)
         elif elem.tag == "ZContour":
+            # TODO: no ZContour import
             zcontour = ZContour(extract_zcontour_attributes(elem))  # TODO
-            zcontours.append(zcontour)
-    return attributes, contours, zcontours
+            data["zcontours"].append(zcontour)
+    return data
 
 
-def process_section(tree):
-    """Return attribute dictionary, image object, and contour list associated with a Section"s XML <tree>"""
-    # Process attributes
+def process_section_file(path):
+    """Return a Section object from a Section XML file."""
+    tree = etree.parse(path)
     root = tree.getroot()
     attributes = extract_section_attributes(root)
 
@@ -74,6 +70,7 @@ def process_section(tree):
                     if contours is None:
                         contours = []
                     contours.append(cont)
+    # section =
     return attributes, images, contours
 
 

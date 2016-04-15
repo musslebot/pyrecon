@@ -1,8 +1,5 @@
 """Series."""
-import os
 import re
-
-from Section import Section as Section
 
 
 class Series(object):
@@ -102,94 +99,7 @@ class Series(object):
         self.contours = []
         self.zcontours = []
         self.sections = []
-        self.processArguments(args, kwargs)
 
-    def processArguments(self, args, kwargs):
-        """Update instance with provided args/kwargs."""
-        # 1) ARGS
-        try:
-            self.update(*args)
-        except Exception as e:
-            print "Could not process Series arg: {}\n\t".format(
-                str(args) + str(e))
-        # 2) KWARGS
-        try:
-            self.update(**kwargs)
-        except Exception as e:
-            print "Could not process Series kwarg: {}\n\t".format(
-                str(kwargs) + str(e))
-
-# MUTATORS
-    def update(self, *args, **kwargs):
-        """Update instance attributes from arbitrary arguments."""
-        for arg in args:
-            # String argument
-            if isinstance(arg, str):  # Possible path to XML?
-                from pyrecon.tools import reconstruct_reader
-                try:  # given full path to .ser file
-                    self.update(*reconstruct_reader.process(arg))
-                    self.path = arg
-                    filename = arg.split("/")[len(arg.split("/")) - 1]
-                    self.name = filename.replace(".ser", "")
-                except:  # given directory path instead of path to .ser file
-                    path = arg
-                    if path[-1] != "/":
-                        path += "/"
-                    path = path + str(
-                        [f for f in os.listdir(path) if ".ser" in f].pop())
-                    self.update(*reconstruct_reader.process(path))
-                    self.path = path
-                    filename = path.split("/")[len(path.split("/")) - 1]
-                    self.name = filename.replace(".ser", "")
-            # Dictionary
-            elif isinstance(arg, dict):
-                for key in arg:
-                    if key in self.__dict__:
-                        self.__dict__[key] = arg[key]
-            # List
-            elif isinstance(arg, list):
-                for item in arg:
-                    # Contour
-                    if item.__class__.__name__ == "Contour":
-                        self.contours.append(item)
-                    # ZSection
-                    elif item.__class__.__name__ == "ZContour":
-                        self.zcontours.append(item)
-                    # Section
-                    elif item.__class__.__name__ == "Section":
-                        self.sections.append(item)
-            # Contour
-            elif arg.__class__.__name__ == "Contour":
-                self.contours.append(arg)
-            # ZSection
-            elif arg.__class__.__name__ == "ZContour":
-                self.zcontours.append(item)
-            # Section
-            elif arg.__class__.__name__ == "Section":
-                self.sections.append(arg)
-        for kwarg in kwargs:
-            # Load sections
-            if "sections" in kwargs:
-                if kwargs["sections"]:
-                    print("Attempting to load sections..."),
-                    ser = os.path.basename(self.path)
-                    serfixer = re.compile(re.escape(".ser"), re.IGNORECASE)
-                    sername = serfixer.sub("", ser)
-                    # look for files with "seriesname"+"."+"number"
-                    p = re.compile("^" + sername + "[.][0-9]*$")
-                    sectionlist = [f for f in os.listdir(self.path.replace(ser, "")) if p.match(f)]
-                    # create and append Sections for each section file
-                    path = self.path.replace(os.path.basename(self.path), "")
-                    for sec in sectionlist:
-                        section = Section(path + sec)
-                        if section.index is not None:  # TODO
-                            self.update(section)
-                    # sort sections by index
-                    self.sections = sorted(
-                        self.sections, key=lambda Section: Section.index)
-                    print(" SUCCESS!")
-
-# ACCESSORS
     def attributes(self):
         """Return a dict of this Series" attributes."""
         ignore = ["name", "path", "contours", "zcontours", "sections"]
