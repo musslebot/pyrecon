@@ -1,4 +1,6 @@
 """Functions for reading from RECONSTRUCT XML files."""
+import os
+
 from lxml import etree
 
 from pyrecon.classes import Contour, Image, Transform, ZContour
@@ -10,7 +12,8 @@ def process_series_file(path):
     root = tree.getroot()
 
     data = extract_series_attributes(root)
-
+    data["name"] = os.path.basename(path).replace(".ser", "")
+    data["path"] = os.path.dirname(path)
     # Populate Series Contours & ZContours
     data["contours"] = []
     data["zcontours"] = []
@@ -30,11 +33,13 @@ def process_section_file(path):
     """Return a Section object from a Section XML file."""
     tree = etree.parse(path)
     root = tree.getroot()
-    attributes = extract_section_attributes(root)
+    data = extract_section_attributes(root)
+    data["name"] = os.path.basename(path)
+    data["_path"] = os.path.dirname(path)
 
     # Process images and contours
-    images = []
-    contours = None
+    data["images"] = []
+    data["contours"] = []
     for transform in root:
         # make Transform object
         transform_object = Transform(extract_transform_attributes(transform))
@@ -45,7 +50,7 @@ def process_section_file(path):
         if len(img) > 0:
             img = img.pop()
             img = Image(extract_image_attributes(img))
-
+            img._path = data["_path"]
             image_contour = []
             for child in children:
                 if child.tag == "Contour":
@@ -60,18 +65,16 @@ def process_section_file(path):
                 contour.image = img
                 # set image"s contour to the contour
                 img.contour = contour
-                images.append(img)
+                data["images"].append(img)
         # Non-Image Transform Node
         else:
             for child in children:
                 if child.tag == "Contour":
                     cont = Contour(
                         section_contour_attributes(child), transform_object)
-                    if contours is None:
-                        contours = []
-                    contours.append(cont)
-    # section =
-    return attributes, images, contours
+                    data["contours"].append(cont)
+
+    return data
 
 
 def series_contour_attributes(node):

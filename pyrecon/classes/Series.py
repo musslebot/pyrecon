@@ -5,7 +5,7 @@ import re
 class Series(object):
     """Class representing a RECONSTRUCT Series."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         """Set instance attributes with args and kwargs."""
         self.index = None
         self.viewport = None
