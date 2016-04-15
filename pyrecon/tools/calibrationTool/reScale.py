@@ -4,7 +4,7 @@ import argparse
 
 from pyrecon.classes import Transform
 from pyrecon.main import openSeries
-from pyrecon.tools import handleXML as xml
+from pyrecon.tools import reconstruct_writer
 
 
 def main(ser, new_mag, outpath):
@@ -41,7 +41,7 @@ def main(ser, new_mag, outpath):
                     newpts.append((pt[0] * scale, pt[1] * scale))
                 contour.points = newpts
     # Write out series/sections
-    xml.writeSeries(ser, outpath, sections=True)
+    reconstruct_writer.writeSeries(ser, outpath, sections=True)
 
 
 def scaleImgTForms(olt_t, scale):

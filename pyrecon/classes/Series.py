@@ -125,9 +125,9 @@ class Series(object):
         for arg in args:
             # String argument
             if isinstance(arg, str):  # Possible path to XML?
-                import pyrecon.tools.handleXML as xml
+                from pyrecon.tools import reconstruct_reader
                 try:  # given full path to .ser file
-                    self.update(*xml.process(arg))
+                    self.update(*reconstruct_reader.process(arg))
                     self.path = arg
                     filename = arg.split("/")[len(arg.split("/")) - 1]
                     self.name = filename.replace(".ser", "")
@@ -137,7 +137,7 @@ class Series(object):
                         path += "/"
                     path = path + str(
                         [f for f in os.listdir(path) if ".ser" in f].pop())
-                    self.update(*xml.process(path))
+                    self.update(*reconstruct_reader.process(path))
                     self.path = path
                     filename = path.split("/")[len(path.split("/")) - 1]
                     self.name = filename.replace(".ser", "")

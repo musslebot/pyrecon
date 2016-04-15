@@ -3,11 +3,11 @@ __all__ = [
 	'curationTool',
 	'excelTool',
 	'mergeTool',
-	'handleXML',
+	'reconstruct_reader',
 ]
 
 import calibrationTool
 import curationTool
 import excelTool
 import mergeTool
-import handleXML
+import reconstruct_reader

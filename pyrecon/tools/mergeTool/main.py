@@ -1,5 +1,5 @@
 from pyrecon.classes import Series, Section
-from pyrecon.tools import handleXML as xml
+from pyrecon.tools import reconstruct_writer
 
 
 def createMergeSet(series1, series2):  # TODO: needs multithreading
@@ -51,7 +51,7 @@ class MergeSet(object):
         merged_series.name = self.seriesMerge.name.replace(".ser", "")
         for mergeSec in self.sectionMerges:  # TODO
             merged_series.sections.append(mergeSec.toSection())
-        xml.writeSeries(merged_series, outpath, sections=True)
+        reconstruct_writer.writeSeries(merged_series, outpath, sections=True)
         print "Done!"  # TODO
 
 

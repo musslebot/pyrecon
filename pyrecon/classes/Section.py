@@ -59,8 +59,8 @@ class Section(object):
                         self.contours.append(arg[key])
             # String argument
             elif isinstance(arg, str):  # Possible path to XML?
-                import pyrecon.tools.handleXML as xml
-                self.update(*xml.process(arg))
+                from pyrecon.tools import reconstruct_reader
+                self.update(*reconstruct_reader.process(arg))
                 self.name = arg.split('/')[-1]
                 self._path = os.path.dirname(arg)
                 if self._path[-1] != '/':
