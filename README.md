@@ -13,6 +13,12 @@ This package also contains several tools for managing this data:
 * [curationTool](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/curationTool/curationTool.md) - check for various properties of objects in a series
 
 The functions/tools already in place can be used to develop solutions to a wide range of problems associated with RECONSTRUCT data.
+linux dependencies:
+<code>
+python-dev python2.7-dev python-setuptools build-essential libgeos-dev
+libblas-dev liblapack-dev libfreetype6-dev libpng-dev gfortran libxml2-dev
+libxslt1-dev cmake libshiboken-dev libphonon-dev libqt4-dev qtmobility-dev
+</code>
 
 To start graphical tool loader, use commands in python shell:
 * `import pyrecon`
