@@ -21,10 +21,6 @@ class PyreconMainWindow(QMainWindow):
         self.helpMenu = self.menuBar().addMenu("&Help")
     def loadToolsMenu(self):
         # 1) Create Actions
-        # - gitTool
-        gitAction = QAction( QIcon(), 'gitTool', self)
-        gitAction.triggered.connect( self.loadGitTool )
-        gitAction.setStatusTip( 'Open git widget' )
         # - mergeTool
         mergeAction = QAction( QIcon(), 'mergeTool', self ) #QIcon() is null, but necessary for Action creation
         mergeAction.triggered.connect( self.loadMergeTool )
@@ -42,7 +38,6 @@ class PyreconMainWindow(QMainWindow):
         curateAction.triggered.connect( self.loadCurationTool )
         curateAction.setStatusTip( 'Open curation widget' )
         # 2) Add actions to toolbars
-        self.toolsMenu.addAction( gitAction )
         self.toolsMenu.addAction( mergeAction )
         self.toolsMenu.addAction( calibAction )
         self.toolsMenu.addAction( excelAction )
@@ -77,12 +72,6 @@ class PyreconMainWindow(QMainWindow):
         self.excelTool = excelToolWindow(self)
         self.excelSelector.setWidget( self.excelTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.excelSelector)
-    def loadGitTool(self):
-        # importing mergeTool stuff here was the only way to get it to work
-        from pyrecon.tools.mergeTool.main import createMergeSet
-        from pyrecon.gui.mergeTool.main import MergeSetWrapper
-        from pyrecon.gui.gitTool.main import main as gitMain
-        self.setCentralWidget( gitMain() ) 
 
 # Helper widgets
 class BrowseWidget(QWidget):
@@ -137,7 +126,7 @@ class BrowseOutputDirectory(QDialog):
         self.exec_()
     def loadObjects(self):
         self.path = BrowseWidget()
-        self.doneBut = QPushButton() 
+        self.doneBut = QPushButton()
     def loadFunctions(self):
         self.doneBut.setText('Write Series')
         self.doneBut.clicked.connect( self.finish )

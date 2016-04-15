@@ -3,6 +3,5 @@ __all__ = [
 	'curationTool',
 	'excelTool',
 	'mergeTool',
-	'gitTool',
 ]
 import main
