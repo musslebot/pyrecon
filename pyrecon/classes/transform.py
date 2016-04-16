@@ -11,47 +11,14 @@ class Transform(object):
         self.dim = kwargs.get("dim")
         self.xcoef = kwargs.get("xcoef")
         self.ycoef = kwargs.get("ycoef")
-        self._tform = kwargs.get("_tform")  # skimage.transform._geometric.AffineTransform
 
-    def __eq__(self, other):
-        """Allow use of == operator."""
-        return (self.dim == other.dim and
-                self.xcoef == other.xcoef and
-                self.ycoef == other.ycoef)
-
-    def __ne__(self, other):
-        """Allow use of != operator."""
-        return not self.__eq__(other)
-
-    def worldpts(self, points, mag=1):  # TODO
-        """Return inverse points."""
-        newpts = self._tform.inverse(np.asarray(points) * mag)
-        return list(map(tuple, newpts))
-
-    def imagepts(self, points, mag):
-        """Return points in pixel space."""
-        newpts = self._tform.inverse(np.asarray(points) / mag)
-        return list(map(tuple, newpts))
-
-    def isAffine(self):
-        """Returns True if the transform is affine."""
-        xcheck = self.xcoef[3:6]
-        ycheck = self.ycoef[3:6]
-        for elem in xcheck:
-            if elem != 0:
-                return False
-        for elem in ycheck:
-            if elem != 0:
-                return False
-        return True
-
-# MUTATORS
-    def tform(self):
-        """Create self._tform variable which represents the transform."""
+    @property
+    def _tform(self):
+        """Return a skimage transform object."""
         xcoef = self.xcoef
         ycoef = self.ycoef
         dim = self.dim
-        if xcoef == None or ycoef == None or dim == None:
+        if not xcoef or not ycoef or dim is None:
             return None
         a = xcoef
         b = ycoef
@@ -93,7 +60,7 @@ class Transform(object):
                     uv0 = tforward(np.array([x0, y0]).reshape([1, 2]))[0]
                     u0 = uv0[0]
                     v0 = uv0[1]
-                    e = 1.0 # reduce error to this limit
+                    e = 1.0  # reduce error to this limit
                     epsilon = 5e-10
                     i = 0
                     while e > epsilon and i < 100:  # NOTE: 10 -> 100
@@ -124,3 +91,35 @@ class Transform(object):
                 return newpts
             tforward.inverse = getrevt
             return tforward
+
+    def __eq__(self, other):
+        """Allow use of == operator."""
+        return (self.dim == other.dim and
+                self.xcoef == other.xcoef and
+                self.ycoef == other.ycoef)
+
+    def __ne__(self, other):
+        """Allow use of != operator."""
+        return not self.__eq__(other)
+
+    def worldpts(self, points, mag=1):  # TODO
+        """Return inverse points."""
+        newpts = self._tform.inverse(np.asarray(points) * mag)
+        return list(map(tuple, newpts))
+
+    def imagepts(self, points, mag):
+        """Return points in pixel space."""
+        newpts = self._tform.inverse(np.asarray(points) / mag)
+        return list(map(tuple, newpts))
+
+    def isAffine(self):
+        """Returns True if the transform is affine."""
+        xcheck = self.xcoef[3:6]
+        ycheck = self.ycoef[3:6]
+        for elem in xcheck:
+            if elem != 0:
+                return False
+        for elem in ycheck:
+            if elem != 0:
+                return False
+        return True

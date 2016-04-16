@@ -82,7 +82,6 @@ def process_section_file(path):
         # make Transform object
         transform_data = extract_transform_attributes(node)
         transform = Transform(**transform_data)
-        transform._tform = transform.tform()
         children = [child for child in node]
 
         # Image transform node
