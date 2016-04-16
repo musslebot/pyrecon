@@ -29,10 +29,6 @@ class PyreconMainWindow(QMainWindow):
         calibAction = QAction( QIcon(), 'calibrationTool', self )
         calibAction.triggered.connect( self.loadCalibrationTool )
         calibAction.setStatusTip( 'Open calibration widget' )
-        # - excelTool
-        excelAction = QAction( QIcon(), 'excelTool', self )
-        excelAction.triggered.connect( self.loadExcelTool )
-        excelAction.setStatusTip( 'Open excel widget' )
         # - curationTool
         curateAction = QAction( QIcon(), 'curationTool', self )
         curateAction.triggered.connect( self.loadCurationTool )
@@ -40,7 +36,6 @@ class PyreconMainWindow(QMainWindow):
         # 2) Add actions to toolbars
         self.toolsMenu.addAction( mergeAction )
         self.toolsMenu.addAction( calibAction )
-        self.toolsMenu.addAction( excelAction )
         self.toolsMenu.addAction( curateAction )
     def loadMergeTool(self):
         from pyrecon.tools.mergeTool.main import createMergeSet
@@ -65,13 +60,7 @@ class PyreconMainWindow(QMainWindow):
         self.calibrationTool = calibrationToolStuff(self)
         self.calibSelector.setWidget( self.calibrationTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.calibSelector )
-    def loadExcelTool(self):
-        from pyrecon.gui.excelTool.excelGUI import excelToolWindow
-        # Left dockWidget
-        self.excelSelector = QDockWidget()
-        self.excelTool = excelToolWindow(self)
-        self.excelSelector.setWidget( self.excelTool )
-        self.addDockWidget( Qt.LeftDockWidgetArea, self.excelSelector)
+
 
 # Helper widgets
 class BrowseWidget(QWidget):

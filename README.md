@@ -8,7 +8,6 @@ Date Created: 3/7/2013<br>
 This package also contains several tools for managing this data:
 * [gitTool](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/gitTool/gitTool.md) - Reduced functionality UI for interacting with a git repository containing a Series
 * [mergeTool](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/mergeTool/mergeTool.md) - merge series together with built-in conflict resolution (graphical or non-graphical)
-* [excelTool](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/excelTool/excelTool.md) - output data into excel workbooks (.xlsx)
 * calibrationTool - rescale contours representing images in a section
 * [curationTool](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/curationTool/curationTool.md) - check for various properties of objects in a series
 

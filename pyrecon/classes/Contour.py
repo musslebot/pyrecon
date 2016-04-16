@@ -165,34 +165,6 @@ class Contour(object):
         # TODO: sqrt is taxing computation; reimplement with 1 sqrt at end?
         return length
 
-    def getStartEndCount(self, series):
-        """Return the start, end, and count for this Contour in given Series.
-
-        * Uses name to determine same Contour in different Sections
-        """
-        return series.getStartEndCount(self.name)
-
-    def getVolume(self, series):
-        """Return volume of this Contour in an entire Series.
-
-        * Uses name to determine same Contour in different Sections
-        """
-        return series.getVolume(self.name)
-
-    def getSurfaceArea(self, series):
-        """Return surface area of this Contour in an entire Series.
-
-        * Uses name to determine same Contour in different Sections
-        """
-        return series.getSurfaceArea(self.name)
-
-    def getFlatArea(self, series):
-        """Return FlatArea of this Contour in an entire Series.
-
-        * Uses name to determine same Contour in different Sections
-        """
-        return series.getFlatArea(self.name)
-
     def isReverse(self):
         """Return true if contour is a reverse trace (negative area).
 
