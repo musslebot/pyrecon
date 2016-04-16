@@ -1,0 +1,199 @@
+<?xml version="1.0"?>
+<!DOCTYPE Series SYSTEM "series.dtd">
+
+<Series index="267" viewport="-1.85496 -7.74495 0.0213713"
+    units="microns"
+    autoSaveSeries="true"
+    autoSaveSection="true"
+    warnSaveSection="true"
+    beepDeleting="true"
+    beepPaging="true"
+    hideTraces="false"
+    unhideTraces="true"
+    hideDomains="false"
+    unhideDomains="false"
+    useAbsolutePaths="false"
+    defaultThickness="0.05"
+    zMidSection="false"
+    thumbWidth="128"
+    thumbHeight="96"
+    fitThumbSections="false"
+    firstThumbSection="1"
+    lastThumbSection="2147483647"
+    skipSections="1"
+    displayThumbContours="true"
+    useFlipbookStyle="false"
+    flipRate="5"
+    useProxies="true"
+    widthUseProxies="2048"
+    heightUseProxies="1536"
+    scaleProxies="0.25"
+    significantDigits="6"
+    defaultBorder="1.000 0.000 0.500"
+    defaultFill="1.000 0.000 0.500"
+    defaultMode="-11"
+    defaultName="d124_ztrace_21_up_03+"
+    defaultComment=""
+    listSectionThickness="true"
+    listDomainSource="true"
+    listDomainPixelsize="true"
+    listDomainLength="false"
+    listDomainArea="false"
+    listDomainMidpoint="false"
+    listTraceComment="true"
+    listTraceLength="true"
+    listTraceArea="true"
+    listTraceCentroid="false"
+    listTraceExtent="false"
+    listTraceZ="false"
+    listTraceThickness="false"
+    listObjectRange="true"
+    listObjectCount="true"
+    listObjectSurfarea="false"
+    listObjectFlatarea="true"
+    listObjectVolume="true"
+    listZTraceNote="true"
+    listZTraceRange="true"
+    listZTraceLength="true"
+    borderColors="0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        "
+    fillColors="0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        0.000 0.000 0.000,
+        "
+    offset3D="0 0 0"
+    type3Dobject="1"
+    first3Dsection="1"
+    last3Dsection="2147483647"
+    max3Dconnection="-1"
+    upper3Dfaces="true"
+    lower3Dfaces="true"
+    faceNormals="false"
+    vertexNormals="true"
+    facets3D="8"
+    dim3D="-1 -1 -1"
+    gridType="0"
+    gridSize="1 1"
+    gridDistance="1 1"
+    gridNumber="1 1"
+    hueStopWhen="3"
+    hueStopValue="50"
+    satStopWhen="3"
+    satStopValue="50"
+    brightStopWhen="0"
+    brightStopValue="100"
+    tracesStopWhen="false"
+    areaStopPercent="999"
+    areaStopSize="0"
+    ContourMaskWidth="0"
+    smoothingLength="7"
+    mvmtIncrement="0.022 1 1 1.01 1.01 0.02 0.02 0.001 0.001"
+    ctrlIncrement="0.0044 0.01 0.01 1.002 1.002 0.004 0.004 0.0002 0.0002"
+    shiftIncrement="0.11 100 100 1.05 1.05 0.1 0.1 0.005 0.005"
+    >
+<Contour name="D119" closed="true" border="0.000 1.000 0.000" fill="0.000 1.000 0.000" mode="11"
+ points="0 7,
+    -7 0,
+    0 -7,
+    7 0,
+    "/>
+<Contour name="D52" closed="true" border="0.498 0.000 1.000" fill="0.498 0.000 1.000" mode="11"
+ points="-2 1,
+    -5 0,
+    -2 -1,
+    -4 -4,
+    -1 -2,
+    0 -5,
+    1 -2,
+    4 -4,
+    2 -1,
+    5 0,
+    2 1,
+    4 4,
+    1 2,
+    0 5,
+    -1 2,
+    -4 4,
+    "/>
+<Contour name="d04_p_05_sh" closed="true" border="1.000 0.000 0.000" fill="1.000 0.000 0.000" mode="-13"
+ points="-6 -6,
+    6 -6,
+    0 5,
+    "/>
+<Contour name="Question" closed="true" border="1.000 0.000 0.000" fill="1.000 0.000 0.000" mode="-11"
+ points="-7 7,
+    -2 0,
+    -7 -7,
+    -4 -7,
+    0 -1,
+    4 -7,
+    7 -7,
+    2 0,
+    7 7,
+    4 7,
+    0 1,
+    -4 7,
+    "/>
+<ZContour name="d110_ztrace_11_up_01" closed="false" border="1.000 0.500 0.000" fill="1.000 0.500 0.000" mode="11"
+ points="23.1257 16.0818 252,
+    23.1375 16.1408 250,
+    23.1375 16.1644 248,
+    23.0903 16.129 245,
+    23.1965 16.0995 240,
+    23.3263 16.0818 227,
+    "/>
+<ZContour name="d110_ztrace_11_down_01" closed="false" border="1.000 0.500 0.000" fill="1.000 0.500 0.000" mode="11"
+ points="23.3381 16.0936 227,
+    23.3204 16.0759 232,
+    23.2555 16.0759 238,
+    23.1493 16.1821 242,
+    23.1316 16.0936 252,
+    "/>
+<ZContour name="d110_ztrace_11_up_02" closed="false" border="1.000 0.500 0.000" fill="1.000 0.500 0.000" mode="11"
+ points="23.1316 16.0877 252,
+    23.1139 16.1585 246,
+    23.1611 16.1172 239,
+    23.2555 16.0995 235,
+    23.2968 16.0936 227,
+    "/>
+<ZContour name="d98_ztrace_01_up_02" closed="false" border="1.000 0.000 0.500" fill="1.000 0.000 0.500" mode="-11"
+ points="23.2881 16.2714 52,
+    23.3811 17.6058 19,
+    "/>
+<ZContour name="d98_ztrace_01_up_03" closed="false" border="1.000 0.000 0.500" fill="1.000 0.000 0.500" mode="-11"
+ points="23.2919 16.2786 52,
+    23.3816 17.6027 19,
+    "/>
+<ZContour name="d98_ztrace_01_up_01" closed="false" border="1.000 0.000 0.500" fill="1.000 0.000 0.500" mode="-11"
+ points="23.2919 16.2786 52,
+    23.3781 17.6027 19,
+    "/>
+</Series>
