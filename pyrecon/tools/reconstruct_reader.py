@@ -1,9 +1,46 @@
 """Functions for reading from RECONSTRUCT XML files."""
+import re
 import os
 
 from lxml import etree
 
-from pyrecon.classes import Contour, Image, Transform, ZContour
+from pyrecon.classes import (
+    Contour, Image, Section, Series, Transform, ZContour
+)
+
+
+def populate_object_with_data(obj, data):
+    """Apply data to an object."""
+    for k, v in data.iteritems():
+        if hasattr(obj, k):
+            setattr(obj, k, v)
+        else:
+            print("{} has no attribute: {}. Skipping.".format(type(obj), k))
+
+
+def process_series_directory(path):
+    """Return a Series, fully loaded with data found in the provided path."""
+    # Gather Series from provided path
+    series_files = []
+    for filename in os.listdir(path):
+        if ".ser" in filename:
+            series_files.append(filename)
+    assert len(series_files) == 1, "There is more than one Series file in the provided directory"
+    series_file = series_files[0]
+    series_path = os.path.join(path, series_file)
+    series = process_series_file(series_path)
+
+    # Gather Sections from provided path
+    section_regex = re.compile(r"{}.[0-9]+$".format(series.name))
+    sections = []
+    for filename in os.listdir(path):
+        if re.match(section_regex, filename):
+            section_path = os.path.join(path, filename)
+            section = process_section_file(section_path)
+            sections.append(section)
+    series.sections = sorted(sections, key=lambda Section: Section.index)
+
+    return series
 
 
 def process_series_file(path):
@@ -11,35 +48,39 @@ def process_series_file(path):
     tree = etree.parse(path)
     root = tree.getroot()
 
+    # Create Series and populate with metadata
+    series = Series()
     data = extract_series_attributes(root)
     data["name"] = os.path.basename(path).replace(".ser", "")
     data["path"] = os.path.dirname(path)
-    # Populate Series Contours & ZContours
-    data["contours"] = []
-    data["zcontours"] = []
+    populate_object_with_data(series, data)
+
+    # Add Contours, ZContours
     for elem in root:
         if elem.tag == "Contour":
             # TODO: no Contour import
             contour = Contour(series_contour_attributes(elem), None)
-            data["contours"].append(contour)
+            series.contours.append(contour)
         elif elem.tag == "ZContour":
             # TODO: no ZContour import
             zcontour = ZContour(extract_zcontour_attributes(elem))  # TODO
-            data["zcontours"].append(zcontour)
-    return data
+            series.zcontours.append(zcontour)
+    return series
 
 
 def process_section_file(path):
     """Return a Section object from a Section XML file."""
     tree = etree.parse(path)
     root = tree.getroot()
+
+    # Create Section and populate with metadata
+    section = Section()
     data = extract_section_attributes(root)
     data["name"] = os.path.basename(path)
     data["_path"] = os.path.dirname(path)
+    populate_object_with_data(section, data)
 
-    # Process images and contours
-    data["images"] = []
-    data["contours"] = []
+    # Process Images, Contours, Transforms
     for transform in root:
         # make Transform object
         transform_object = Transform(extract_transform_attributes(transform))
@@ -65,16 +106,16 @@ def process_section_file(path):
                 contour.image = img
                 # set image"s contour to the contour
                 img.contour = contour
-                data["images"].append(img)
+                section.images.append(img)
         # Non-Image Transform Node
         else:
             for child in children:
                 if child.tag == "Contour":
                     cont = Contour(
                         section_contour_attributes(child), transform_object)
-                    data["contours"].append(cont)
+                    section.contours.append(cont)
 
-    return data
+    return section
 
 
 def series_contour_attributes(node):
