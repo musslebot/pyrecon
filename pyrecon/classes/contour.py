@@ -146,15 +146,18 @@ class Contour(object):
                 return 0
 
             def distance(pt0, pt1):
-                return math.sqrt((pt0[0] - pt1[0])**2 + (pt0[1] - pt1[1])**2)
+                x0, y0 = pt0
+                x1, y1 = pt1
+                return math.sqrt((x0 - x1)**2 + (y0 - y1)**2)
 
             # Lists of world coords to compare
             a = self.transform.worldpts(self.points)
             b = other.transform.worldpts(other.points)
             distlist = [distance(a[i], b[i]) for i in range(len(self.points))]
-            for elem in distlist:
-                if elem > threshold:
-                    return 0
+            max_dist = max(distlist)
+            if max_dist > threshold:
+                return 0
+
         return 1
 
 # curationTool functions
