@@ -7,7 +7,7 @@ from shapely.geometry import Polygon, LineString, box, LinearRing
 class Contour(object):
     """Class representing a RECONSTRUCT Contour."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         """Apply given keyword arguments as instance attributes."""
         self.name = None
         self.comment = None
@@ -23,43 +23,7 @@ class Contour(object):
         self.image = None  # Only used if image contour
         self.transform = None
         self.shape = None
-        self.processArguments(args, kwargs)
 
-    def processArguments(self, args, kwargs):
-        """Apply any custom args/kwargs to the instance."""
-        # 1) ARGS
-        for arg in args:
-            try:
-                self.update(arg)
-            except Exception as e:
-                print "Could not process Contour arg:{}\n\t".format(
-                    str(arg) + str(e))
-        # 2) KWARGS
-        for kwarg in kwargs:
-            try:
-                self.update(kwarg)
-            except Exception as e:
-                print "Could not process Contour kwarg:{}\n\t".format(
-                    str(kwarg) + str(e))
-
-# MUTATORS
-    def update(self, *args):  # TODO: Kwargs eventually
-        """Method for updating instance with arbitrary objects."""
-        for arg in args:
-            # Dictionary
-            if isinstance(arg, dict):
-                for key in arg:
-                    # Dict:attributes
-                    if key in self.__dict__:
-                        self.__dict__[key] = arg[key]
-            # Transform
-            elif arg.__class__.__name__ == 'Transform':
-                self.transform = arg
-            # Image
-            elif arg.__class__.__name__ == 'Image':
-                self.image = arg
-
-# ACCESSORS
     def __eq__(self, other):
         """Allow use of == between multiple contours."""
         ignore = ['shape', 'comment', 'hidden', 'image']

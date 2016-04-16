@@ -1,4 +1,4 @@
-"""Functions for reading from RECONSTRUCT XML files."""
+"""Functions for creating Python objects from RECONSTRUCT XML files."""
 import re
 import os
 
@@ -59,12 +59,17 @@ def process_series_file(path):
     for elem in root:
         if elem.tag == "Contour":
             # TODO: no Contour import
-            contour = Contour(series_contour_attributes(elem), None)
+            contour = Contour()
+            contour_data = extract_series_contour_attributes(elem)
+            populate_object_with_data(contour, contour_data)
             series.contours.append(contour)
         elif elem.tag == "ZContour":
             # TODO: no ZContour import
-            zcontour = ZContour(extract_zcontour_attributes(elem))  # TODO
+            zcontour = ZContour()
+            zcontour_data = extract_zcontour_attributes(elem)  # TODO
+            populate_object_with_data(zcontour, zcontour_data)
             series.zcontours.append(zcontour)
+
     return series
 
 
@@ -81,44 +86,52 @@ def process_section_file(path):
     populate_object_with_data(section, data)
 
     # Process Images, Contours, Transforms
-    for transform in root:
+    for node in root:
         # make Transform object
-        transform_object = Transform(extract_transform_attributes(transform))
-        children = [child for child in transform]
+        transform = Transform()
+        data = extract_transform_attributes(node)
+        populate_object_with_data(transform, data)
+        transform._tform = transform.tform()
+        children = [child for child in node]
 
         # Image transform node
-        img = [child for child in children if child.tag == "Image"]
-        if len(img) > 0:
-            img = img.pop()
-            img = Image(extract_image_attributes(img))
-            img._path = data["_path"]
-            image_contour = []
+        images = [child for child in children if child.tag == "Image"]
+        if len(images) > 0:
+            image = Image()
+            image._path = section._path
+            image_data = extract_image_attributes(images[0])
+            populate_object_with_data(image, image_data)
+
+            image_contours = []
             for child in children:
                 if child.tag == "Contour":
-                    image_contour.append(child)
+                    image_contours.append(child)
 
-            if len(image_contour) > 0:
-                image_contour = image_contour.pop()
-                contour = Contour(
-                    section_contour_attributes(
-                        image_contour), transform_object)
-                # set contour"s image to the image
-                contour.image = img
-                # set image"s contour to the contour
-                img.contour = contour
-                section.images.append(img)
+            if len(image_contours) > 0:
+                image_contour = Contour()
+                image_contour.transform = transform
+                image_contour_data = extract_section_contour_attributes(
+                    image_contours[0])
+                populate_object_with_data(image_contour, image_contour_data)
+                # set contour's image to the image
+                image_contour.image = image
+                # set image's contour to the contour
+                image.contour = image_contour
+                section.images.append(image)
         # Non-Image Transform Node
         else:
             for child in children:
                 if child.tag == "Contour":
-                    cont = Contour(
-                        section_contour_attributes(child), transform_object)
-                    section.contours.append(cont)
+                    contour = Contour()
+                    contour.transform = transform
+                    contour_data = extract_section_contour_attributes(child)
+                    populate_object_with_data(contour, contour_data)
+                    section.contours.append(contour)
 
     return section
 
 
-def series_contour_attributes(node):
+def extract_series_contour_attributes(node):
     """Return a dict of Series' Contour's attributes."""
     def get_points_int(points):
         return zip(
@@ -137,7 +150,7 @@ def series_contour_attributes(node):
     return attributes
 
 
-def section_contour_attributes(node):
+def extract_section_contour_attributes(node):
     """Return a dict of Section Contour's attributes."""
     def get_points_float(points):
         return zip(

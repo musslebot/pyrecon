@@ -6,47 +6,13 @@ from skimage import transform as tf
 class Transform(object):
     """Class representing a RECONSTRUCT Transform."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         """Assign instance attributes to provided args/kwargs."""
         self.dim = None
         self.xcoef = None
         self.ycoef = None
         self._tform = None  # skimage.transform._geometric.AffineTransform
-        self.processArguments(args, kwargs)
 
-    def processArguments(self, args, kwargs):
-        """Update instance with args/kwargs."""
-        # 1) ARGS
-        for arg in args:
-            try:
-                self.update(arg)
-            except Exception as e:
-                print "Could not process Transform arg:{}\n\t".format(
-                    str(arg) + str(e))
-        # 2) KWARGS
-        for kwarg in kwargs:
-            try:
-                self.update(kwarg)
-            except:
-                print "Could not process Transform kwarg:{}\n\t".format(
-                    str(kwarg) + str(e))
-
-# MUTATORS
-    def update(self, *args):  # TODO: Kwargs eventually
-        """Update instance with arbitrary arguments."""
-        for arg in args:
-            # Dictionary
-            if isinstance(arg, dict):
-                for key in arg:
-                    if key in self.__dict__:
-                        self.__dict__[key] = arg[key]
-                # Recreate self._tform everytime attributes is updated
-                self._tform = self.tform()
-            # self._tform (skimage.transform._geometric.AffineTransform)
-            elif arg.__class__.__name__ == "AffineTransform":
-                self._tform = arg
-
-# ACCESSORS
     def __eq__(self, other):
         """Allow use of == operator."""
         return (self.dim == other.dim and

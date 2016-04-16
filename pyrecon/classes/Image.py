@@ -4,7 +4,7 @@
 class Image(object):
     """Class representing a RECONSTRUCT Image."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         """Apply given keyword arguments as instance attributes."""
         self.src = None
         self.mag = None
@@ -16,43 +16,7 @@ class Image(object):
         # Non-attributes
         self.contour = None  # TODO: d1fixed
         self._path = None
-        self.processArguments(args, kwargs)
 
-    def processArguments(self, args, kwargs):
-        """Apply any custom args/kwargs to the instance."""
-        # 1) ARGS
-        for arg in args:
-            try:
-                self.update(arg)
-            except Exception as e:
-                print "Could not process Contour arg:{}\n\t".format(
-                    str(arg) + str(e))
-        # 2) KWARGS
-        for kwarg in kwargs:
-            try:
-                self.update(kwarg)
-            except Exception as e:
-                print "Could not process Contour kwarg:{}\n\t".format(
-                    str(kwarg) + str(e))
-
-# MUTATORS
-    def update(self, *args):  # TODO: **kwargs eventually
-        """Change Section data from arguments."""
-        for arg in args:
-            # Dictionary
-            if isinstance(arg, dict):
-                for key in arg:
-                    # Dict:Attribute
-                    if key in self.__dict__:
-                        self.__dict__[key] = arg[key]
-                    # Dict:Transform
-                    elif arg[key].__class__.__name__ == "Contour":
-                        self.contour = arg[key]
-            # Transform object
-            elif arg.__class__.__name__ == "Transform":
-                self.contour = arg
-
-# ACCESSORS
     def __eq__(self, other):
         """Allow use of == operator."""
         return (self.contour == other.contour and
