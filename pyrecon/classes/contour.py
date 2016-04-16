@@ -63,7 +63,7 @@ class Contour(object):
     def popShape(self):
         """Add a Shapely geometric object to self._shape."""
         # Closed trace
-        if self.closed:
+        if self.closed is True:
             # If image contour, multiply pts by mag before inverting transform
             if self.image.__class__.__name__ == 'Image':
                 mag = self.image.mag
@@ -76,13 +76,14 @@ class Contour(object):
                 pts = self.points
             self.shape = Polygon(self.transform.worldpts(pts))  # TODO
         # Open trace
-        elif not self.closed and len(self.points) > 1:
+        elif self.closed is False and len(self.points) > 1:
             self.shape = LineString(
                 self.transform.worldpts(self.points))  # TODO
-        elif not self.closed and len(self.points) == 1:
+        elif self.closed is False and len(self.points) == 1:
             self.shape = Point(
                 self.transform.worldpts(self.points))
         else:
+            # TODO: raise Exception
             print("\nInvalid shape characteristics: {}".format(self.name))
             print ("Quit for debug")
             quit()  # for dbugging
