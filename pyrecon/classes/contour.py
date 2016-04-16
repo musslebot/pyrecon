@@ -111,6 +111,11 @@ class Contour(object):
             self.popShape()
         if not other.shape:
             other.popShape()
+        if self.shape.type != other.shape.type:
+            return 0
+        # Points
+        if self.shape.type == "Point" and self.shape.equals(other.shape):
+            return 1
         # Check bounding box (reduces comp. time for non-overlapping contours)
         this_box = self.bounding_box()
         other_box = other.bounding_box()
