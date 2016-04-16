@@ -122,19 +122,6 @@ class Series(object):
                         print "Removing: {}".format(contour.name)
                         section.contours.remove(contour)
 
-# calibrationTool functions
-    def zeroIdentity(self):
-        """Convert points for all Sections to identity transform."""
-        for sec in self.sections:
-            for c in sec.contours:
-                if c.image is None:
-                    # Don"t alter image contours i.e. domain1
-                    c.points = c.transform.worldpts(c.points)
-                    c.transform.dim = 0
-                    c.transform.ycoef = [0, 0, 1, 0, 0, 0]
-                    c.transform.xcoef = [0, 1, 0, 0, 0, 0]
-                    c._tform = c.transform.tform()
-
 # curationTool functions
     def locateInvalidTraces(self, delete=False):
         """Return a map of invalid traces in this Series."""

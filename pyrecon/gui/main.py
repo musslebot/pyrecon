@@ -25,17 +25,12 @@ class PyreconMainWindow(QMainWindow):
         mergeAction = QAction( QIcon(), 'mergeTool', self ) #QIcon() is null, but necessary for Action creation
         mergeAction.triggered.connect( self.loadMergeTool )
         mergeAction.setStatusTip( 'Open merge widget' )
-        # - calibrationTool
-        calibAction = QAction( QIcon(), 'calibrationTool', self )
-        calibAction.triggered.connect( self.loadCalibrationTool )
-        calibAction.setStatusTip( 'Open calibration widget' )
         # - curationTool
         curateAction = QAction( QIcon(), 'curationTool', self )
         curateAction.triggered.connect( self.loadCurationTool )
         curateAction.setStatusTip( 'Open curation widget' )
         # 2) Add actions to toolbars
         self.toolsMenu.addAction( mergeAction )
-        self.toolsMenu.addAction( calibAction )
         self.toolsMenu.addAction( curateAction )
     def loadMergeTool(self):
         from pyrecon.tools.mergeTool.main import createMergeSet
@@ -53,13 +48,6 @@ class PyreconMainWindow(QMainWindow):
         self.curateSelector.setWidget( self.curationTool )
         self.addDockWidget( Qt.LeftDockWidgetArea, self.curateSelector )
         self.setCentralWidget(self.curationTool.outputWidget)
-    def loadCalibrationTool(self):
-        from pyrecon.gui.calibrationTool.calibrationGUI import calibrationToolStuff
-        # Left dockWidget: load series/options
-        self.calibSelector = QDockWidget()
-        self.calibrationTool = calibrationToolStuff(self)
-        self.calibSelector.setWidget( self.calibrationTool )
-        self.addDockWidget( Qt.LeftDockWidgetArea, self.calibSelector )
 
 
 # Helper widgets
