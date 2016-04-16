@@ -9,27 +9,6 @@ from pyrecon.tools import reconstruct_reader
 
 class ReconstructReaderTests(TestCase):
 
-    def test_populate_object_with_data(self):
-        class TestClass(object):
-            def __init__(self):
-                self.a = None
-                self.b = None
-                self.c = None
-
-        test_object = TestClass()
-        self.assertIsNone(test_object.a)
-        self.assertIsNone(test_object.b)
-        self.assertIsNone(test_object.c)
-
-        test_data = {
-            "a": 1,
-            "b": 2,
-            "c": 3,
-        }
-        reconstruct_reader.populate_object_with_data(test_object, test_data)
-        for k, v in test_data.iteritems():
-            self.assertEqual(getattr(test_object, k), test_data[k])
-
     def test_process_series_directory(self):
         path = "tests/tools/"
         series = reconstruct_reader.process_series_directory(path)

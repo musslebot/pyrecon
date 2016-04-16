@@ -14,15 +14,6 @@ def str_to_bool(string):
     return string.capitalize() == "True"
 
 
-def populate_object_with_data(obj, data):
-    """Apply data to an object."""
-    for k, v in data.iteritems():
-        if hasattr(obj, k):
-            setattr(obj, k, v)
-        else:
-            print("{} has no attribute: {}. Skipping.".format(type(obj), k))
-
-
 def process_series_directory(path):
     """Return a Series, fully loaded with data found in the provided path."""
     # Gather Series from provided path
@@ -54,25 +45,22 @@ def process_series_file(path):
     root = tree.getroot()
 
     # Create Series and populate with metadata
-    series = Series()
     data = extract_series_attributes(root)
     data["name"] = os.path.basename(path).replace(".ser", "")
     data["path"] = os.path.dirname(path)
-    populate_object_with_data(series, data)
+    series = Series(**data)
 
     # Add Contours, ZContours
     for elem in root:
         if elem.tag == "Contour":
             # TODO: no Contour import
-            contour = Contour()
             contour_data = extract_series_contour_attributes(elem)
-            populate_object_with_data(contour, contour_data)
+            contour = Contour(**contour_data)
             series.contours.append(contour)
         elif elem.tag == "ZContour":
             # TODO: no ZContour import
-            zcontour = ZContour()
             zcontour_data = extract_zcontour_attributes(elem)  # TODO
-            populate_object_with_data(zcontour, zcontour_data)
+            zcontour = ZContour(**zcontour_data)
             series.zcontours.append(zcontour)
 
     return series
@@ -84,28 +72,25 @@ def process_section_file(path):
     root = tree.getroot()
 
     # Create Section and populate with metadata
-    section = Section()
     data = extract_section_attributes(root)
     data["name"] = os.path.basename(path)
     data["_path"] = os.path.dirname(path)
-    populate_object_with_data(section, data)
+    section = Section(**data)
 
     # Process Images, Contours, Transforms
     for node in root:
         # make Transform object
-        transform = Transform()
-        data = extract_transform_attributes(node)
-        populate_object_with_data(transform, data)
+        transform_data = extract_transform_attributes(node)
+        transform = Transform(**transform_data)
         transform._tform = transform.tform()
         children = [child for child in node]
 
         # Image transform node
         images = [child for child in children if child.tag == "Image"]
         if len(images) > 0:
-            image = Image()
-            image._path = section._path
             image_data = extract_image_attributes(images[0])
-            populate_object_with_data(image, image_data)
+            image_data["_path"] = section._path
+            image = Image(**image_data)
 
             image_contours = []
             for child in children:
@@ -113,11 +98,10 @@ def process_section_file(path):
                     image_contours.append(child)
 
             if len(image_contours) > 0:
-                image_contour = Contour()
-                image_contour.transform = transform
                 image_contour_data = extract_section_contour_attributes(
                     image_contours[0])
-                populate_object_with_data(image_contour, image_contour_data)
+                image_contour_data["transform"] = transform
+                image_contour = Contour(**image_contour_data)
                 # set contour's image to the image
                 image_contour.image = image
                 # set image's contour to the contour
@@ -127,10 +111,9 @@ def process_section_file(path):
         else:
             for child in children:
                 if child.tag == "Contour":
-                    contour = Contour()
-                    contour.transform = transform
                     contour_data = extract_section_contour_attributes(child)
-                    populate_object_with_data(contour, contour_data)
+                    contour_data["transform"] = transform
+                    contour = Contour(**contour_data)
                     section.contours.append(contour)
 
     return section

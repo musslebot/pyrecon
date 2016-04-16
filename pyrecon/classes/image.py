@@ -4,18 +4,18 @@
 class Image(object):
     """Class representing a RECONSTRUCT Image."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Apply given keyword arguments as instance attributes."""
-        self.src = None
-        self.mag = None
-        self.contrast = None
-        self.brightness = None
-        self.red = None
-        self.green = None
-        self.blue = None
+        self.src = kwargs.get("src")
+        self.mag = kwargs.get("mag")
+        self.contrast = kwargs.get("contrast")
+        self.brightness = kwargs.get("brightness")
+        self.red = kwargs.get("red")
+        self.green = kwargs.get("green")
+        self.blue = kwargs.get("blue")
         # Non-attributes
-        self.contour = None  # TODO: d1fixed
-        self._path = None
+        self.contour = kwargs.get("contour")  # TODO: d1fixe
+        self._path = kwargs.get("_path")
 
     def __eq__(self, other):
         """Allow use of == operator."""

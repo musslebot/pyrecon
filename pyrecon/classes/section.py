@@ -4,16 +4,16 @@
 class Section(object):
     """Class representing a RECONSTRUCT Section."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Apply given keyword arguments as instance attributes."""
-        self.name = None  # Series name + index
-        self.index = None
-        self.thickness = None
-        self.alignLocked = None
+        self.name = kwargs.get("name")  # Series name + index
+        self.index = kwargs.get("index")
+        self.thickness = kwargs.get("thickness")
+        self.alignLocked = kwargs.get("alignLocked")
         # Non-attributes
-        self.images = []  # TODO: d1fixed
-        self.contours = []
-        self._path = None
+        self.images = kwargs.get("images", [])  # TODO: d1fixed
+        self.contours = kwargs.get("contours", [])
+        self._path = kwargs.get("_path")
 
     def popShapes(self):
         """Populate each Contour, in this Section, with a shape object."""

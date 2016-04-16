@@ -6,12 +6,12 @@ from skimage import transform as tf
 class Transform(object):
     """Class representing a RECONSTRUCT Transform."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Assign instance attributes to provided args/kwargs."""
-        self.dim = None
-        self.xcoef = None
-        self.ycoef = None
-        self._tform = None  # skimage.transform._geometric.AffineTransform
+        self.dim = kwargs.get("dim")
+        self.xcoef = kwargs.get("xcoef")
+        self.ycoef = kwargs.get("ycoef")
+        self._tform = kwargs.get("_tform")  # skimage.transform._geometric.AffineTransform
 
     def __eq__(self, other):
         """Allow use of == operator."""

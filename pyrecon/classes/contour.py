@@ -7,22 +7,22 @@ from shapely.geometry import box, LinearRing, LineString, Point, Polygon
 class Contour(object):
     """Class representing a RECONSTRUCT Contour."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Apply given keyword arguments as instance attributes."""
-        self.name = None
-        self.comment = None
-        self.hidden = None
-        self.closed = None
-        self.simplified = None
-        self.mode = None
-        self.border = None
-        self.fill = None
-        self.points = None
+        self.name = kwargs.get("name")
+        self.comment = kwargs.get("comment")
+        self.hidden = kwargs.get("hidden")
+        self.closed = kwargs.get("closed")
+        self.simplified = kwargs.get("simplified")
+        self.mode = kwargs.get("mode")
+        self.border = kwargs.get("border")
+        self.fill = kwargs.get("fill")
+        self.points = kwargs.get("points", [])
         # Non-attributes
-        self.coordSys = None
-        self.image = None  # Only used if image contour
-        self.transform = None
-        self.shape = None
+        self.coordSys = kwargs.get("coordSys")
+        self.image = kwargs.get("image")  # Only used if image contour
+        self.transform = kwargs.get("transform")
+        self.shape = kwargs.get("shape")
 
     def __eq__(self, other):
         """Allow use of == between multiple contours."""
@@ -61,7 +61,7 @@ class Contour(object):
         self.popShape()  # repopulate shape
 
     def popShape(self):
-        """Add polygon object (shapely) to self._shape."""
+        """Add a Shapely geometric object to self._shape."""
         # Closed trace
         if self.closed:
             # If image contour, multiply pts by mag before inverting transform

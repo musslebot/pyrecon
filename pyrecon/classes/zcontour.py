@@ -5,14 +5,14 @@ import math
 class ZContour(object):
     """Class representing a RECONSTRUCT ZContour."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Assign instance attributes from args/kwargs."""
-        self.name = None
-        self.closed = None
-        self.border = None
-        self.fill = None
-        self.mode = None
-        self.points = None
+        self.name = kwargs.get("name")
+        self.closed = kwargs.get("closed")
+        self.border = kwargs.get("border")
+        self.fill = kwargs.get("fill")
+        self.mode = kwargs.get("mode")
+        self.points = kwargs.get("points", [])
 
     def __eq__(self, other):
         """Allow use of == operator."""
