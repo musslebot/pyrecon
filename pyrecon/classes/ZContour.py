@@ -5,7 +5,7 @@ import math
 class ZContour(object):
     """Class representing a RECONSTRUCT ZContour."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         """Assign instance attributes from args/kwargs."""
         self.name = None
         self.closed = None
@@ -13,34 +13,6 @@ class ZContour(object):
         self.fill = None
         self.mode = None
         self.points = None
-        self.processArguments(args, kwargs)
-
-    def processArguments(self, args, kwargs):
-        """Set instance attributes."""
-        # 1) ARGS
-        for arg in args:
-            try:
-                self.update(arg)
-            except Exception as e:
-                print "Could not process ZContour arg:{}\n\t".format(
-                    str(arg) + str(e))
-        # 2) KWARGS
-        for kwarg in kwargs:
-            try:
-                self.update(kwarg)
-            except Exception as e:
-                print "Could not process ZContour kwarg:{}\n\t".format(
-                    str(kwarg) + str(e))
-
-    def update(self, *args):  # TODO: KWARGS
-        """Update instance from arbitrary arguments."""
-        for arg in args:
-            # Dictionary
-            if isinstance(arg, dict):
-                for key in arg:
-                    # Dict:attributes
-                    if key in self.__dict__:
-                        self.__dict__[key] = arg[key]
 
     def __eq__(self, other):
         """Allow use of == operator."""
