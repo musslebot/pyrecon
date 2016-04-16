@@ -274,7 +274,7 @@ def extract_series_attributes(node):
         "satStopValue": int(node.get("satStopValue")),
         "brightStopWhen": int(node.get("brightStopWhen")),
         "brightStopValue": int(node.get("brightStopValue")),
-        "tracesStopWhen": node.get("tracesStopWhen").capitalize(),
+        "tracesStopWhen": node.get("tracesStopWhen").capitalize() == "True",
         "areaStopPercent": int(node.get("areaStopPercent")),
         "areaStopSize": int(node.get("areaStopSize")),
         "ContourMaskWidth": int(node.get("ContourMaskWidth")),
