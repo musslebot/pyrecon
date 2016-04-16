@@ -1,7 +1,7 @@
 """Contour."""
 import math
 
-from shapely.geometry import Polygon, LineString, box, LinearRing
+from shapely.geometry import box, LinearRing, LineString, Point, Polygon
 
 
 class Contour(object):
@@ -76,12 +76,15 @@ class Contour(object):
                 pts = self.points
             self.shape = Polygon(self.transform.worldpts(pts))  # TODO
         # Open trace
-        elif self.closed is False and len(self.points) > 1:
+        elif not self.closed and len(self.points) > 1:
             self.shape = LineString(
                 self.transform.worldpts(self.points))  # TODO
+        elif not self.closed and len(self.points) == 1:
+            self.shape = Point(
+                self.transform.worldpts(self.points))
         else:
-            print "\nInvalid shape characteristics: {}".format(self.name)
-            print "Quit for debug"
+            print("\nInvalid shape characteristics: {}".format(self.name))
+            print ("Quit for debug")
             quit()  # for dbugging
 
     def box(self):
