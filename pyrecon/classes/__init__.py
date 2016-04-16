@@ -1,9 +1,9 @@
-from Contour import Contour
-from Image import Image
-from Section import Section
-from Series import Series
-from Transform import Transform
-from ZContour import ZContour
+from contour import Contour
+from image import Image
+from section import Section
+from series import Series
+from transform import Transform
+from zcontour import ZContour
 
 
 __all__ = [
