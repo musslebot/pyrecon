@@ -87,7 +87,7 @@ class Contour(object):
             print ("Quit for debug")
             quit()  # for dbugging
 
-    def box(self):
+    def bounding_box(self):
         """Return bounding box of shape (shapely) library."""
         if self.shape:
             minx, miny, maxx, maxy = self.shape.bounds
@@ -111,8 +111,8 @@ class Contour(object):
         if not other.shape:
             other.popShape()
         # Check bounding box (reduces comp. time for non-overlapping contours)
-        this_box = self.box()
-        other_box = other.box()
+        this_box = self.bounding_box()
+        other_box = other.bounding_box()
         if not this_box.intersects(other_box) and \
                 not this_box.touches(other_box):
             return 0
