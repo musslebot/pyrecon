@@ -5,7 +5,7 @@ from pyrecon.classes import Contour, Transform
 
 class ContourTests(TestCase):
 
-    def test_popShape_polygon(self):
+    def test_shape_polygon(self):
         transform = Transform(
             dim=0,
             xcoef=[0, 1, 0, 0, 0, 0],
@@ -20,10 +20,9 @@ class ContourTests(TestCase):
             ],
             transform=transform,
         )
-        poly_contour.popShape()
         self.assertEqual(poly_contour.shape.type, "Polygon")
 
-    def test_popShape_line(self):
+    def test_shape_line(self):
         transform = Transform(
             dim=0,
             xcoef=[0, 1, 0, 0, 0, 0],
@@ -39,10 +38,9 @@ class ContourTests(TestCase):
             ],
             transform=transform,
         )
-        line_contour.popShape()
         self.assertEqual(line_contour.shape.type, "LineString")
 
-    def test_popShape_point(self):
+    def test_shape_point(self):
         transform = Transform(
             dim=0,
             xcoef=[0, 1, 0, 0, 0, 0],
@@ -53,7 +51,6 @@ class ContourTests(TestCase):
             points=[(13.5904, 16.6472)],
             transform=transform,
         )
-        point_contour.popShape()
         self.assertEqual(point_contour.shape.type, "Point")
 
     def test_overlaps_polygon(self):

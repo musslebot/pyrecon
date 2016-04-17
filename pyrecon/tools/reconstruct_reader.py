@@ -134,7 +134,6 @@ def extract_series_contour_attributes(node):
         "border": tuple(float(x) for x in node.get("border").strip().split(" ")),
         "fill": tuple(float(x) for x in node.get("fill").strip().split(" ")),
         "points": get_points_int(node.get("points")),
-        "coordSys": "bio",
     }
     return attributes
 
@@ -156,7 +155,6 @@ def extract_section_contour_attributes(node):
         "border": tuple(float(x) for x in node.get("border").strip().split(" ")),
         "fill": tuple(float(x) for x in node.get("fill").strip().split(" ")),
         "points": get_points_float(node.get("points")),
-        "coordSys": "bio",
     }
     return attributes
 

@@ -15,11 +15,6 @@ class Section(object):
         self.contours = kwargs.get("contours", [])
         self._path = kwargs.get("_path")
 
-    def popShapes(self):
-        """Populate each Contour, in this Section, with a shape object."""
-        for contour in self.contours:
-            contour.popShape()
-
 # ACCESSORS
     def __len__(self):
         """Return number of contours in Section object."""

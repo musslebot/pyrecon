@@ -19,9 +19,7 @@ class Contour(object):
         self.fill = kwargs.get("fill")
         self.points = kwargs.get("points", [])
         # Non-RECONSTRUCT attributes
-        self.coordSys = kwargs.get("coordSys")
         self.transform = kwargs.get("transform")
-        self.shape = kwargs.get("shape")
 
     def __repr__(self):
         """Return a string representation of this Contour's data."""
@@ -59,37 +57,18 @@ class Contour(object):
         """Allow use of != between multiple contours."""
         return not self.__eq__(other)
 
-# transform/shape operations
-    # TODO: remove
-    def convertToBioCoords(self, mag):
-        """Convert points to biological coordinate system and update shape."""
-        if self.coordSys == 'bio':
-            return 'Already in biological coordinate system -- abort.'
-        self.points = self.transform.worldpts(self.points, mag)
-        self.coordSys = 'bio'
-        self.popShape()  # repopulate shape
-
-    # TODO: remove
-    def convertToPixCoords(self, mag):
-        """Convert points to pixel coordinate system and update shape."""
-        if self.coordSys == 'pix':
-            return 'Already in pixel coordinate system -- abort.'
-        self.points = self.transform.imagepts(self.points, mag)
-        self.coordSys = 'pix'
-        self.popShape()  # repopulate shape
-
-    # TODO: make self.shape @property
-    def popShape(self):
-        """Add a Shapely geometric object to self._shape."""
+    @property
+    def shape(self):
+        """Return a Shapely geometric object."""
         if not self.points:
             raise Exception("No points found: {}".format(self))
         elif len(self.points) == 1:
-            self.shape = Point(self.transform.worldpts(self.points))
+            return Point(self.transform.worldpts(self.points))
         elif len(self.points) == 2:
-            self.shape = LineString(self.transform.worldpts(self.points))
+            return LineString(self.transform.worldpts(self.points))
         elif self.closed is True:
             # Closed trace
-            self.shape = Polygon(self.transform.worldpts(self.points))
+            return Polygon(self.transform.worldpts(self.points))
             # TODO: do I need to handle this?
             # If image contour, multiply pts by mag before inverting transform
             # if self.image.__class__.__name__ == 'Image':
@@ -99,19 +78,17 @@ class Contour(object):
             #     pts = zip(xvals, yvals)
             # else:
         elif self.closed is False:
-            self.shape = LineString(self.transform.worldpts(self.points))
+            return LineString(self.transform.worldpts(self.points))
         else:
             raise Exception(
                 "Could not deduce shape for Contour: {}".format(self))
 
+# transform/shape operations
     # TODO: decouple from Contour class. belongs to mergeTool
     def bounding_box(self):
         """Return bounding box of shape (shapely) library."""
-        if self.shape:
-            minx, miny, maxx, maxy = self.shape.bounds
-            return box(minx, miny, maxx, maxy)
-        else:
-            print "NoneType for shape: ".format(self.name)
+        minx, miny, maxx, maxy = self.shape.bounds
+        return box(minx, miny, maxx, maxy)
 
     # TODO: decouple from Contour class. belongs to mergeTool
     def overlaps(self, other, threshold=(1 + 2**(-17))):
@@ -124,10 +101,6 @@ class Contour(object):
             * 0 if # pts differs or distance between parallel pts > threshold
             * 1 otherwise
         """
-        if not self.shape:
-            self.popShape()
-        if not other.shape:
-            other.popShape()
         if self.shape.type != other.shape.type:
             return 0
         # Points
@@ -199,8 +172,6 @@ class Contour(object):
 
         * Uses name to determine same Contour in different Sections
         """
-        if not self.shape:
-            self.popShape()
         if self.closed:
             # convert polygon to ring
             # For some reason, the opposite is true (image vs biological
