@@ -81,8 +81,15 @@ class Contour(object):
     # TODO: make self.shape @property
     def popShape(self):
         """Add a Shapely geometric object to self._shape."""
-        # Closed trace
-        if self.closed is True:
+        if not self.points:
+            raise Exception("No points found: {}".format(self))
+        elif len(self.points) == 1:
+            self.shape = Point(self.transform.worldpts(self.points))
+        elif len(self.points) == 2:
+            self.shape = LineString(self.transform.worldpts(self.points))
+        elif self.closed is True:
+            # Closed trace
+            self.shape = Polygon(self.transform.worldpts(self.points))
             # TODO: do I need to handle this?
             # If image contour, multiply pts by mag before inverting transform
             # if self.image.__class__.__name__ == 'Image':
@@ -91,19 +98,8 @@ class Contour(object):
             #     yvals = [pt[1] * mag for pt in self.points]
             #     pts = zip(xvals, yvals)
             # else:
-            if len(self.points) < 3:
-                raise Exception(
-                    "Closed Contour with less than 3 points: {}".format(
-                        self))
-            self.shape = Polygon(self.transform.worldpts(self.points))  # TODO
-
-        # Open trace
-        elif self.closed is False and len(self.points) > 1:
-            self.shape = LineString(
-                self.transform.worldpts(self.points))  # TODO
-        elif self.closed is False and len(self.points) == 1:
-            self.shape = Point(
-                self.transform.worldpts(self.points))
+        elif self.closed is False:
+            self.shape = LineString(self.transform.worldpts(self.points))
         else:
             raise Exception(
                 "Could not deduce shape for Contour: {}".format(self))
