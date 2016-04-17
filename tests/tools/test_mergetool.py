@@ -53,24 +53,34 @@ class MergetoolTests(TestCase):
         polygon = Polygon(numpy.asarray(self.polygon_points))
         self.assertFalse(mergetool.is_reverse(polygon))
 
-    def test_overlaps_polygon(self):
-        polygon = Polygon(numpy.asarray(self.polygon_points))
+    def test_is_contacting_point(self):
+        point_points = [(13.5904, 16.6472)]
+        point = Point(*numpy.asarray(point_points))
 
-        # Test 100% overlap
-        overlap = mergetool.overlaps(polygon, polygon)
-        self.assertEqual(overlap, 1)
+        # Test same point
+        self.assertTrue(mergetool.is_contacting(point, point))
 
         # Not even close
-        different_polygon_points = [
+        far_point_points = [(14.5904, 16.6472)]
+        far_point = Point(*numpy.asarray(far_point_points))
+        self.assertFalse(mergetool.is_contacting(point, far_point))
+
+    def test_is_contacting_polygon(self):
+        polygon = Polygon(numpy.asarray(self.polygon_points))
+
+        # Test same polygon
+        self.assertTrue(mergetool.is_contacting(polygon, polygon))
+
+        # Not even close
+        far_polygon_points = [
             (9.2342, 5.115),
             (9.2826, 5.115),
             (9.2584, 5.1593),
         ]
-        different_polygon = Polygon(numpy.asarray(different_polygon_points))
-        overlap = mergetool.overlaps(polygon, different_polygon)
-        self.assertEqual(overlap, 0)
+        far_polygon = Polygon(numpy.asarray(far_polygon_points))
+        self.assertFalse(mergetool.is_contacting(polygon, far_polygon))
 
-        # Potential duplicate -> needs resolution
+        # Potential duplicate
         close_polygon_points = [
             (15.0988, 17.5196),
             (15.3815, 17.4754),
@@ -91,10 +101,9 @@ class MergetoolTests(TestCase):
             (15.0988, 17.5284),
         ]
         close_polygon = Polygon(numpy.asarray(close_polygon_points))
-        overlap = mergetool.overlaps(polygon, close_polygon)
-        self.assertTrue(overlap > 1)
+        self.assertTrue(mergetool.is_contacting(polygon, close_polygon))
 
-    def test_overlaps_line(self):
+    def test_is_contacting_line(self):
         line_points = [
             (24.6589, 17.3004),
             (24.7018, 17.3489),
@@ -104,8 +113,7 @@ class MergetoolTests(TestCase):
         line = LineString(numpy.asarray(line_points))
 
         # Test 100% overlap
-        overlap = mergetool.overlaps(line, line)
-        self.assertEqual(overlap, 1)
+        self.assertTrue(mergetool.is_contacting(line, line))
 
         # Not even close
         different_line_points = [
@@ -115,19 +123,153 @@ class MergetoolTests(TestCase):
             (14.8174, 7.4197),
         ]
         different_line = LineString(numpy.asarray(different_line_points))
-        overlap = mergetool.overlaps(line, different_line)
-        self.assertEqual(overlap, 0)
+        self.assertFalse(mergetool.is_contacting(line, different_line))
 
-    def test_overlaps_point(self):
+    def test_is_exact_duplicate_point(self):
         point_points = [(13.5904, 16.6472)]
         point = Point(*numpy.asarray(point_points))
 
-        # Test 100% overlap
-        overlap = mergetool.overlaps(point, point)
-        self.assertEqual(overlap, 1)
+        # Test same point
+        self.assertTrue(mergetool.is_exact_duplicate(point, point))
 
         # Not even close
-        different_point_points = [(14.5904, 16.6472)]
-        different_point = Point(*numpy.asarray(different_point_points))
-        overlap = mergetool.overlaps(point, different_point)
-        self.assertEqual(overlap, 0)
+        far_point_points = [(14.5904, 16.6472)]
+        far_point = Point(*numpy.asarray(far_point_points))
+        self.assertFalse(mergetool.is_exact_duplicate(point, far_point))
+
+    def test_is_exact_duplicate_polygon(self):
+        polygon = Polygon(numpy.asarray(self.polygon_points))
+
+        # Test same polygon
+        self.assertTrue(mergetool.is_exact_duplicate(polygon, polygon))
+
+        # Not even close
+        far_polygon_points = [
+            (9.2342, 5.115),
+            (9.2826, 5.115),
+            (9.2584, 5.1593),
+        ]
+        far_polygon = Polygon(numpy.asarray(far_polygon_points))
+        self.assertFalse(mergetool.is_exact_duplicate(polygon, far_polygon))
+
+        # Potential duplicate
+        close_polygon_points = [
+            (15.0988, 17.5196),
+            (15.3815, 17.4754),
+            (15.5229, 17.4577),
+            (15.5936, 17.4489),
+            (15.6289, 17.4577),
+            (15.9116, 17.7228),
+            (15.9381, 17.7581),
+            (16.0088, 18.0408),
+            (16.0265, 18.1115),
+            (16.0265, 18.1292),
+            (15.7437, 18.2263),
+            (15.6731, 18.2529),
+            (15.3904, 18.0673),
+            (15.249, 17.9701),
+            (15.2225, 17.9436),
+            (15.143, 17.6609),
+            (15.0988, 17.5284),
+        ]
+        close_polygon = Polygon(numpy.asarray(close_polygon_points))
+        # Potential is not exact
+        self.assertFalse(mergetool.is_exact_duplicate(polygon, close_polygon))
+
+    def test_is_exact_duplicate_line(self):
+        line_points = [
+            (24.6589, 17.3004),
+            (24.7018, 17.3489),
+            (24.7634, 17.3917),
+            (24.8174, 17.4197),
+        ]
+        line = LineString(numpy.asarray(line_points))
+
+        # Test 100% overlap
+        self.assertTrue(mergetool.is_exact_duplicate(line, line))
+
+        # Not even close
+        different_line_points = [
+            (14.6589, 7.3004),
+            (14.7018, 7.3489),
+            (14.7634, 7.3917),
+            (14.8174, 7.4197),
+        ]
+        different_line = LineString(numpy.asarray(different_line_points))
+        self.assertFalse(mergetool.is_exact_duplicate(line, different_line))
+
+    def test_is_potential_duplicate_point(self):
+        point_points = [(13.5904, 16.6472)]
+        point = Point(*numpy.asarray(point_points))
+
+        # Test same point
+        self.assertTrue(mergetool.is_potential_duplicate(point, point))
+
+        # Not even close
+        far_point_points = [(14.5904, 16.6472)]
+        far_point = Point(*numpy.asarray(far_point_points))
+        self.assertFalse(mergetool.is_potential_duplicate(point, far_point))
+
+    def test_is_potential_duplicate_polygon(self):
+        polygon = Polygon(numpy.asarray(self.polygon_points))
+
+        # Exact is not potential
+        self.assertFalse(mergetool.is_potential_duplicate(polygon, polygon))
+
+        # Not even close
+        far_polygon_points = [
+            (9.2342, 5.115),
+            (9.2826, 5.115),
+            (9.2584, 5.1593),
+        ]
+        far_polygon = Polygon(numpy.asarray(far_polygon_points))
+        self.assertFalse(
+            mergetool.is_potential_duplicate(polygon, far_polygon))
+
+        # Potential duplicate
+        close_polygon_points = [
+            (15.0988, 17.5196),
+            (15.3815, 17.4754),
+            (15.5229, 17.4577),
+            (15.5936, 17.4489),
+            (15.6289, 17.4577),
+            (15.9116, 17.7228),
+            (15.9381, 17.7581),
+            (16.0088, 18.0408),
+            (16.0265, 18.1115),
+            (16.0265, 18.1292),
+            (15.7437, 18.2263),
+            (15.6731, 18.2529),
+            (15.3904, 18.0673),
+            (15.249, 17.9701),
+            (15.2225, 17.9436),
+            (15.143, 17.6609),
+            (15.0988, 17.5284),
+        ]
+        close_polygon = Polygon(numpy.asarray(close_polygon_points))
+        # Potential is not exact
+        self.assertTrue(
+            mergetool.is_potential_duplicate(polygon, close_polygon))
+
+    def test_is_potential_duplicate_line(self):
+        line_points = [
+            (24.6589, 17.3004),
+            (24.7018, 17.3489),
+            (24.7634, 17.3917),
+            (24.8174, 17.4197),
+        ]
+        line = LineString(numpy.asarray(line_points))
+
+        # Test 100% overlap
+        self.assertTrue(mergetool.is_potential_duplicate(line, line))
+
+        # Not even close
+        different_line_points = [
+            (14.6589, 7.3004),
+            (14.7018, 7.3489),
+            (14.7634, 7.3917),
+            (14.8174, 7.4197),
+        ]
+        different_line = LineString(numpy.asarray(different_line_points))
+        self.assertFalse(
+            mergetool.is_potential_duplicate(line, different_line))

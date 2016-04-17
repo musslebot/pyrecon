@@ -31,7 +31,9 @@ class ZContour(object):
         """Return 1 or 0 of whether ZContour overlaps other."""
         def distance(pt0, pt1):
             """Distance formula: return distance between two points."""
-            return math.sqrt((pt0[0] - pt1[0])**2 + (pt0[1] - pt1[1])**2)
+            x0, y0 = pt0
+            x1, y1 = pt1
+            return math.sqrt((x0 - x1)**2 + (y0 - y1)**2)
         # Check equal # pts
         if len(self.points) != len(other.points):
             return 0

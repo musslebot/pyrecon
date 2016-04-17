@@ -28,8 +28,8 @@ class PyreconMainWindow(QMainWindow):
         # 2) Add actions to toolbars
         self.toolsMenu.addAction( mergeAction )
     def loadMergeTool(self):
-        from pyrecon.tools.mergeTool.main import createMergeSet
-        from pyrecon.gui.mergeTool.main import MergeSetWrapper
+        from pyrecon.tools.mergetool import createMergeSet
+        from pyrecon.gui.mergetool import MergeSetWrapper
         loadDialog = DoubleSeriesLoad() # User locates 2 series
         s1 = openSeries(loadDialog.output[0])
         s2 = openSeries(loadDialog.output[1])

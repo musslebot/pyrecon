@@ -2,11 +2,11 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 from pyrecon.main import openSeries
-from pyrecon.tools.mergeTool.main import MergeSet, MergeSeries, MergeSection
-
 from pyrecon.gui.main import BrowseOutputDirectory, DoubleSeriesLoad
-from pyrecon.gui.mergeTool.sectionHandlers import SectionMergeWrapper
-from pyrecon.gui.mergeTool.seriesHandlers import SeriesMergeWrapper
+from pyrecon.gui.mergetool_section import SectionMergeWrapper
+from pyrecon.gui.mergetool_series import SeriesMergeWrapper
+from pyrecon.tools.mergetool import MergeSet, MergeSeries, MergeSection
+
 
 class MergeSetWrapper(QWidget):
     '''This class is a single widget that contains all necessary widgets for resolving conflicts in a MergeSet and handles the signal/slots between them.'''
@@ -192,8 +192,8 @@ class MergeSetList(QListWidget):
                 item.resolution.attributes.chooseLeft.click()
                 item.resolution.contours.chooseLeft.click()
                 # zconts
-                uniqueA, uniqueB, ovlps = item.merge.getCategorizedZContours()
-                item.merge.zcontours = uniqueA+uniqueB+ovlps
+                item_1_uniques, item_2_uniques, ovlps = item.merge.getCategorizedZContours()
+                item.merge.zcontours = item_1_uniques+item_2_uniques+ovlps
             item.refresh()
     def quickMergeABContsB(self, items): #===
         '''This completes the merge resolution by selection the B (right) version of non-contour conflicts (attributes & images). For contour conflicts, this selects BOTH (left & right) for overlaps and uniques.'''
@@ -206,8 +206,8 @@ class MergeSetList(QListWidget):
                 item.resolution.attributes.chooseRight.click()
                 item.resolution.contours.chooseRight.click()
                 # zconts
-                uniqueA, uniqueB, ovlps = item.merge.getCategorizedZContours()
-                item.merge.zcontours = uniqueA+uniqueB+ovlps
+                item_1_uniques, item_2_uniques, ovlps = item.merge.getCategorizedZContours()
+                item.merge.zcontours = item_1_uniques+item_2_uniques+ovlps
             item.refresh()
 
 class MergeSetListItem(QListWidgetItem):

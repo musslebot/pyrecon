@@ -4,6 +4,8 @@ from shapely.geometry import box, LinearRing, LineString, Point, Polygon
 from pyrecon.classes import Series, Section
 from pyrecon.tools import reconstruct_writer
 
+TOLERANCE = 1 + 2**-17
+
 
 def get_bounding_box(shape):
     """Return bounding box of shapely shape."""
@@ -20,75 +22,104 @@ def is_reverse(shape):
     return False
 
 
-def overlaps(shape1, shape2, threshold=(1 + 2**(-17))):
-    """Return 0 if no overlap.
+def is_contacting(shape1, shape2):
+    """Return True if two shapes are contacting."""
+    if isinstance(shape1, Point) and isinstance(shape2, Point):
+        # TODO: investigate more sophisticated comparison
+        return shape1.equals(shape2)
 
-    For closed traces:
-        * 1 if area_of_union/area_of_intersection < threshold,
-        * area_of_union/area_of_intersection if not < threshold
-    For open traces:
-        * 0 if # pts differs or distance between parallel pts > threshold
-        * 1 otherwise
-    """
-    if shape1.type != shape2.type:
-        return 0
+    elif isinstance(shape1, (LineString, Polygon)) and isinstance(shape2, (LineString, Polygon)):
+            this_box = box(*shape1.bounds)
+            other_box = box(*shape2.bounds)
+            if not this_box.intersects(other_box) and not this_box.touches(other_box):
+                return False
+            else:
+                return True
 
-    if isinstance(shape1, Point) and shape1.equals(shape2):
-        return 1
+    raise Exception("No support for shape type(s): {}".format(
+        set([shape1.type, shape2.type])))
 
-    # Check bounding box first (least expensive)
-    this_box = box(*shape1.bounds)
-    other_box = box(*shape2.bounds)
-    if not this_box.intersects(other_box) and not this_box.touches(other_box):
-        return 0
 
-    if isinstance(shape1, Polygon):
-        # CCW should not count as CW dupe
-        if is_reverse(shape1) != is_reverse(shape2):
-            return 0
+def is_exact_duplicate(shape1, shape2, threshold=TOLERANCE):
+    """Return True if two shapes are exact duplicates (within tolerance)."""
+    if isinstance(shape1, Point) and isinstance(shape2, Point):
+        # TODO: investigate more sophisticated comparison
+        return shape1.equals(shape2)
 
+    elif isinstance(shape1, Polygon) and isinstance(shape2, Polygon):
+        if is_reverse(shape2) != is_reverse(shape2):
+            # Reverse traces are not duplicates of non-reverse
+            return False
         area_of_union = shape1.union(shape2).area
         area_of_intersection = shape1.intersection(shape2).area
-        if area_of_intersection == 0:
-            return 0
+        if not area_of_intersection:
+            return False
+        union_over_intersection = area_of_union / area_of_intersection
+        if union_over_intersection >= threshold:
+            # Potential duplicate
+            return False
+        elif union_over_intersection < threshold:
+            return True
 
-        elif area_of_union / area_of_intersection >= threshold:
-            # TODO: try shape1.almost_equals(shape2, decimal=11.698970004)
-            #     solve for x, 0.5*(10**-x) = 1*(10**-12)
-            #     (11log(2)+12log(5))/(log(2)+log(5))
-            # # TODO: Returns actual value, not 0 or 1 (this is dumb)
-            return area_of_union / area_of_intersection
+    elif isinstance(shape1, LineString) and isinstance(shape2, LineString):
+        # TODO: investigate more sophisticated comparison
+        return shape1.equals(shape2)
 
-        elif area_of_union / area_of_intersection < threshold:
-            return 1
+    raise Exception("No support for shape type(s): {}".format(
+        set([shape1.type, shape2.type])))
 
-    if isinstance(shape1, LineString):
-        if not shape1.equals(shape2):
-            return 0
 
-    return 1
+# TODO: investigate way to reduce shared computation with is_duplicate
+# TODO: investigate if support needed for LineString
+def is_potential_duplicate(shape1, shape2, threshold=TOLERANCE):
+    """Return True if two shapes are potential overlaps (exceed tolerance)."""
+    if isinstance(shape1, Point) and isinstance(shape2, Point):
+        # TODO: investigate more sophisticated comparison
+        return shape1.equals(shape2)
+
+    elif isinstance(shape1, Polygon) and isinstance(shape2, Polygon):
+        if is_reverse(shape2) != is_reverse(shape2):
+            # Reverse traces are not duplicates of non-reverse
+            return False
+        area_of_union = shape1.union(shape2).area
+        area_of_intersection = shape1.intersection(shape2).area
+        if not area_of_intersection:
+            return False
+        union_over_intersection = area_of_union / area_of_intersection
+        if union_over_intersection >= threshold:
+            return True
+        else:
+            return False
+
+    elif isinstance(shape1, LineString) and isinstance(shape2, LineString):
+        # TODO: investigate more sophisticated comparison
+        return shape1.equals(shape2)
+
+    raise Exception("No support for shape type(s): {}".format(
+        set([shape1.type, shape2.type])))
 
 
 def createMergeSet(series1, series2):  # TODO: needs multithreading
-    """This function takes in two Series objects and returns a MergeSet to be used for the mergeTool"""
+    """Return a MergeSet from two Series."""
+    if len(series1.sections) != len(series2.sections):
+        raise Exception("Series do not have the same number of Sections.")
+
     m_ser = MergeSeries(
         name=series1.name,
         series1=series1,
         series2=series2,
     )
     m_secs = []
-    for i in range(len(series1.sections)):
-        section1 = series1.sections[i]
-        section2 = series2.sections[i]
-        if section1.index == section2.index:
-            merge_section = MergeSection(
-                name=section1.name,
-                section1=section1,
-                section2=section2,
-            )
-            m_secs.append(merge_section)
-        else:
-            raise Exception("Series do not have matching section indices! Aborting createMergeSet()!")
+    for section1, section2 in zip(series1.sections, series2.sections):
+        if section1.index != section2.index:
+            raise Exception("Section indices do not match.")
+        merge_section = MergeSection(
+            name=section1.name,
+            section1=section1,
+            section2=section2,
+        )
+        m_secs.append(merge_section)
+
     return MergeSet(
         name=m_ser.name,
         merge_series=m_ser,
@@ -138,10 +169,10 @@ class MergeSection(object):
         self.contours = None
 
         # Contours conflict resolution stuff
-        self.uniqueA = None
-        self.uniqueB = None
-        self.compOvlps = None
-        self.confOvlps = None
+        self.section_1_unique_contours = None
+        self.section_2_unique_contours = None
+        self.definite_shared_contours = None
+        self.potential_shared_contours = None
 
         self.checkConflicts()
 
@@ -155,13 +186,13 @@ class MergeSection(object):
             self.section1.images[-1] == self.section2.images[-1]):
             self.images = self.section1.images  # TODO: problematic if other images are different
         # Are contours equivalent?
-        separated_contours = self.getCategorizedContours(overlaps=True)  # TODO: thread this function
-        self.uniqueA = separated_contours[0]
-        self.uniqueB = separated_contours[1]
-        self.compOvlps = separated_contours[2]
-        self.confOvlps = separated_contours[3]
-        if (len(self.uniqueA + self.uniqueB) == 0 and
-            len(self.confOvlps) == 0):
+        separated_contours = self.getCategorizedContours(include_overlaps=True)  # TODO: thread this function
+        self.section_1_unique_contours = separated_contours[0]
+        self.section_2_unique_contours = separated_contours[1]
+        self.definite_shared_contours = separated_contours[2]
+        self.potential_shared_contours = separated_contours[3]
+        if (len(self.section_1_unique_contours + self.section_2_unique_contours) == 0 and
+            len(self.potential_shared_contours) == 0):
             self.contours = self.section1.contours
 
     def isDone(self):
@@ -176,12 +207,10 @@ class MergeSection(object):
                 self.images is not None,
                 self.contours is not None).count(True)
 
-    # mergeTool functions
-    #=== MULTITHREAD THIS FUNCTION!!!!!!!
-    def getCategorizedContours(self, threshold=(1 + 2**(-17)), sameName=True, overlaps=False):
+    def getCategorizedContours(self, threshold=(1 + 2**(-17)), sameName=True, include_overlaps=False):
         """Returns lists of mutually overlapping contours between two Section objects."""
-        complete_overlaps = []  # Pairs of completely (within threshold) overlapping contours
-        potential_overlaps = []  # Pairs of incompletely overlapping contours
+        complete_overlaps = []
+        potential_overlaps = []
 
         # Compute overlaps
         sec1_overlaps = []  # Section1 contours that have ovlps in section2
@@ -192,20 +221,25 @@ class MergeSection(object):
             for contB in self.section2.contours:
                 if sameName and contA.name != contB.name:
                     continue
-                overlap = contA.overlaps(contB, threshold)
-                # If sameName: only check contours with the same name
-                if overlap != 0:
+                if contA.shape.type != contB.shape.type:
+                    # Ignore contours with different shapes
+                    continue
+
+                if not is_contacting(contA.shape, contB.shape):
+                    continue
+                elif is_exact_duplicate(contA.shape, contB.shape):
                     ovlpA.append(contA)
                     ovlpB.append(contB)
-                    if overlaps:
-                        if overlap == 1:
-                            complete_overlaps.append([contA, contB])
-                        elif overlap > 0:  # Conflicting (non-100%) overlap
-                            potential_overlaps.append([contA, contB])
+                    complete_overlaps.append([contA, contB])
+                    continue
+                if is_potential_duplicate(contA.shape, contB.shape):
+                    ovlpA.append(contA)
+                    ovlpB.append(contB)
+                    potential_overlaps.append([contA, contB])
             sec1_overlaps.extend(ovlpA)
             sec2_overlaps.extend(ovlpB)
 
-        if overlaps:
+        if include_overlaps:
             # Return unique conts from section1, unique conts from section2,
             # completely overlapping contours, and incompletely overlapping
             # contours
@@ -274,21 +308,20 @@ class MergeSeries(object):
                 self.contours is not None,
                 self.zcontours is not None).count(True)
 
-    # mergeTool functions
     def getCategorizedZContours(self, threshold=(1 + 2**(-17))):
         """Return unique Series1 ZContours, unique Series2 ZContours,
         and overlapping Contours to be merged."""
         copy_contours_1 = [cont for cont in self.series1.zcontours]
         copy_contours_2 = [cont for cont in self.series2.zcontours]
-        overlaps = []
+        overlapping_zcontours = []
         for contA in copy_contours_1:
             for contB in copy_contours_2:
                 if contA.name == contB.name and contA.overlaps(contB, threshold):
                     # If overlaps, append to overlap list and remove from unique lists
-                    overlaps.append(contA)
+                    overlapping_zcontours.append(contA)
                     copy_contours_1.remove(contA)
                     copy_contours_2.remove(contB)
-        return copy_contours_1, copy_contours_2, overlaps
+        return copy_contours_1, copy_contours_2, overlapping_zcontours
 
     def toSeries(self):
         """Return a Series object that resolves the merge.

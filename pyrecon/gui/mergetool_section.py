@@ -1,7 +1,11 @@
+from copy import deepcopy
+
+import numpy as np
 from PySide.QtCore import *
 from PySide.QtGui import *
+
 import pyrecon
-import numpy as np
+
 
 # SECTION CONFLICT RESOLUTION GUI WRAPPER
 class SectionMergeWrapper(QTabWidget):
@@ -171,9 +175,9 @@ class SectionContourHandler(QWidget):
         self.merge = MergeSection
         # Contours
         # - Unique contours from each section
-        self.uniqueA, self.uniqueB = self.merge.uniqueA, self.merge.uniqueB
+        self.section_1_unique_contours, self.section_2_unique_contours = self.merge.section_1_unique_contours, self.merge.section_2_unique_contours
         # - Complete overlap, and conflicting overlap contours
-        self.compOvlp, self.confOvlp = self.merge.compOvlps, self.merge.confOvlps
+        self.definite_shared_contours, self.potential_shared_contours = self.merge.definite_shared_contours, self.merge.potential_shared_contours
         # Load UI
         self.loadObjects()
         self.loadFunctions()
@@ -199,9 +203,9 @@ class SectionContourHandler(QWidget):
         self.moveSelectedB = QPushButton(self)
     def loadFunctions(self):
         # Load tables with contour objects
-        self.loadTable(self.inUniqueA, self.uniqueA)
-        self.loadTable(self.inUniqueB, self.uniqueB)
-        self.loadTable(self.inOvlp, self.compOvlp+self.confOvlp)
+        self.loadTable(self.inUniqueA, self.section_1_unique_contours)
+        self.loadTable(self.inUniqueB, self.section_2_unique_contours)
+        self.loadTable(self.inOvlp, self.definite_shared_contours+self.potential_shared_contours)
         for table in [self.inUniqueA, self.inUniqueB, self.inOvlp, self.outUniqueA, self.outUniqueB, self.outOvlp]:
             table.setSelectionMode(QAbstractItemView.ExtendedSelection)
             table.itemDoubleClicked.connect(self.doubleClickCheck)
@@ -226,13 +230,13 @@ class SectionContourHandler(QWidget):
         labelContainer.addWidget(QLabel('Output'))
         columnContainer.addLayout(labelContainer)
 
-        uniqueAColumn = QVBoxLayout()
-        uniqueALabel = QLabel('Section A\'s Unique Contours')
-        uniqueAColumn.addWidget(uniqueALabel)
-        uniqueAColumn.addWidget(self.inUniqueA)
-        uniqueAColumn.addWidget(self.moveSelectedA)
-        uniqueAColumn.addWidget(self.outUniqueA)
-        columnContainer.addLayout(uniqueAColumn)
+        section_1_unique_contoursColumn = QVBoxLayout()
+        section_1_unique_contoursLabel = QLabel('Section A\'s Unique Contours')
+        section_1_unique_contoursColumn.addWidget(section_1_unique_contoursLabel)
+        section_1_unique_contoursColumn.addWidget(self.inUniqueA)
+        section_1_unique_contoursColumn.addWidget(self.moveSelectedA)
+        section_1_unique_contoursColumn.addWidget(self.outUniqueA)
+        columnContainer.addLayout(section_1_unique_contoursColumn)
 
         overlapColumn = QVBoxLayout()
         overlapLabel = QLabel('Overlapping Contours')
@@ -242,13 +246,13 @@ class SectionContourHandler(QWidget):
         overlapColumn.addWidget(self.outOvlp)
         columnContainer.addLayout(overlapColumn)
 
-        uniqueBColumn = QVBoxLayout()
-        uniqueBLabel = QLabel('Section B\'s Unique Contours')
-        uniqueBColumn.addWidget(uniqueBLabel)
-        uniqueBColumn.addWidget(self.inUniqueB)
-        uniqueBColumn.addWidget(self.moveSelectedB)
-        uniqueBColumn.addWidget(self.outUniqueB)
-        columnContainer.addLayout(uniqueBColumn)
+        section_2_unique_contoursColumn = QVBoxLayout()
+        section_2_unique_contoursLabel = QLabel('Section B\'s Unique Contours')
+        section_2_unique_contoursColumn.addWidget(section_2_unique_contoursLabel)
+        section_2_unique_contoursColumn.addWidget(self.inUniqueB)
+        section_2_unique_contoursColumn.addWidget(self.moveSelectedB)
+        section_2_unique_contoursColumn.addWidget(self.outUniqueB)
+        columnContainer.addLayout(section_2_unique_contoursColumn)
 
         container.addLayout(secNameContainer)
         container.addLayout(columnContainer)
@@ -261,9 +265,9 @@ class SectionContourHandler(QWidget):
                 # Item can be a contour or list of 2 contours, they are handled differently in contourTableItem class upon initialization
                 listItem = contourTableItem(item, [self.merge.section1.images[-1],self.merge.section2.images[-1]])
                 if type(item) == type([]):
-                    if item in self.confOvlp: # Conflicting ovlping contour
+                    if item in self.potential_shared_contours: # Conflicting ovlping contour
                         listItem.setBackground(QColor('red'))
-                    elif item in self.compOvlp: # Completely ovlping contour
+                    elif item in self.definite_shared_contours: # Completely ovlping contour
                         listItem.contour = listItem.contour1 #=== set chosen contour to cont1 since they're the same
                         listItem.setBackground(QColor('lightgreen'))
                         self.outOvlp.addItem(listItem)
@@ -389,7 +393,7 @@ class contourPixmap(QLabel):
         QLabel.__init__(self)
         self.image = image
         self.pixmap = QPixmap( image._path+image.src )
-        self.contour = pyrecon.classes.Contour( contour.__dict__ ) # Create copy of contour to be altered for visualization
+        self.contour = deepcopy(contour) # Create copy of contour to be altered for visualization
         self.transformToPixmap()
         self.crop()
         self.scale()
