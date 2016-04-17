@@ -18,9 +18,8 @@ class Contour(object):
         self.border = kwargs.get("border")
         self.fill = kwargs.get("fill")
         self.points = kwargs.get("points", [])
-        # Non-attributes
+        # Non-RECONSTRUCT attributes
         self.coordSys = kwargs.get("coordSys")
-        self.image = kwargs.get("image")  # Only used if image contour
         self.transform = kwargs.get("transform")
         self.shape = kwargs.get("shape")
 
@@ -61,6 +60,7 @@ class Contour(object):
         return not self.__eq__(other)
 
 # transform/shape operations
+    # TODO: remove
     def convertToBioCoords(self, mag):
         """Convert points to biological coordinate system and update shape."""
         if self.coordSys == 'bio':
@@ -69,6 +69,7 @@ class Contour(object):
         self.coordSys = 'bio'
         self.popShape()  # repopulate shape
 
+    # TODO: remove
     def convertToPixCoords(self, mag):
         """Convert points to pixel coordinate system and update shape."""
         if self.coordSys == 'pix':
@@ -77,23 +78,24 @@ class Contour(object):
         self.coordSys = 'pix'
         self.popShape()  # repopulate shape
 
+    # TODO: make self.shape @property
     def popShape(self):
         """Add a Shapely geometric object to self._shape."""
         # Closed trace
         if self.closed is True:
+            # TODO: do I need to handle this?
             # If image contour, multiply pts by mag before inverting transform
-            if self.image.__class__.__name__ == 'Image':
-                mag = self.image.mag
-                xvals = [pt[0] * mag for pt in self.points]
-                yvals = [pt[1] * mag for pt in self.points]
-                pts = zip(xvals, yvals)
-            else:
-                if len(self.points) < 3:
-                    raise Exception(
-                        "Closed Contour with less than 3 points: {}".format(
-                            self))
-                pts = self.points
-            self.shape = Polygon(self.transform.worldpts(pts))  # TODO
+            # if self.image.__class__.__name__ == 'Image':
+            #     mag = self.image.mag
+            #     xvals = [pt[0] * mag for pt in self.points]
+            #     yvals = [pt[1] * mag for pt in self.points]
+            #     pts = zip(xvals, yvals)
+            # else:
+            if len(self.points) < 3:
+                raise Exception(
+                    "Closed Contour with less than 3 points: {}".format(
+                        self))
+            self.shape = Polygon(self.transform.worldpts(self.points))  # TODO
 
         # Open trace
         elif self.closed is False and len(self.points) > 1:
@@ -106,6 +108,7 @@ class Contour(object):
             raise Exception(
                 "Could not deduce shape for Contour: {}".format(self))
 
+    # TODO: decouple from Contour class. belongs to mergeTool
     def bounding_box(self):
         """Return bounding box of shape (shapely) library."""
         if self.shape:
@@ -114,7 +117,7 @@ class Contour(object):
         else:
             print "NoneType for shape: ".format(self.name)
 
-# mergeTool functions
+    # TODO: decouple from Contour class. belongs to mergeTool
     def overlaps(self, other, threshold=(1 + 2**(-17))):
         """Return 0 if no overlap.
 
@@ -178,7 +181,7 @@ class Contour(object):
 
         return 1
 
-# curationTool functions
+    # TODO: decouple from Contour class. belong in curationTool
     def getLength(self):
         """Return the sum of all line segments in the contour object."""
         length = 0
@@ -211,6 +214,7 @@ class Contour(object):
         else:
             return False
 
+    # TODO: decouple from Contour class. belong in curationTool
     def isInvalid(self):
         """Return true if this is an invalid Contour."""
         if self.closed and len(self.points) < 3:

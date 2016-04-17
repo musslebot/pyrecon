@@ -84,29 +84,31 @@ def process_section_file(path):
         transform = Transform(**transform_data)
         children = [child for child in node]
 
-        # Image transform node
+        # Image node
         images = [child for child in children if child.tag == "Image"]
-        if len(images) > 0:
+        if len(images) > 1:
+            raise Exception("No support for Sections with more than one Image.")
+        elif images:
             image_data = extract_image_attributes(images[0])
             image_data["_path"] = section._path
-            image = Image(**image_data)
+            image_data["transform"] = transform
 
-            image_contours = []
-            for child in children:
-                if child.tag == "Contour":
-                    image_contours.append(child)
-
-            if len(image_contours) > 0:
+            # Image contours
+            image_contours = [child for child in children if child.tag == "Contour"]
+            if len(image_contours) > 1:
+                raise Exception(
+                    "No support for Images with more than one Contour.")
+            elif not image_contours:
+                raise Exception("No support for Images with out a Contour.")
+            else:
                 image_contour_data = extract_section_contour_attributes(
                     image_contours[0])
-                image_contour_data["transform"] = transform
-                image_contour = Contour(**image_contour_data)
-                # set contour's image to the image
-                image_contour.image = image
-                # set image's contour to the contour
-                image.contour = image_contour
-                section.images.append(image)
-        # Non-Image Transform Node
+                image_data.update(image_contour_data)
+
+            image = Image(**image_data)
+            section.images.append(image)
+
+        # Non-Image Node
         else:
             for child in children:
                 if child.tag == "Contour":
