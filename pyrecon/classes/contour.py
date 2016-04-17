@@ -24,6 +24,23 @@ class Contour(object):
         self.transform = kwargs.get("transform")
         self.shape = kwargs.get("shape")
 
+    def __repr__(self):
+        """Return a string representation of this Contour's data."""
+        return (
+            "Contour name={name} hidden={hidden} closed={closed} "
+            "simplified={simplified} border={border} fill={fill} "
+            "mode={mode}\npoints={points}"
+        ).format(
+            name=self.name,
+            hidden=self.hidden,
+            closed=self.closed,
+            simplified=self.simplified,
+            border=self.border,
+            fill=self.fill,
+            mode=self.mode,
+            points=self.points,
+        )
+
     def __eq__(self, other):
         """Allow use of == between multiple contours."""
         ignore = ['shape', 'comment', 'hidden', 'image']
@@ -72,9 +89,12 @@ class Contour(object):
                 pts = zip(xvals, yvals)
             else:
                 if len(self.points) < 3:
-                    return None
+                    raise Exception(
+                        "Closed Contour with less than 3 points: {}".format(
+                            self))
                 pts = self.points
             self.shape = Polygon(self.transform.worldpts(pts))  # TODO
+
         # Open trace
         elif self.closed is False and len(self.points) > 1:
             self.shape = LineString(
@@ -83,10 +103,8 @@ class Contour(object):
             self.shape = Point(
                 self.transform.worldpts(self.points))
         else:
-            # TODO: raise Exception
-            print("\nInvalid shape characteristics: {}".format(self.name))
-            print ("Quit for debug")
-            quit()  # for dbugging
+            raise Exception(
+                "Could not deduce shape for Contour: {}".format(self))
 
     def bounding_box(self):
         """Return bounding box of shape (shapely) library."""
