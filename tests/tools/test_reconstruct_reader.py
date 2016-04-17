@@ -1,4 +1,4 @@
-
+import os
 from unittest import TestCase
 
 from lxml import etree
@@ -6,26 +6,28 @@ from lxml import etree
 from pyrecon.classes import Section, Series
 from pyrecon.tools import reconstruct_reader
 
+DATA_LOC = "tests/tools/_data"
+
 
 class ReconstructReaderTests(TestCase):
 
     def test_process_series_directory(self):
-        path = "tests/tools/"
+        path = DATA_LOC
         series = reconstruct_reader.process_series_directory(path)
         self.assertIsInstance(series, Series)
         self.assertIsNotNone(series.contours)
 
     def test_process_series_file(self):
-        path = "tests/tools/_VRJXH.ser"
+        path = os.path.join(DATA_LOC, "_VRJXH.ser")
         series = reconstruct_reader.process_series_file(path)
         self.assertIsInstance(series, Series)
         self.assertEqual(series.name, "_VRJXH")
-        self.assertEqual(series.path, "tests/tools")
+        self.assertEqual(series.path, DATA_LOC)
         self.assertEqual(len(series.contours), 4)
         self.assertEqual(len(series.zcontours), 6)
 
     def test_process_section_file(self):
-        path = "tests/tools/_VRJXH.98"
+        path = os.path.join(DATA_LOC, "_VRJXH.98")
         section = reconstruct_reader.process_section_file(path)
         self.assertIsInstance(section, Section)
         self.assertEqual(section.name, "_VRJXH.98")
@@ -34,7 +36,7 @@ class ReconstructReaderTests(TestCase):
         self.assertEqual(len(section.images), 1)
 
     def test_extract_series_contour_attributes(self):
-        node = etree.parse("tests/tools/_series_contour.xml").getroot()
+        node = etree.parse(os.path.join(DATA_LOC, "_series_contour.xml")).getroot()
         series_contour_attributes = reconstruct_reader.extract_series_contour_attributes(
             node)
         expected_attributes = {
@@ -67,7 +69,7 @@ class ReconstructReaderTests(TestCase):
         self.assertTrue(series_contour_attributes, expected_attributes)
 
     def test_extract_section_contour_attributes(self):
-        node = etree.parse("tests/tools/_section_contour.xml").getroot()
+        node = etree.parse(os.path.join(DATA_LOC, "_section_contour.xml")).getroot()
         section_contour_attributes = reconstruct_reader.extract_section_contour_attributes(
             node)
         expected_attributes = {
@@ -90,7 +92,7 @@ class ReconstructReaderTests(TestCase):
         self.assertTrue(section_contour_attributes, expected_attributes)
 
     def test_extract_image_attributes(self):
-        node = etree.parse("tests/tools/_image.xml").getroot()
+        node = etree.parse(os.path.join(DATA_LOC, "_image.xml")).getroot()
         image_attributes = reconstruct_reader.extract_image_attributes(
             node)
         expected_attributes = {
@@ -105,7 +107,7 @@ class ReconstructReaderTests(TestCase):
         self.assertTrue(image_attributes, expected_attributes)
 
     def test_extract_section_attributes(self):
-        node = etree.parse("tests/tools/_section.xml").getroot()
+        node = etree.parse(os.path.join(DATA_LOC, "_section.xml")).getroot()
         section_attributes = reconstruct_reader.extract_section_attributes(
             node)
         expected_attributes = {
@@ -116,7 +118,7 @@ class ReconstructReaderTests(TestCase):
         self.assertTrue(section_attributes, expected_attributes)
 
     def test_extract_series_attributes(self):
-        node = etree.parse("tests/tools/_series.xml").getroot()
+        node = etree.parse(os.path.join(DATA_LOC, "_series.xml")).getroot()
         series_attributes = reconstruct_reader.extract_series_attributes(
             node)
         expected_attributes = {
@@ -244,7 +246,7 @@ class ReconstructReaderTests(TestCase):
         self.assertTrue(series_attributes, expected_attributes)
 
     def test_extract_transform_attributes(self):
-        node = etree.parse("tests/tools/_transform.xml").getroot()
+        node = etree.parse(os.path.join(DATA_LOC, "_transform.xml")).getroot()
         transform_attributes = reconstruct_reader.extract_transform_attributes(
             node)
         expected_attributes = {
@@ -255,7 +257,7 @@ class ReconstructReaderTests(TestCase):
         self.assertTrue(transform_attributes, expected_attributes)
 
     def test_extract_zcontour_attributes(self):
-        node = etree.parse("tests/tools/_zcontour.xml").getroot()
+        node = etree.parse(os.path.join(DATA_LOC, "_zcontour.xml")).getroot()
         zcontour_attributes = reconstruct_reader.extract_zcontour_attributes(
             node)
         expected_attributes = {

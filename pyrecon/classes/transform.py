@@ -94,23 +94,15 @@ class Transform(object):
 
     def __eq__(self, other):
         """Allow use of == operator."""
-        return (self.dim == other.dim and
-                self.xcoef == other.xcoef and
-                self.ycoef == other.ycoef)
+        to_compare = ["dim", "xcoef", "ycoef"]
+        for k in to_compare:
+            if getattr(self, k) != getattr(other, k):
+                return False
+        return True
 
     def __ne__(self, other):
         """Allow use of != operator."""
         return not self.__eq__(other)
-
-    def worldpts(self, points, mag=1):  # TODO
-        """Return inverse points."""
-        newpts = self._tform.inverse(np.asarray(points) * mag)
-        return list(map(tuple, newpts))
-
-    def imagepts(self, points, mag):
-        """Return points in pixel space."""
-        newpts = self._tform.inverse(np.asarray(points) / mag)
-        return list(map(tuple, newpts))
 
     def isAffine(self):
         """Returns True if the transform is affine."""

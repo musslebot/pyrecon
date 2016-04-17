@@ -25,13 +25,8 @@ class PyreconMainWindow(QMainWindow):
         mergeAction = QAction( QIcon(), 'mergeTool', self ) #QIcon() is null, but necessary for Action creation
         mergeAction.triggered.connect( self.loadMergeTool )
         mergeAction.setStatusTip( 'Open merge widget' )
-        # - curationTool
-        curateAction = QAction( QIcon(), 'curationTool', self )
-        curateAction.triggered.connect( self.loadCurationTool )
-        curateAction.setStatusTip( 'Open curation widget' )
         # 2) Add actions to toolbars
         self.toolsMenu.addAction( mergeAction )
-        self.toolsMenu.addAction( curateAction )
     def loadMergeTool(self):
         from pyrecon.tools.mergeTool.main import createMergeSet
         from pyrecon.gui.mergeTool.main import MergeSetWrapper
@@ -40,14 +35,6 @@ class PyreconMainWindow(QMainWindow):
         s2 = openSeries(loadDialog.output[1])
         mSet = createMergeSet( s1, s2 )
         self.setCentralWidget( MergeSetWrapper(mSet) )
-    def loadCurationTool(self):
-        from pyrecon.gui.curationTool.curationGUI import curationToolStuff
-        # Left dockWidget: load series/options
-        self.curateSelector = QDockWidget()
-        self.curationTool = curationToolStuff(self)
-        self.curateSelector.setWidget( self.curationTool )
-        self.addDockWidget( Qt.LeftDockWidgetArea, self.curateSelector )
-        self.setCentralWidget(self.curationTool.outputWidget)
 
 
 # Helper widgets

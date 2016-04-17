@@ -16,9 +16,11 @@ class ZContour(object):
 
     def __eq__(self, other):
         """Allow use of == operator."""
-        return (self.name == other.name and
-                self.points == other.points and
-                self.closed == other.closed)
+        to_compare = ["name", "points", "closed"]
+        for k in to_compare:
+            if getattr(self, k) != getattr(other, k):
+                return False
+        return True
 
     def __ne__(self, other):
         """Allow use of != operator."""
