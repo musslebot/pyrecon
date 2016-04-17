@@ -3,51 +3,69 @@ import os
 
 from lxml import etree
 
+from pyrecon.classes import (
+    Contour, Image, Section, Series, Transform, ZContour
+)
 
-def contourToElement(contour):
-    try: # Contour in Section
-        element = etree.Element(
-            "Contour",
-            name=str(contour.name),
-            hidden=str(contour.hidden).lower(),
-            closed=str(contour.closed).lower(),
-            simplified=str(contour.simplified).lower(),
-            border=str(contour.border[0])+" "+str(contour.border[1])+" "+str(contour.border[2]),
-            fill=str(contour.fill[0])+" "+str(contour.fill[1])+" "+str(contour.fill[2]),
-            mode=str(contour.mode),
-            points= ", ".join([str(pt[0])+" "+str(pt[1]) for pt in contour.points])+","
-        )
-    except:
-        try: # Contour in Series
-            element = etree.Element(
-                "Contour",
-                name=str(contour.name),
-                closed=str(contour.closed).lower(),
-                border=str(contour.border[0])+" "+str(contour.border[1])+" "+str(contour.border[2]),
-                fill=str(contour.fill[0])+" "+str(contour.fill[1])+" "+str(contour.fill[2]),
-                mode=str(contour.mode),
-                points= ", ".join([str(pt[0])+" "+str(pt[1]) for pt in contour.points])+","
-            )
-        except:
-            print("Problem creating Contour element", contour.name)
+
+def image_to_contour_xml(image):
+    element = etree.Element(
+        "Contour",
+        name=str(image.name),
+        hidden=str(image.hidden).lower(),
+        closed=str(image.closed).lower(),
+        simplified=str(image.simplified).lower(),
+        border=" ".join(map(str, map(int, image.border))),
+        fill=" ".join(map(str, map(int, image.fill))),
+        mode=str(image.mode),
+        points=",     ".join([" ".join(map(str, map(int, list(pt)))) for pt in image.points])+",     "
+    )
     return element
 
 
-def imageToElement(image):
+def section_contour_to_xml(contour):
+    element = etree.Element(
+        "Contour",
+        name=str(contour.name),
+        hidden=str(contour.hidden).lower(),
+        closed=str(contour.closed).lower(),
+        simplified=str(contour.simplified).lower(),
+        border=" ".join(map(str, map(int, contour.border))),
+        fill=" ".join(map(str, map(int, contour.fill))),
+        mode=str(contour.mode),
+        points=",     ".join([" ".join(map(str, map(float, list(pt)))) for pt in contour.points])+",     "
+    )
+    return element
+
+
+def series_contour_to_xml(contour):
+    element = etree.Element(
+        "Contour",
+        name=str(contour.name),
+        closed=str(contour.closed).lower(),
+        border=" ".join(map("{:.3f}".format, map(float, contour.border))),
+        fill=" ".join(map("{:.3f}".format, map(float, contour.fill))),
+        mode=str(contour.mode),
+        points=",     ".join([" ".join(map(str, map(int, list(pt)))) for pt in contour.points])+",     "
+    )
+    return element
+
+
+def image_to_xml(image):
     element = etree.Element(
         "Image",
         mag=str(image.mag),
-        contrast=str(image.contrast),
-        brightness=str(image.brightness),
+        contrast=str(int(image.contrast)),
+        brightness=str(int(image.brightness)),
         red=str(image.red).lower(),
-        green=str(image.red).lower(),
+        green=str(image.green).lower(),
         blue=str(image.blue).lower(),
         src=str(image.src)
     )
     return element
 
 
-def sectionToElement(section):
+def section_to_xml(section):
     element = etree.Element(
         "Section",
         index=str(section.index),
@@ -57,11 +75,11 @@ def sectionToElement(section):
     return element
 
 
-def seriesToElement(series):
+def series_to_xml(series):
     element = etree.Element(
         "Series",
         index=str(series.index),
-        viewport=" ".join([str(val) for val in series.viewport]),
+        viewport=" ".join(map(str, map(float, series.viewport))),
         units=str(series.units),
         autoSaveSeries=str(series.autoSaveSeries).lower(),
         autoSaveSection=str(series.autoSaveSection).lower(),
@@ -89,8 +107,8 @@ def seriesToElement(series):
         heightUseProxies=str(series.heightUseProxies),
         scaleProxies=str(series.scaleProxies),
         significantDigits=str(series.significantDigits),
-        defaultBorder=" ".join([str(val) for val in series.defaultBorder]),
-        defaultFill=" ".join([str(val) for val in series.defaultFill]),
+        defaultBorder=" ".join(map("{:.3f}".format, series.defaultBorder)),
+        defaultFill=" ".join(map("{:.3f}".format, series.defaultFill)),
         defaultMode=str(series.defaultMode),
         defaultName=str(series.defaultName),
         defaultComment=str(series.defaultComment),
@@ -115,9 +133,9 @@ def seriesToElement(series):
         listZTraceNote=str(series.listZTraceNote).lower(),
         listZTraceRange=str(series.listZTraceRange).lower(),
         listZTraceLength=str(series.listZTraceLength).lower(),
-        borderColors=",".join([str(val[0])+" "+str(val[1])+" "+str(val[2]) for val in series.borderColors])+",",
-        fillColors=",".join([str(val[0])+" "+str(val[1])+" "+str(val[2]) for val in series.fillColors])+",",
-        offset3D=" ".join([str(val) for val in series.offset3D]),
+        borderColors=",         ".join([" ".join(map("{:.3f}".format, map(float, list(pt)))) for pt in series.borderColors])+",         ",
+        fillColors=",         ".join([" ".join(map("{:.3f}".format, map(float, list(pt)))) for pt in series.fillColors])+",         ",
+        offset3D=" ".join(map(str, map(int, series.offset3D))),  # TODO: is this always int?
         type3Dobject=str(series.type3Dobject),
         first3Dsection=str(series.first3Dsection),
         last3Dsection=str(series.last3Dsection),
@@ -127,11 +145,11 @@ def seriesToElement(series):
         faceNormals=str(series.faceNormals).lower(),
         vertexNormals=str(series.vertexNormals).lower(),
         facets3D=str(series.facets3D),
-        dim3D=" ".join([str(val) for val in series.dim3D]),
+        dim3D=" ".join(map(str, map(int, series.dim3D))),
         gridType=str(series.gridType),
-        gridSize=" ".join([str(val) for val in series.gridSize]),
-        gridDistance=" ".join([str(val) for val in series.gridDistance]),
-        gridNumber=" ".join([str(val) for val in series.gridNumber]),
+        gridSize=" ".join(map(str, map(int, series.gridSize))),
+        gridDistance=" ".join(map(str, map(int, series.gridDistance))),
+        gridNumber=" ".join(map(str, map(int, series.gridNumber))),
         hueStopWhen=str(series.hueStopWhen),
         hueStopValue=str(series.hueStopValue),
         satStopWhen=str(series.satStopWhen),
@@ -143,153 +161,139 @@ def seriesToElement(series):
         areaStopSize=str(series.areaStopSize),
         ContourMaskWidth=str(series.ContourMaskWidth),
         smoothingLength=str(series.smoothingLength),
-        mvmtIncrement=" ".join([str(val) for val in series.mvmtIncrement]),
-        ctrlIncrement=" ".join([str(val) for val in series.ctrlIncrement]),
-        shiftIncrement=" ".join([str(val) for val in series.shiftIncrement])
+        mvmtIncrement=" ".join(map("{:g}".format, map(float, series.mvmtIncrement))),
+        ctrlIncrement=" ".join(map(str, map(float, series.ctrlIncrement))),
+        shiftIncrement=" ".join(map("{:g}".format, map(float, series.shiftIncrement)))
     )
     return element
 
 
-def transformToElement(transform):
+def transform_to_xml(transform):
     element = etree.Element(
         "Transform",
         dim=str(transform.dim),
-        xcoef=" "+" ".join([str(item) for item in transform.xcoef]),
-        ycoef=" "+" ".join([str(item) for item in transform.ycoef])
+        xcoef=" " + " ".join(map(str, transform.xcoef)),
+        ycoef=" " + " ".join(map(str, transform.ycoef))
     )
     return element
 
 
-def zcontourToElement(zcontour):
+def zcontour_to_xml(zcontour):
     element = etree.Element(
         "ZContour",
         name=str(zcontour.name),
         closed=str(zcontour.closed).lower(),
-        border=" ".join([str(val) for val in zcontour.border]),
-        fill=" ".join([str(val) for val in zcontour.fill]),
+        border=" ".join(map("{:.3f}".format, zcontour.border)),
+        fill=" ".join(map("{:.3f}".format, zcontour.fill)),
         mode=str(zcontour.mode),
-        points=", ".join([str(pt[0])+" "+str(pt[1])+" "+str(pt[2]) for pt in zcontour.points])+","
+        points=",     ".join(["{} {} {:g}".format(*map(float, list(pt))) for pt in zcontour.points])+",     "
     )
     return element
 
 
-def objectToElement(object):
-    """Returns an ElementTree Element for <object> that is appropriate for writing to an XML file."""
-    if object.__class__.__name__ == "Contour":
-        return contourToElement(object)
-    elif object.__class__.__name__ == "Image":
-        return imageToElement(object)
-    elif object.__class__.__name__ == "Section":
-        return sectionToElement(object)
-    elif object.__class__.__name__ == "Series":
-        return seriesToElement(object)
-    elif object.__class__.__name__ == "Transform":
-        return transformToElement(object)
-    elif object.__class__.__name__ == "ZContour":
-        return zcontourToElement(object)
-
-
-def writeSection(section, directory, outpath=None, overwrite=False):
-    """Writes <section> to an XML file in directory"""
-    print "Writing section:",section.name
-    if not outpath: # Will write to file with sections name
-        if str(directory[-1]) != "/":
-            directory += "/"
-        outpath = str(directory)+str(section.name)
-
+def entire_section_to_xml(section):
     # Make root (Section attributes: index, thickness, alignLocked)
-    root = objectToElement(section)
+    root = section_to_xml(section)
 
     # Add Transform nodes for images (assumes they can all have different tform)
     for image in section.images:
-        trnsfrm = objectToElement(image.transform)
-        img = objectToElement(image)
+        trnsfrm = transform_to_xml(image.transform)
+        img = image_to_xml(image)
         # RECONSTRUCT has a Contour for Images
-        cntr = contourToElement(image)
+        cntr = image_to_contour_xml(image)  # Section or Series?
         trnsfrm.append(img)
         trnsfrm.append(cntr)
-        root.append(trnsfrm) # append images transform node to XML file
+        root.append(trnsfrm)  # append images transform node to XML file
 
     # Non-Image Contours
     # - Build list of unique Transform objects
-    uniqueTransforms = []
+    unique_transform = []
     for contour in section.contours:
         unique = True
-        for tform in uniqueTransforms:
+        for tform in unique_transform:
             if tform == contour.transform:
                 unique = False
                 break
         if unique:
-            uniqueTransforms.append(contour.transform)
+            unique_transform.append(contour.transform)
 
     # - Add contours to their equivalent Transform objects
-    for transform in uniqueTransforms:
-        transformElement = objectToElement(transform)
+    for transform in unique_transform:
+        transform_elem = transform_to_xml(transform)
         for contour in section.contours:
             if contour.transform == transform:
-                cont = objectToElement(contour)
-                transformElement.append(cont)
-        root.append(transformElement)
+                cont = section_contour_to_xml(contour)
+                transform_elem.append(cont)
+        root.append(transform_elem)
 
     # Make tree and write
+    return root
+
+
+def entire_series_to_xml(series):
+    # Build series root element
+    root = series_to_xml(series)
+    # Add Contours/ZContours to root
+    for contour in series.contours:
+        root.append(series_contour_to_xml(contour))
+    for zcontour in series.zcontours:
+        root.append(zcontour_to_xml(zcontour))
+
+    # Make tree and write
+    return root
+
+
+def write_section(section, directory, outpath=None, overwrite=False):
+    """Writes <section> to an XML file in directory"""
+    if not outpath:
+        outpath = os.path.join(directory, section.name)
+
+    root = entire_section_to_xml(section)
     elemtree = etree.ElementTree(root)
+
     if os.path.exists(outpath) and not overwrite:
-        print("Section write aborted (%s) due to overwrite conflict."%(section.name))
+        print("Will not write {} due to overwrite conflict. Set overwrite=True to overwrite".format(section.name))
         return
     elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
 
 
-def writeSeries(series, directory, outpath=None, sections=False, overwrite=False):
+def write_series(series, directory, outpath=None, sections=False, overwrite=False):
     """Writes <series> to an XML file in directory"""
-    print "Writing series:",series.name
-    # Pre-writing checks
-    # - Make sure directory is correctly input
-    if directory[-1] != "/":
-        directory += "/"
-    # - Check if directory exists, make if does not exist
+    # Check if directory exists, make if does not exist
     if not os.path.exists(directory):
         os.makedirs(directory)
     if not outpath:
-        outpath = directory+series.name+".ser"
-    # - Raise error if this file already exists to prevent overwrite
+        outpath = os.path.join(directory, series.name + ".ser")
+
+    # Raise error if this file already exists to prevent overwrite
     if not overwrite and os.path.exists(outpath):
         msg = "CAUTION: Files already exist in ths directory: Do you want to overwrite them?"
-        try: # Graphical
+        try:
+            # Graphical
             from PySide.QtGui import QApplication, QMessageBox
             app = QApplication.instance()
-            if app == None:
+            if not app:
                 app = QApplication([])
-            msgBox = QMessageBox()
-            msgBox.setText(msg)
-            msgBox.setStandardButtons( QMessageBox.Ok | QMessageBox.Cancel)
-            response = msgBox.exec_()
+            message_box = QMessageBox()
+            message_box.setText(msg)
+            message_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            response = message_box.exec_()
             if response == QMessageBox.Ok:
                 a = "yes"
             else:
                 a = "no"
-        except: # StdOut
-            a = raw_input(msg+" (y/n)")
-        overwrite = str(a).lower() in ["y","yes"]
+        except:
+            # StdOut
+            a = input("{} (y/n)".format(msg))
+        overwrite = str(a).lower() in ["y", "yes"]
         if not overwrite:
             raise IOError("\nFilename %s already exists.\nQuiting write command to avoid overwrite"%outpath)
         print ("!!! OVERWRITE ENABLED !!!")
-    # Build series root element
-    root = objectToElement( series )
-    # Add Contours/ZContours to root
-    if series.contours is not None:
-        for contour in series.contours:
-            root.append( objectToElement(contour) )
-    else:
-        print "No contours in", series.name
-    if series.zcontours is not None:
-        for zcontour in series.zcontours:
-            root.append( objectToElement(zcontour) )
-    else:
-        print "No zcontours in", series.name
-    # Make tree and write
+
+    root = entire_series_to_xml(series)
     elemtree = etree.ElementTree(root)
     elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
     # Write all sections if <sections> == True
-    if sections == True:
+    if sections:
         for section in series.sections:
-            writeSection(section, directory, overwrite=overwrite)
+            write_section(section, directory, overwrite=overwrite)
