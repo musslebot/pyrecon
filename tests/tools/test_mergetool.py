@@ -125,6 +125,14 @@ class MergetoolTests(TestCase):
         different_line = LineString(numpy.asarray(different_line_points))
         self.assertFalse(mergetool.is_contacting(line, different_line))
 
+        # Simple line (no interior or exterior)
+        simple_line_points = [
+            (5.64847, 18.996),
+            (11.7753, 18.996),
+        ]
+        simple_line = LineString(numpy.asarray(simple_line_points))
+        self.assertTrue(mergetool.is_contacting(simple_line, simple_line))
+
     def test_is_exact_duplicate_point(self):
         point_points = [(13.5904, 16.6472)]
         point = Point(*numpy.asarray(point_points))

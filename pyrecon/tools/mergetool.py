@@ -28,7 +28,11 @@ def is_contacting(shape1, shape2):
         # TODO: investigate more sophisticated comparison
         return shape1.equals(shape2)
 
-    elif isinstance(shape1, (LineString, Polygon)) and isinstance(shape2, (LineString, Polygon)):
+    elif isinstance(shape1, LineString) and isinstance(shape2, LineString):
+        # shape1.almost_equals(shape2)?
+        return shape1.almost_equals(shape2)
+
+    elif isinstance(shape1, Polygon) and isinstance(shape2, Polygon):
             this_box = box(*shape1.bounds)
             other_box = box(*shape2.bounds)
             if not this_box.intersects(other_box) and not this_box.touches(other_box):
@@ -230,6 +234,7 @@ class MergeSection(object):
                 elif is_exact_duplicate(contA.shape, contB.shape):
                     ovlpA.append(contA)
                     ovlpB.append(contB)
+                    # TODO: only need 1 since they are duplicates
                     complete_overlaps.append([contA, contB])
                     continue
                 if is_potential_duplicate(contA.shape, contB.shape):
