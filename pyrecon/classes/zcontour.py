@@ -1,5 +1,6 @@
 """ZContour."""
-import math
+import numpy
+from shapely.geometry import LineString, Polygon
 
 
 class ZContour(object):
@@ -26,29 +27,15 @@ class ZContour(object):
         """Allow use of != operator."""
         return not self.__eq__(other)
 
-    # mergeTool Functions
-    def overlaps(self, other, threshold=(1 + 2**(-17))):
-        """Return 1 or 0 of whether ZContour overlaps other."""
-        def distance(pt0, pt1):
-            """Distance formula: return distance between two points."""
-            x0, y0 = pt0
-            x1, y1 = pt1
-            return math.sqrt((x0 - x1)**2 + (y0 - y1)**2)
-        # Check equal # pts
-        if len(self.points) != len(other.points):
-            return 0
-        # Build list of min distance between pts
-        distlist = []
-        for pt in self.points:
-            ptdistances = []
-            for pt2 in other.points:
-                if pt[2] == pt2[2]:  # if in same section
-                    dist = distance(pt[0:2], pt[0:2])
-                    ptdistances.append(dist)
-            if len(ptdistances) != 0:
-                distlist.append(min(ptdistances))
-        # check for any distances above threshold
-        for dist in distlist:
-            if dist > threshold:  # no matching point
-                return 0
-        return 1
+    @property
+    def shape(self):
+        """Return a Shapely geometric object."""
+        if not self.points:
+            raise Exception("No points found: {}".format(self))
+
+        array = numpy.asarray(self.points)
+
+        # Normalize points
+        if len(array) == 2:
+            return LineString(array)
+        return Polygon(array)

@@ -33,12 +33,12 @@ def is_contacting(shape1, shape2):
         return shape1.almost_equals(shape2)
 
     elif isinstance(shape1, Polygon) and isinstance(shape2, Polygon):
-            this_box = box(*shape1.bounds)
-            other_box = box(*shape2.bounds)
-            if not this_box.intersects(other_box) and not this_box.touches(other_box):
-                return False
-            else:
-                return True
+        this_box = box(*shape1.bounds)
+        other_box = box(*shape2.bounds)
+        if not this_box.intersects(other_box) and not this_box.touches(other_box):
+            return False
+        else:
+            return True
 
     raise Exception("No support for shape type(s): {}".format(
         set([shape1.type, shape2.type])))
@@ -51,19 +51,22 @@ def is_exact_duplicate(shape1, shape2, threshold=TOLERANCE):
         return shape1.equals(shape2)
 
     elif isinstance(shape1, Polygon) and isinstance(shape2, Polygon):
-        if is_reverse(shape2) != is_reverse(shape2):
-            # Reverse traces are not duplicates of non-reverse
-            return False
-        area_of_union = shape1.union(shape2).area
-        area_of_intersection = shape1.intersection(shape2).area
-        if not area_of_intersection:
-            return False
-        union_over_intersection = area_of_union / area_of_intersection
-        if union_over_intersection >= threshold:
-            # Potential duplicate
-            return False
-        elif union_over_intersection < threshold:
-            return True
+        if shape1.has_z and shape2.has_z:
+            return shape1.exterior.equals(shape2.exterior)
+        else:
+            if is_reverse(shape2) != is_reverse(shape2):
+                # Reverse traces are not duplicates of non-reverse
+                return False
+            area_of_union = shape1.union(shape2).area
+            area_of_intersection = shape1.intersection(shape2).area
+            if not area_of_intersection:
+                return False
+            union_over_intersection = area_of_union / area_of_intersection
+            if union_over_intersection >= threshold:
+                # Potential duplicate
+                return False
+            elif union_over_intersection < threshold:
+                return True
 
     elif isinstance(shape1, LineString) and isinstance(shape2, LineString):
         # TODO: investigate more sophisticated comparison
@@ -79,9 +82,12 @@ def is_potential_duplicate(shape1, shape2, threshold=TOLERANCE):
     """Return True if two shapes are potential overlaps (exceed tolerance)."""
     if isinstance(shape1, Point) and isinstance(shape2, Point):
         # TODO: investigate more sophisticated comparison
-        return shape1.equals(shape2)
+        return shape1.almost_equals(shape2) and not shape1.equals(shape2)
 
     elif isinstance(shape1, Polygon) and isinstance(shape2, Polygon):
+        if shape1.has_z or shape2.has_z:
+            raise Exception(
+                "is_potential_duplicate does not support 3D polygons")
         if is_reverse(shape2) != is_reverse(shape2):
             # Reverse traces are not duplicates of non-reverse
             return False
@@ -97,7 +103,7 @@ def is_potential_duplicate(shape1, shape2, threshold=TOLERANCE):
 
     elif isinstance(shape1, LineString) and isinstance(shape2, LineString):
         # TODO: investigate more sophisticated comparison
-        return shape1.equals(shape2)
+        return shape1.almost_equals(shape2) and not shape1.equals(shape2)
 
     raise Exception("No support for shape type(s): {}".format(
         set([shape1.type, shape2.type])))
@@ -240,6 +246,9 @@ class MergeSection(object):
                 if is_potential_duplicate(contA.shape, contB.shape):
                     ovlpA.append(contA)
                     ovlpB.append(contB)
+                    # TODO: issue with 2 exact duplicates that each have a
+                    # potential duplicate. How to prevent this? Filter from
+                    # list? [contA, contB] == [contB, contA]
                     potential_overlaps.append([contA, contB])
             sec1_overlaps.extend(ovlpA)
             sec2_overlaps.extend(ovlpB)
@@ -321,7 +330,7 @@ class MergeSeries(object):
         overlapping_zcontours = []
         for contA in copy_contours_1:
             for contB in copy_contours_2:
-                if contA.name == contB.name and contA.overlaps(contB, threshold):
+                if contA.name == contB.name and is_exact_duplicate(contA.shape, contB.shape):
                     # If overlaps, append to overlap list and remove from unique lists
                     overlapping_zcontours.append(contA)
                     copy_contours_1.remove(contA)

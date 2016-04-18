@@ -103,6 +103,31 @@ class MergetoolTests(TestCase):
         close_polygon = Polygon(numpy.asarray(close_polygon_points))
         self.assertTrue(mergetool.is_contacting(polygon, close_polygon))
 
+        # 3D Polygon
+        three_dim_polygon_points = [
+            [19.5386, 15.368, 46.0],
+            [19.456, 15.3857, 45.0],
+            [19.3793, 15.3031, 43.0],
+            [19.2731, 15.3149, 40.0],
+            [19.2024, 15.3444, 39.0],
+            [19.1493, 15.2913, 37.0],
+            [18.9487, 15.368, 33.0],
+            [18.8661, 15.3562, 31.0],
+            [18.8543, 15.4152, 29.0],
+            [18.8071, 15.4919, 27.0],
+            [18.8071, 15.5568, 26.0],
+            [18.8012, 15.6335, 20.0],
+            [18.8012, 15.5804, 19.0],
+            [18.7835, 15.5568, 14.0],
+            [18.8779, 15.5509, 11.0],
+            [18.8779, 15.4683, 8.0],
+            [18.754, 15.4034, 7.0],
+            [18.6419, 15.4034, 5.0],
+        ]
+        three_dim_polygon = Polygon(numpy.asarray(three_dim_polygon_points))
+        self.assertTrue(
+            mergetool.is_contacting(three_dim_polygon, three_dim_polygon))
+
     def test_is_contacting_line(self):
         line_points = [
             (24.6589, 17.3004),
@@ -184,6 +209,57 @@ class MergetoolTests(TestCase):
         # Potential is not exact
         self.assertFalse(mergetool.is_exact_duplicate(polygon, close_polygon))
 
+        # 3D Polygon
+        three_dim_polygon_points = [
+            [19.5386, 15.368, 46.0],
+            [19.456, 15.3857, 45.0],
+            [19.3793, 15.3031, 43.0],
+            [19.2731, 15.3149, 40.0],
+            [19.2024, 15.3444, 39.0],
+            [19.1493, 15.2913, 37.0],
+            [18.9487, 15.368, 33.0],
+            [18.8661, 15.3562, 31.0],
+            [18.8543, 15.4152, 29.0],
+            [18.8071, 15.4919, 27.0],
+            [18.8071, 15.5568, 26.0],
+            [18.8012, 15.6335, 20.0],
+            [18.8012, 15.5804, 19.0],
+            [18.7835, 15.5568, 14.0],
+            [18.8779, 15.5509, 11.0],
+            [18.8779, 15.4683, 8.0],
+            [18.754, 15.4034, 7.0],
+            [18.6419, 15.4034, 5.0],
+        ]
+        three_dim_polygon = Polygon(numpy.asarray(three_dim_polygon_points))
+        self.assertTrue(
+            mergetool.is_exact_duplicate(three_dim_polygon, three_dim_polygon))
+
+        # Close 3D Polygon
+        close_three_dim_polygon_points = [
+            [19.4386, 15.368, 46.0],
+            [19.456, 15.3857, 45.0],
+            [19.3793, 15.3031, 43.0],
+            [19.2731, 15.3149, 40.0],
+            [19.2024, 15.3444, 39.0],
+            [19.1493, 15.2913, 37.0],
+            [18.9487, 15.368, 33.0],
+            [18.8661, 15.3562, 31.0],
+            [18.8543, 15.4152, 29.0],
+            [18.8071, 15.4919, 27.0],
+            [18.8071, 15.5568, 26.0],
+            [18.8012, 15.6335, 20.0],
+            [18.8012, 15.5804, 19.0],
+            [18.7835, 15.5568, 14.0],
+            [18.8779, 15.5509, 11.0],
+            [18.8779, 15.4683, 8.0],
+            [18.754, 15.4034, 7.0],
+            [18.6419, 15.4034, 5.0],
+        ]
+        close_three_dim_polygon = Polygon(
+            numpy.asarray(close_three_dim_polygon_points))
+        self.assertFalse(mergetool.is_exact_duplicate(
+            three_dim_polygon, close_three_dim_polygon))
+
     def test_is_exact_duplicate_line(self):
         line_points = [
             (24.6589, 17.3004),
@@ -206,12 +282,31 @@ class MergetoolTests(TestCase):
         different_line = LineString(numpy.asarray(different_line_points))
         self.assertFalse(mergetool.is_exact_duplicate(line, different_line))
 
+        # 3D line
+        three_dim_line_points = [
+            (23.2919, 16.2786, 52),
+            (23.3781, 17.6027, 19),
+        ]
+        three_dim_line = LineString(numpy.asarray(three_dim_line_points))
+        self.assertTrue(
+            mergetool.is_exact_duplicate(three_dim_line, three_dim_line))
+
+        # Close 3D line
+        close_three_dim_line_points = [
+            (23.3919, 16.2786, 52),
+            (23.3781, 17.6027, 19),
+        ]
+        close_three_dim_line = LineString(
+            numpy.asarray(close_three_dim_line_points))
+        self.assertFalse(mergetool.is_exact_duplicate(
+            three_dim_line, close_three_dim_line))
+
     def test_is_potential_duplicate_point(self):
         point_points = [(13.5904, 16.6472)]
         point = Point(*numpy.asarray(point_points))
 
-        # Test same point
-        self.assertTrue(mergetool.is_potential_duplicate(point, point))
+        # Exact is not potential
+        self.assertFalse(mergetool.is_potential_duplicate(point, point))
 
         # Not even close
         far_point_points = [(14.5904, 16.6472)]
@@ -255,7 +350,6 @@ class MergetoolTests(TestCase):
             (15.0988, 17.5284),
         ]
         close_polygon = Polygon(numpy.asarray(close_polygon_points))
-        # Potential is not exact
         self.assertTrue(
             mergetool.is_potential_duplicate(polygon, close_polygon))
 
@@ -268,8 +362,8 @@ class MergetoolTests(TestCase):
         ]
         line = LineString(numpy.asarray(line_points))
 
-        # Test 100% overlap
-        self.assertTrue(mergetool.is_potential_duplicate(line, line))
+        # Exact is not potential
+        self.assertFalse(mergetool.is_potential_duplicate(line, line))
 
         # Not even close
         different_line_points = [
