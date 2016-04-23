@@ -5,8 +5,6 @@ Date Created: 3/7/2013<br>
 
 # Overview
 [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) provides easy access to data in XML files associated with the program [RECONSTRUCT](http://synapses.clm.utexas.edu/tools/reconstruct/reconstruct.stm).
-This package also contains several tools for managing this data:
-* [gitTool](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/gitTool/gitTool.md) - Reduced functionality UI for interacting with a git repository containing a Series
 * [mergeTool](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/mergeTool/mergeTool.md) - merge series together with built-in conflict resolution (graphical or non-graphical)
 * [curationTool](https://github.com/wtrdrnkr/pyrecon/blob/master/pyrecon/tools/curationTool/curationTool.md) - check for various properties of objects in a series
 
@@ -28,11 +26,6 @@ To start graphical tool loader, use commands in python shell:
 ### Linux
 * From the <b>top-level</b> pyrecon directory, run the following commands in a terminal:
 <pre>
-sudo ./install_depends.sh  # Installs linux package dependencies
-./install_prereqs.sh  # Installs python packages
-sudo ./install_pyside.sh  # Install PySide
-python setup.py install
+# After installing dependencies listed above
+pip install -r requirements.txt
 </pre>
-
-### Windows
-* Send me a message for the PyRECONSTRUCT Windows Installer.exe -- filesize is too large to keep in GitHub
