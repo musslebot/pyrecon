@@ -402,8 +402,7 @@ class contourPixmap(QLabel):
     def transformToPixmap(self):
         '''Transforms points from RECONSTRUCT'S coordsys to PySide's points'''
         # Convert biological points to pixel points
-        self.contour.points = self.contour.transform.imagepts(
-            self.contour.points, self.image.mag)
+        self.contour.points = list(map(tuple, self.contour.transform._tform.inverse(np.asarray(self.contour.points) / self.image.mag)))
         # Is Pixmap valid?
         if self.pixmap.isNull(): # If image doesnt exist...
             # Get shape from contour to determine size of background
