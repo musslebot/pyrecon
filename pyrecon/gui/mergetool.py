@@ -1,7 +1,7 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 
-from pyrecon.main import openSeries
+from pyrecon import openSeries
 from pyrecon.gui.main import BrowseOutputDirectory, DoubleSeriesLoad
 from pyrecon.gui.mergetool_section import SectionMergeWrapper
 from pyrecon.gui.mergetool_series import SeriesMergeWrapper

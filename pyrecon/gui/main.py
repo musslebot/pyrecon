@@ -2,7 +2,7 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 
-from pyrecon.main import openSeries
+from pyrecon import openSeries
 # Pyrecon tool modules imported when called by their functions below
 
 class PyreconMainWindow(QMainWindow):
