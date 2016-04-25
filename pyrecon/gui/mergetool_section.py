@@ -175,9 +175,11 @@ class SectionContourHandler(QWidget):
         self.merge = MergeSection
         # Contours
         # - Unique contours from each section
-        self.section_1_unique_contours, self.section_2_unique_contours = self.merge.section_1_unique_contours, self.merge.section_2_unique_contours
-        # - Complete overlap, and conflicting overlap contours
-        self.definite_shared_contours, self.potential_shared_contours = self.merge.definite_shared_contours, self.merge.potential_shared_contours
+	self.section_1_unique_contours = self.merge.section_1_unique_contours
+	self.section_2_unique_contours = self.merge.section_2_unique_contours
+	# - Complete overlap, and conflicting overlap contours
+	self.definite_shared_contours = self.merge.definite_shared_contours
+	self.potential_shared_contours = self.merge.potential_shared_contours
         # Load UI
         self.loadObjects()
         self.loadFunctions()
@@ -261,20 +263,17 @@ class SectionContourHandler(QWidget):
     def loadTable(self, table, items):
         '''Load <table> with <items>'''
         for item in items:
-            if item.__class__.__name__ == 'Contour' or type(item) == type([]):
+            listItem = contourTableItem(item, [self.merge.section1.images[-1],self.merge.section2.images[-1]])
+            if item.__class__.__name__ == 'Contour':
+		if item in self.definite_shared_contours: # Completely ovlping contour
+                    listItem.setBackground(QColor('lightgreen'))
+                    self.outOvlp.addItem(listItem)
+                    continue
+	    elif isinstance(item, list):
+	        if item in self.potential_shared_contours:
                 # Item can be a contour or list of 2 contours, they are handled differently in contourTableItem class upon initialization
-                listItem = contourTableItem(item, [self.merge.section1.images[-1],self.merge.section2.images[-1]])
-                if type(item) == type([]):
-                    if item in self.potential_shared_contours: # Conflicting ovlping contour
-                        listItem.setBackground(QColor('red'))
-                    elif item in self.definite_shared_contours: # Completely ovlping contour
-                        listItem.contour = listItem.contour1 #=== set chosen contour to cont1 since they're the same
-                        listItem.setBackground(QColor('lightgreen'))
-                        self.outOvlp.addItem(listItem)
-                        continue
-                table.addItem(listItem)
-            else:
-                print 'Invalid item for contourListWidget'
+                    listItem.setBackground(QColor('red'))
+            table.addItem(listItem)
     def doubleClickCheck(self, item):
         item.clicked() # See contourTableItem class
         self.doneBut.setStyleSheet(QWidget().styleSheet())

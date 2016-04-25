@@ -240,15 +240,11 @@ class MergeSection(object):
                 elif is_exact_duplicate(contA.shape, contB.shape):
                     ovlpA.append(contA)
                     ovlpB.append(contB)
-                    # TODO: only need 1 since they are duplicates
-                    complete_overlaps.append([contA, contB])
+                    complete_overlaps.append(contA)
                     continue
                 if is_potential_duplicate(contA.shape, contB.shape):
                     ovlpA.append(contA)
                     ovlpB.append(contB)
-                    # TODO: issue with 2 exact duplicates that each have a
-                    # potential duplicate. How to prevent this? Filter from
-                    # list? [contA, contB] == [contB, contA]
                     potential_overlaps.append([contA, contB])
             sec1_overlaps.extend(ovlpA)
             sec2_overlaps.extend(ovlpB)
