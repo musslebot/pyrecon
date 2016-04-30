@@ -253,6 +253,13 @@ class MergeSection(object):
             # Return unique conts from section1, unique conts from section2,
             # completely overlapping contours, and incompletely overlapping
             # contours
+            new_potential_overlaps = []
+            for contA, contB in potential_overlaps:
+                if contA in complete_overlaps and contB in complete_overlaps:
+                    continue
+                else:
+                    new_potential_overlaps.append([contA, contB])
+            potential_overlaps = new_potential_overlaps
             return (
                 [cont for cont in self.section1.contours if cont not in sec1_overlaps],
                 [cont for cont in self.section2.contours if cont not in sec2_overlaps],
