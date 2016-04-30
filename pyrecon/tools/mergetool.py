@@ -277,11 +277,10 @@ class MergeSection(object):
 
         If not resolved (None), defaults to the self.section1 version
         """
-        return Section(
-            self.attributes if self.attributes is not None else self.section1.attributes(),
-            self.images if self.images is not None else self.section1.images,
-            self.contours if self.contours is not None else self.section1.contours
-        )
+        attributes = self.attributes if self.attributes is not None else self.section1.attributes()
+        images = self.images if self.images is not None else self.section1.images
+        contours = self.contours if self.contours is not None else self.section1.contours
+        return Section(images=images, contours=contours, **attributes)
 
 
 class MergeSeries(object):
@@ -345,8 +344,7 @@ class MergeSeries(object):
 
         If not resolved (None), defaults to self.series1 version
         """
-        return Series(
-            self.attributes if self.attributes is not None else self.series1.attributes(),
-            self.contours if self.contours is not None else self.series1.contours,
-            self.zcontours if self.zcontours is not None else self.series1.zcontours
-        )
+        attributes = self.attributes if self.attributes is not None else self.series1.attributes()
+        contours = self.contours if self.contours is not None else self.series1.contours
+        zcontours = self.zcontours if self.zcontours is not None else self.series1.zcontours
+        return Series(contours=contours, zcontours=zcontours, **attributes)
