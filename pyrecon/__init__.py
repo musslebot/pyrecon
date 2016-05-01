@@ -1,9 +1,4 @@
 """Main, overarching functions that are used in multiple modules."""
-try:
-    from PySide.QtCore import *
-    from PySide.QtGui import *
-except:
-    print("Problem importing PySide. You will not be able to use GUI functions.")
 
 
 def openSeries(path):
@@ -18,19 +13,3 @@ def openSeries(path):
 
     return series
 
-
-def start():
-    """Begin GUI application (pyrecon.gui.main)"""
-    app = QApplication.instance()
-    if app is None:  # Create QApplication if doesn"t exist
-        app = QApplication([])
-    from pyrecon.gui.main import PyreconMainWindow
-    gui = PyreconMainWindow()
-    app.exec_()  # Start event-loop
-
-
-if __name__ == "__main__":
-    try:
-        start()
-    except:
-        print "Error running start() from main.py -- Did PySide import correctly?"

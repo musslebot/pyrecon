@@ -268,23 +268,8 @@ def write_series(series, directory, outpath=None, sections=False, overwrite=Fals
     # Raise error if this file already exists to prevent overwrite
     if not overwrite and os.path.exists(outpath):
         msg = "CAUTION: Files already exist in ths directory: Do you want to overwrite them?"
-        try:
-            # Graphical
-            from PySide.QtGui import QApplication, QMessageBox
-            app = QApplication.instance()
-            if not app:
-                app = QApplication([])
-            message_box = QMessageBox()
-            message_box.setText(msg)
-            message_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            response = message_box.exec_()
-            if response == QMessageBox.Ok:
-                a = "yes"
-            else:
-                a = "no"
-        except:
-            # StdOut
-            a = input("{} (y/n)".format(msg))
+        # StdOut
+        a = input("{} (y/n)".format(msg))
         overwrite = str(a).lower() in ["y", "yes"]
         if not overwrite:
             raise IOError("\nFilename %s already exists.\nQuiting write command to avoid overwrite"%outpath)
