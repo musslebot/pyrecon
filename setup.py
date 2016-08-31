@@ -8,7 +8,7 @@ setup(
     version="2.2.0",
     author="Michael Musslewhite",
     author_email="mdmusslewhite@gmail.com",
-    url="https://github.com/wtrdrnkr/pyrecon",
+    url="https://github.com/musslebot/pyrecon",
     packages=[
         "classes",
         "tools",
