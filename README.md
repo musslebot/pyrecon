@@ -9,6 +9,14 @@ Date Created: 3/7/2013<br>
 * [curationTool](https://github.com/musslebot/pyrecon/blob/master/pyrecon/tools/curationTool/curationTool.md) - check for various properties of objects in a series
 
 The functions/tools already in place can be used to develop solutions to a wide range of problems associated with RECONSTRUCT data.
+
+To start graphical mergetool loader, use commands in python shell:
+* `from pyrecon.gui import mergetool`
+* `mergetool.start()`
+
+# Install Instructions
+
+### Linux
 linux dependencies:
 <code>
 python-dev python2.7-dev python-setuptools build-essential libgeos-dev
@@ -16,13 +24,6 @@ libblas-dev liblapack-dev libfreetype6-dev libpng-dev gfortran libxml2-dev
 libxslt1-dev cmake libshiboken-dev libphonon-dev libqt4-dev qtmobility-dev
 </code>
 
-To start graphical tool loader, use commands in python shell:
-* `import pyrecon`
-* `pyrecon.start()`
-
-# Install Instructions
-
-### Linux
 * From the <b>top-level</b> pyrecon directory, run the following commands in a terminal:
 <pre>
 # After installing dependencies listed above
