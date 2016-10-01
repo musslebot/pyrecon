@@ -120,31 +120,41 @@ def process_section_file(path):
     return section
 
 
+
+def _get_points_int(points):
+    return zip(
+        [int(x.replace(",", "")) for x in points.split()][0::2],
+        [int(x.replace(",", "")) for x in points.split()][1::2]
+    )
+
+
+def _get_points_float(points):
+    return zip(
+        [float(x.replace(",", "")) for x in points.split()][0::2],
+        [float(x.replace(",", "")) for x in points.split()][1::2]
+    )
+
+
 def extract_series_contour_attributes(node):
     """Return a dict of Series' Contour's attributes."""
-    def get_points_int(points):
-        return zip(
-            [int(x.replace(",", "")) for x in points.split()][0::2],
-            [int(x.replace(",", "")) for x in points.split()][1::2]
-        )
     attributes = {
         "name": str(node.get("name")),
         "closed": str_to_bool(node.get("closed")),
         "mode": int(node.get("mode")),
         "border": tuple(float(x) for x in node.get("border").strip().split(" ")),
         "fill": tuple(float(x) for x in node.get("fill").strip().split(" ")),
-        "points": get_points_int(node.get("points")),
     }
+
+    try:
+        attributes["points"] = _get_points_int(node.get("points"))
+    except ValueError:
+        # series contour points can be ints or floats
+        attributes["points"] = _get_points_float(node.get("points"))
     return attributes
 
 
 def extract_section_contour_attributes(node):
     """Return a dict of Section Contour's attributes."""
-    def get_points_float(points):
-        return zip(
-            [float(x.replace(",", "")) for x in points.split()][0::2],
-            [float(x.replace(",", "")) for x in points.split()][1::2]
-        )
     attributes = {
         "name": str(node.get("name")),
         "comment": str(node.get("comment")),
@@ -154,7 +164,7 @@ def extract_section_contour_attributes(node):
         "mode": int(node.get("mode")),
         "border": tuple(float(x) for x in node.get("border").strip().split(" ")),
         "fill": tuple(float(x) for x in node.get("fill").strip().split(" ")),
-        "points": get_points_float(node.get("points")),
+        "points": _get_points_float(node.get("points")),
     }
     return attributes
 
