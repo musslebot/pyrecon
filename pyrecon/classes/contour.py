@@ -65,6 +65,8 @@ class Contour(object):
         elif len(normalized_points) == 2:
             return LineString(normalized_points)
         elif self.closed is True:
+            if len(normalized_points) == 3 and self.points[0] == self.points[-1]:
+                return LineString(normalized_points)
             # Closed trace
             return Polygon(normalized_points)
             # TODO: do I need to handle this?

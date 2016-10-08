@@ -22,6 +22,23 @@ class ContourTests(TestCase):
         )
         self.assertEqual(poly_contour.shape.type, "Polygon")
 
+    def test_shape_weird_line(self):
+        transform = Transform(
+            dim=0,
+            xcoef=[0, 1, 0, 0, 0, 0],
+            ycoef=[0, 0, 1, 0, 0, 0],
+        )
+        line_contour = Contour(
+            closed=False,
+            points=[
+                (15.9352, 10.8615),
+                (15.9332, 10.8508),
+                (15.9352, 10.8615),
+            ],
+            transform=transform,
+        )
+        self.assertEqual(line_contour.shape.type, "LineString")
+
     def test_shape_line(self):
         transform = Transform(
             dim=0,
