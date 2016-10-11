@@ -65,7 +65,8 @@ class Contour(object):
         elif len(normalized_points) == 2:
             return LineString(normalized_points)
         elif self.closed is True:
-            if len(normalized_points) == 3 and self.points[0] == self.points[-1]:
+            if len(set(self.points)) < len(self.points):
+                # [ISSUE-5] If there are self-intersecting points, load as LineString
                 return LineString(normalized_points)
             # Closed trace
             return Polygon(normalized_points)
