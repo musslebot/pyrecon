@@ -54,7 +54,7 @@ def is_exact_duplicate(shape1, shape2, threshold=TOLERANCE):
         if shape1.has_z and shape2.has_z:
             return shape1.exterior.equals(shape2.exterior)
         else:
-            if is_reverse(shape2) != is_reverse(shape2):
+            if is_reverse(shape1) != is_reverse(shape2):
                 # Reverse traces are not duplicates of non-reverse
                 return False
             area_of_union = shape1.union(shape2).area
