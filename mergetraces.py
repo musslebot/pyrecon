@@ -4,6 +4,8 @@ from pyrecon.gui import mergetool
 from pyrecon import openSeries
 from pyrecon.classes import Series, Section
 from shapely.geometry import box, LinearRing, LineString, Point, Polygon
+import os
+from pyrecon.tools import reconstruct_writer
 
 TOLERANCE = 1 + 2**-17
 
@@ -20,7 +22,7 @@ class PyreconMainWindow(QMainWindow):
     def loadMergeTool(self):
         loadDialog = SingleSeriesLoad() # User locates 1 series
         s1 = openSeries(loadDialog.output)
-        mTraces = createMergeTraces(s1)
+        mTraces = createMergeTraces(s1, outpath=str(os.path.dirname(loadDialog.output)))
 
 class BrowseWidget(QWidget):
     '''Provides a QLineEdit and button for browsing through a file system. browseType can be directory, file or series but defaults to directory.'''
@@ -105,9 +107,9 @@ def start():
     gui = PyreconMainWindow()
     app.exec_()  # Start event-loop
 
-def createMergeTraces(series1):
+def createMergeTraces(series1, outpath=""):
   """Return a file with traces merged."""
-#    m1 = MergeSeries(name=series1.name, series1=series1)
+  m1 = MergeSeries(name=series1.name, series1=series1)
 
   m_secs = []
   for section in series1.sections:
@@ -115,11 +117,10 @@ def createMergeTraces(series1):
     m_secs.append(section_traces)
 
   
-  mergedTraceSet = MergeSet(name=series1.name, merge_series=series1, section_merges=m_secs)
+  mergedTraceSet = MergeSet(name=series1.name, merge_series=m1, section_merges=m_secs)
   if outpath != "":
 
-    mergedTraceSet.writeMergeSet(outpath=os.path.dirname(str(self.series1.path.text())
-                        ))
+    mergedTraceSet.writeMergeSet(outpath)
 
 
 class MergeSet(object):
@@ -135,6 +136,7 @@ class MergeSet(object):
         """Writes self.seriesMerge and self.sectionMerges to XML"""
         merged_series = self.seriesMerge.toSeries()
         merged_series.name = self.seriesMerge.name.replace(".ser", "")
+        merged_series.name = str(merged_series.name)+"merged"
         for mergeSec in self.sectionMerges:
             merged_series.sections.append(mergeSec.toSection())
         reconstruct_writer.write_series(merged_series, outpath, sections=True)
@@ -175,14 +177,8 @@ class MergeTraces(object):
       # Compute overlaps
       overlaps = []
       for i in range (len(self.section1.contours)-1):
-          print (self.section1.name)
           contA = self.section1.contours[i]
           contB = self.section1.contours[i+1]
-          print (contA.name)
-          print (contA.shape.type)
-
-          print (contB.name)
-          print (contB.shape.type)
         
           if contA.name != contB.name:
               continue
@@ -197,18 +193,18 @@ class MergeTraces(object):
               continue
           if is_potential_duplicate(contA.shape, contB.shape):
               overlaps.append(contB)
-              potential_overlaps.append([contA, contB])
+              potential_overlaps.append(contB)
 
       if include_overlaps:
           # Return unique conts from section1, unique conts from section2,
           # completely overlapping contours, and incompletely overlapping
           # contours
           new_potential_overlaps = []
-          for contA, contB in potential_overlaps:
-              if contA in complete_overlaps and contB in complete_overlaps:
+          for contB in potential_overlaps:
+              if contB in complete_overlaps:
                   continue
               else:
-                  new_potential_overlaps.append([contA, contB])
+                  new_potential_overlaps.append(contB)
           potential_overlaps = new_potential_overlaps
           return (
               [cont for cont in self.section1.contours if cont not in overlaps],
@@ -219,6 +215,16 @@ class MergeTraces(object):
           return (
               [cont for cont in self.section1.contours if cont not in overlaps],
               )
+
+  def toSection(self):
+      """Return a Section object that resolves the merge.
+
+      If not resolved (None), defaults to the self.section1 version
+      """
+      attributes = self.attributes if self.attributes is not None else self.section1.attributes()
+      images = self.images if self.images is not None else self.section1.images
+      contours = self.contours if self.contours is not None else self.section1.contours
+      return Section(images=images, contours=contours, **attributes)
 
 
 class MergeSeries(object):
@@ -302,6 +308,8 @@ def is_exact_duplicate(shape1, shape2, threshold=TOLERANCE):
         if shape1.has_z and shape2.has_z:
             return shape1.exterior.equals(shape2.exterior)
         else:
+            if not shape1.is_valid or not shape2.is_valid:
+                return False
             if is_reverse(shape2) != is_reverse(shape2):
                 # Reverse traces are not duplicates of non-reverse
                 return False
@@ -331,6 +339,9 @@ def is_potential_duplicate(shape1, shape2, threshold=TOLERANCE):
         return shape1.almost_equals(shape2) and not shape1.equals(shape2)
 
     elif isinstance(shape1, Polygon) and isinstance(shape2, Polygon):
+
+        if not shape1.is_valid or not shape2.is_valid:
+            return False
         if shape1.has_z or shape2.has_z:
             raise Exception(
                 "is_potential_duplicate does not support 3D polygons")
