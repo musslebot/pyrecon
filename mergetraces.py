@@ -355,6 +355,7 @@ class MergeSetListItem(QListWidgetItem):
             self.setBackground(QColor('yellow'))
         else:
             self.setBackground(QColor('red'))
+
     def doubleClicked(self):
         print 'MergeSetListItem.doubleClicked()'
         # Necessary? #===
@@ -472,6 +473,12 @@ class MergeSection(object):
       overlapsB = []
       for contA in self.section1.contours:
         for contB in self.section1.contours:
+          if [contB, contA] in potential_overlaps:
+            continue      
+           
+          if [contB, contA] in complete_overlaps:
+            continue    
+    
           if contA == contB:
             continue
         
@@ -485,7 +492,7 @@ class MergeSection(object):
           elif is_exact_duplicate(contA.shape, contB.shape):
               overlapsA.append(contA)
               overlapsB.append(contB)
-              complete_overlaps.append(contA)
+              complete_overlaps.append([contA, contB])
               continue
           if is_potential_duplicate(contA.shape, contB.shape):
               overlapsA.append(contA)
@@ -498,7 +505,7 @@ class MergeSection(object):
           # contours
           new_potential_overlaps = []
           for contA, contB in potential_overlaps:
-              if contA in complete_overlaps and contB in complete_overlaps:
+              if ([contA, contB] in complete_overlaps) or ([contB, contA] in complete_overlaps):
                   continue
               else:
                   new_potential_overlaps.append([contA, contB])
@@ -785,7 +792,7 @@ class SectionContourHandler(QWidget):
         columnContainer.addLayout(section_1_unique_contoursColumn)
 
         overlapColumn = QVBoxLayout()
-        overlapLabel = QLabel('Duplicate Contours')
+        overlapLabel = QLabel('Exact Duplicate Contours')
         overlapColumn.addWidget(overlapLabel)
         overlapColumn.addWidget(self.inOvlp)
         overlapColumn.addWidget(self.moveSelectedO)
@@ -807,17 +814,21 @@ class SectionContourHandler(QWidget):
     def loadTable(self, table, items):
         '''Load <table> with <items>'''
         for item in items:
-            listItem = contourTableItem(item, [self.merge.section1.images[-1]])
+            listItem = contourTableItem(item, [self.merge.section1.images[-1], self.merge.section1.images[-1]])
             if item.__class__.__name__ == 'Contour':
-		if item in self.definite_shared_contours: # Completely ovlping contour
-                    listItem.setBackground(QColor('lightgreen'))
-                    self.outOvlp.addItem(listItem)
-                    continue
-	    elif isinstance(item, list):
-	        if item in self.potential_shared_contours:
-                # Item can be a contour or list of 2 contours, they are handled differently in contourTableItem class upon initialization
-                    listItem.setBackground(QColor('red'))
-            table.addItem(listItem)
+              if item in self.section_1_unique_contours: # Unique contour
+                  table.addItem(listItem)
+                  continue
+            elif isinstance(item, list):
+                if item in self.potential_shared_contours:
+                      # Item can be a contour or list of 2 contours, they are handled differently in contourTableItem class upon initialization
+                          listItem.setBackground(QColor('red'))
+                          table.addItem(listItem)
+                          continue
+                if item in self.definite_shared_contours: # Completely ovlping contour
+                          listItem.setBackground(QColor('lightgreen'))
+                          self.inOvlp.addItem(listItem)
+                          continue
     def doubleClickCheck(self, item):
         item.clicked() # See contourTableItem class
         self.doneBut.setStyleSheet(QWidget().styleSheet())
@@ -1051,8 +1062,7 @@ class contourTableItem(QListWidgetItem):
             self.contour2 = contour[1]
             if type(images) == type([]): # Images for conflict resolution
                 self.image1 = images[0]
-                if len(images) > 1:
-                  self.image2 = images[1]
+                self.image2 = images[1]
             self.setText(self.contour1.name)
         else:
             self.contour = contour
