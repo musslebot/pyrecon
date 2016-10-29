@@ -457,9 +457,10 @@ class MergeSection(object):
   def checkConflicts(self):
     # Are contours equivalent?
     separated_contours = self.getCategorizedContours(include_overlaps=True)
-    self.section_1_unique_contours = separated_contours[0]
-    self.definite_shared_contours = separated_contours[1]
-    self.potential_shared_contours = separated_contours[2]
+    
+    self.section_1_unique_contours = sorted(separated_contours[0], key=lambda contour:contour.name)
+    self.definite_shared_contours = sorted(separated_contours[1], key=lambda contour: contour[0].name)
+    self.potential_shared_contours = sorted(separated_contours[2], key=lambda contour: contour[0].name)
     self.images = self.section1.images
 
   def getCategorizedContours(self, threshold=(1 + 2**(-17)), sameName=True, include_overlaps=False):
@@ -756,8 +757,8 @@ class SectionContourHandler(QWidget):
         self.moveSelectedP = QPushButton(self)
     def loadFunctions(self):
         # Load tables with contour objects
-        self.loadTable(self.inUniqueA, self.section_1_unique_contours)
-        self.loadTable(self.inOvlp, self.definite_shared_contours)
+        self.loadTable(self.outUniqueA, self.section_1_unique_contours)
+        self.loadTable(self.outOvlp, self.definite_shared_contours)
         self.loadTable(self.inPotential, self.potential_shared_contours)
         for table in [self.inUniqueA, self.inPotential, self.inOvlp, self.outUniqueA, self.outPotential, self.outOvlp]:
             table.setSelectionMode(QAbstractItemView.ExtendedSelection)
@@ -814,7 +815,7 @@ class SectionContourHandler(QWidget):
     def loadTable(self, table, items):
         '''Load <table> with <items>'''
         for item in items:
-            listItem = contourTableItem(item, [self.merge.section1.images[-1], self.merge.section1.images[-1]])
+            listItem = contourTableItem(item, table, [self.merge.section1.images[-1], self.merge.section1.images[-1]])
             if item.__class__.__name__ == 'Contour':
               if item in self.section_1_unique_contours: # Unique contour
                   table.addItem(listItem)
@@ -827,12 +828,14 @@ class SectionContourHandler(QWidget):
                           continue
                 if item in self.definite_shared_contours: # Completely ovlping contour
                           listItem.setBackground(QColor('lightgreen'))
-                          self.inOvlp.addItem(listItem)
+                          table.addItem(listItem)
                           continue
     def doubleClickCheck(self, item):
         item.clicked() # See contourTableItem class
+        if item.table == self.inPotential:         
+          self.moveItems(potentialmov=True)
         self.doneBut.setStyleSheet(QWidget().styleSheet())
-    def moveItems(self):
+    def moveItems(self, potentialmov=False):
         # Move items in which table(s)?
         if self.sender() == self.moveSelectedA:
             inTable = self.inUniqueA
@@ -840,9 +843,11 @@ class SectionContourHandler(QWidget):
         elif self.sender() == self.moveSelectedO:
             inTable = self.inOvlp
             outTable = self.outOvlp
-        elif self.sender() == self.moveSelectedP:
+        elif (self.sender() == self.moveSelectedP) or potentialmov:
             inTable = self.inPotential
             outTable = self.outPotential
+
+      
         # Now move items
         selectedIn = inTable.selectedItems()
         selectedOut = outTable.selectedItems()
@@ -1048,13 +1053,14 @@ class resolveOvlp(QDialog):
     def finish(self): # Return int associated with selected contour
         if self.sender() == self.cont1But:
             self.done(1)
+            
         elif self.sender() == self.cont2But:
             self.done(2)
         elif self.sender() == self.bothContBut:
             self.done(3)
 class contourTableItem(QListWidgetItem):
     '''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
-    def __init__(self, contour, images):
+    def __init__(self, contour, table, images):
         QListWidgetItem.__init__(self)
         if type(contour) == type([]): # Overlapping contours are in pairs
             self.contour = None
@@ -1064,10 +1070,12 @@ class contourTableItem(QListWidgetItem):
                 self.image1 = images[0]
                 self.image2 = images[1]
             self.setText(self.contour1.name)
+            self.table = table
         else:
             self.contour = contour
             self.image = images[0]
             self.setText(contour.name)
+            self.table = table
     def clicked(self):
         item = self
         if self.contour is not None: # single contour
@@ -1083,6 +1091,9 @@ class contourTableItem(QListWidgetItem):
         else: # Conflicting or overlapping
             msg = resolveOvlp(item)
             resolution = msg.result() # msg returns an int referring to the selected contour
+            
+            
+
             if resolution == 1:
                 self.contour = self.contour1
                 self.setBackground(QColor('lightgreen'))
@@ -1092,6 +1103,8 @@ class contourTableItem(QListWidgetItem):
             elif resolution == 3:
                 self.contour = [self.contour1, self.contour2]
                 self.setBackground(QColor('lightgreen'))
+
+          
     def forceResolution(self, integer):
         if int(integer) == 1:
             self.contour = self.contour1
@@ -1099,6 +1112,7 @@ class contourTableItem(QListWidgetItem):
             self.contour = self.contour2
         elif int(integer) == 3:
             self.contour = [self.contour1, self.contour2]
+
         else:
             print ('Invalid entry')
             return
