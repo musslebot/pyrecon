@@ -472,6 +472,7 @@ class MergeSection(object):
       overlaps = []
       overlapsA = []
       overlapsB = []
+
       for contA in self.section1.contours:
         for contB in self.section1.contours:
           if [contB, contA] in potential_overlaps:
@@ -1020,58 +1021,61 @@ class resolveOvlp(QDialog):
         self.exec_()
     def loadObjects(self):
         # Buttons to choose contours
-        self.cont1But = QPushButton('Choose Contour A')
-        self.cont2But = QPushButton('Choose Contour B')
-        self.bothContBut = QPushButton('Choose Both Contours')
-        self.chooseButs = [self.cont1But,self.cont2But,self.bothContBut]
-        for but in self.chooseButs:
-            but.setMinimumHeight(50)
+        self.checkBoxes = []
+        for i in range (0, self.item.numContours):
+          setattr(self, 'contCheck'+str(i+1), QCheckBox('Choose Contour '+str(i+1)))
+          (self.checkBoxes).append(getattr(self, 'contCheck'+str(i+1)))
+#        for but in self.chooseButs:
+#            but.setMinimumHeight(50)
         # Labels to hold pixmap
+        
         self.pix1 = None
         self.pix2 = None
     def loadFunctions(self):
-        self.cont1But.clicked.connect( self.finish )
-        self.cont2But.clicked.connect( self.finish )
-        self.bothContBut.clicked.connect( self.finish )
-        self.pix1 = contourPixmap(self.item.image1, self.item.contour1)
-        self.pix2 = contourPixmap(self.item.image2, self.item.contour2, pen=Qt.cyan)
+        for i in range (0, self.item.numContours):
+          setattr(self, 'contCheck'+str(i+1), QCheckBox('Choose Contour '+str(i+1)))
+          (self.checkBoxes).append(getattr(self, 'contCheck'+str(i+1)))
+          getattr(self, 'contCheck'+str(i+1)).clicked.connect( self.finish )
+
+        for i in range (0, self.item.numContours):
+          setattr(self, 'pix'+str(i+1), contourPixmap(getattr(self.item, 'image'+str(i+1)),getattr(self.item, 'contour'+str(i+1)), pen =Qt.white))
+
     def loadLayout(self):
         container = QVBoxLayout() # Contains everything
         # - Contains Images
         imageContainer = QHBoxLayout()
-        imageContainer.addWidget(self.pix1)
-        imageContainer.addWidget(self.pix2)
+        for i in range (0, self.item.numContours):
+          imageContainer.addWidget(getattr(self, 'pix'+str(i+1)))
         # - Contains buttons
         butBox = QHBoxLayout()
-        butBox.addWidget(self.cont1But)
-        butBox.addWidget(self.cont2But)
+        for i in range (0, self.item.numContours):
+          butBox.addWidget(getattr(self, 'contCheck'+str(i+1)))
         # Add other containers to container
         container.addLayout(imageContainer)
         container.addLayout(butBox)
-        container.addWidget(self.bothContBut)
         self.setLayout(container)
+
     def finish(self): # Return int associated with selected contour
-        if self.sender() == self.cont1But:
-            self.done(1)
-            
-        elif self.sender() == self.cont2But:
-            self.done(2)
-        elif self.sender() == self.bothContBut:
-            self.done(3)
+        for i in range (0, self.item.numContours):
+          if self.sender() == getattr(self, 'contCheck'+str(i+1)):
+            self.done(i+1)
+
 class contourTableItem(QListWidgetItem):
     '''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
     def __init__(self, contour, table, images):
         QListWidgetItem.__init__(self)
         if type(contour) == type([]): # Overlapping contours are in pairs
             self.contour = None
-            self.contour1 = contour[0]
-            self.contour2 = contour[1]
+            self.numContours = len(contour)
+            for i in range (0, len(contour)):
+              setattr(self, 'contour'+str(i+1), contour[i])  
             if type(images) == type([]): # Images for conflict resolution
-                self.image1 = images[0]
-                self.image2 = images[1]
+                for i in range (0, len(images)):                
+                  setattr(self,'image'+str(i+1), images[i])
             self.setText(self.contour1.name)
             self.table = table
         else:
+            self.numContours = 1
             self.contour = contour
             self.image = images[0]
             self.setText(contour.name)
@@ -1092,17 +1096,8 @@ class contourTableItem(QListWidgetItem):
             msg = resolveOvlp(item)
             resolution = msg.result() # msg returns an int referring to the selected contour
             
-            
-
-            if resolution == 1:
-                self.contour = self.contour1
-                self.setBackground(QColor('lightgreen'))
-            elif resolution == 2:
-                self.contour = self.contour2
-                self.setBackground(QColor('lightgreen'))
-            elif resolution == 3:
-                self.contour = [self.contour1, self.contour2]
-                self.setBackground(QColor('lightgreen'))
+            self.contour = getattr(self, 'contour'+str(resolution))
+            self.setBackground(QColor('lightgreen'))          
 
           
     def forceResolution(self, integer):
