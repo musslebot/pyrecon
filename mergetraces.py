@@ -746,32 +746,33 @@ class SectionContourHandler(QWidget):
             self.doneBut.setStyleSheet('background-color:lightgreen;')
     def loadObjects(self):
         # List contours in their appropriate listWidgets
-        self.inUniqueA = QListWidget(self)
-        self.inOvlp = QListWidget(self)
         self.inPotential = QListWidget(self)
-        self.outUniqueA = QListWidget(self)
-        self.outOvlp = QListWidget(self)
+        self.inUniqueOvlps = QListWidget(self)
+
         self.outPotential = QListWidget(self)
-        self.doneBut = QPushButton(self) # Merge button
-        self.moveSelectedA = QPushButton(self)
-        self.moveSelectedO = QPushButton(self)
+        self.outUniqueOvlps = QListWidget(self)
+
+
+
         self.moveSelectedP = QPushButton(self)
+        self.moveSelectedAO = QPushButton(self)
+
+
+        self.doneBut = QPushButton(self) # Merge button
+
     def loadFunctions(self):
         # Load tables with contour objects
-        self.loadTable(self.outUniqueA, self.section_1_unique_contours)
-        self.loadTable(self.outOvlp, self.definite_shared_contours)
         self.loadTable(self.inPotential, self.potential_shared_contours)
-        for table in [self.inUniqueA, self.inPotential, self.inOvlp, self.outUniqueA, self.outPotential, self.outOvlp]:
+        self.loadTable(self.outUniqueOvlps, self.definite_shared_contours)
+        for table in [self.inUniqueOvlps, self.inPotential, self.outUniqueOvlps, self.outPotential]:
             table.setSelectionMode(QAbstractItemView.ExtendedSelection)
             table.itemDoubleClicked.connect(self.doubleClickCheck)
         self.doneBut.setText('Save Current Status')
         self.doneBut.clicked.connect( self.finish )
         self.doneBut.setMinimumHeight(50)
-        self.moveSelectedA.setText('Move Selected')
-        self.moveSelectedO.setText('Move Selected')
+        self.moveSelectedAO.setText('Move Selected')
         self.moveSelectedP.setText('Move Selected')
-        self.moveSelectedA.clicked.connect( self.moveItems )
-        self.moveSelectedO.clicked.connect( self.moveItems )
+        self.moveSelectedAO.clicked.connect( self.moveItems )
         self.moveSelectedP.clicked.connect( self.moveItems )
     def loadLayout(self):
         container = QVBoxLayout()
@@ -785,22 +786,6 @@ class SectionContourHandler(QWidget):
         labelContainer.addWidget(QLabel('Output'))
         columnContainer.addLayout(labelContainer)
 
-        section_1_unique_contoursColumn = QVBoxLayout()
-        section_1_unique_contoursLabel = QLabel('Unique Contours')
-        section_1_unique_contoursColumn.addWidget(section_1_unique_contoursLabel)
-        section_1_unique_contoursColumn.addWidget(self.inUniqueA)
-        section_1_unique_contoursColumn.addWidget(self.moveSelectedA)
-        section_1_unique_contoursColumn.addWidget(self.outUniqueA)
-        columnContainer.addLayout(section_1_unique_contoursColumn)
-
-        overlapColumn = QVBoxLayout()
-        overlapLabel = QLabel('Exact Duplicate Contours')
-        overlapColumn.addWidget(overlapLabel)
-        overlapColumn.addWidget(self.inOvlp)
-        overlapColumn.addWidget(self.moveSelectedO)
-        overlapColumn.addWidget(self.outOvlp)
-        columnContainer.addLayout(overlapColumn)
-
         potential_overlapsColumn = QVBoxLayout()
         potential_overlapsLabel = QLabel('Potential Duplicate Contours')
         potential_overlapsColumn.addWidget(potential_overlapsLabel)
@@ -808,6 +793,15 @@ class SectionContourHandler(QWidget):
         potential_overlapsColumn.addWidget(self.moveSelectedP)
         potential_overlapsColumn.addWidget(self.outPotential)
         columnContainer.addLayout(potential_overlapsColumn)
+
+        section_1_unique_overlapsColumn = QVBoxLayout()
+        section_1_unique_contoursLabel = QLabel('Unique Contours')
+        section_1_unique_overlapsColumn.addWidget(section_1_unique_contoursLabel)
+        section_1_unique_overlapsColumn.addWidget(self.inUniqueOvlps)
+        section_1_unique_overlapsColumn.addWidget(self.moveSelectedAO)
+        section_1_unique_overlapsColumn.addWidget(self.outUniqueOvlps)
+        columnContainer.addLayout(section_1_unique_overlapsColumn)
+
 
         container.addLayout(secNameContainer)
         container.addLayout(columnContainer)
@@ -838,12 +832,9 @@ class SectionContourHandler(QWidget):
         self.doneBut.setStyleSheet(QWidget().styleSheet())
     def moveItems(self, potentialmov=False):
         # Move items in which table(s)?
-        if self.sender() == self.moveSelectedA:
-            inTable = self.inUniqueA
-            outTable = self.outUniqueA
-        elif self.sender() == self.moveSelectedO:
-            inTable = self.inOvlp
-            outTable = self.outOvlp
+        if self.sender() == self.moveSelectedAO:
+            inTable = self.inUniqueOvlps
+            outTable = self.outUniqueOvlps
         elif (self.sender() == self.moveSelectedP) or potentialmov:
             inTable = self.inPotential
             outTable = self.outPotential
@@ -1028,17 +1019,19 @@ class resolveOvlp(QDialog):
 #        for but in self.chooseButs:
 #            but.setMinimumHeight(50)
         # Labels to hold pixmap
-        
+        self.doneContBut = QPushButton('Done') 
+        self.doneContBut.setMinimumHeight(50)       
         self.pix1 = None
         self.pix2 = None
     def loadFunctions(self):
         for i in range (0, self.item.numContours):
           setattr(self, 'contCheck'+str(i+1), QCheckBox('Choose Contour '+str(i+1)))
           (self.checkBoxes).append(getattr(self, 'contCheck'+str(i+1)))
-          getattr(self, 'contCheck'+str(i+1)).clicked.connect( self.finish )
 
         for i in range (0, self.item.numContours):
           setattr(self, 'pix'+str(i+1), contourPixmap(getattr(self.item, 'image'+str(i+1)),getattr(self.item, 'contour'+str(i+1)), pen =Qt.white))
+
+        self.doneContBut.clicked.connect(self.chosenContour)
 
     def loadLayout(self):
         container = QVBoxLayout() # Contains everything
@@ -1051,14 +1044,27 @@ class resolveOvlp(QDialog):
         for i in range (0, self.item.numContours):
           butBox.addWidget(getattr(self, 'contCheck'+str(i+1)))
         # Add other containers to container
+        butBox.addWidget(self.doneContBut)
         container.addLayout(imageContainer)
         container.addLayout(butBox)
         self.setLayout(container)
 
-    def finish(self): # Return int associated with selected contour
+    def chosenContour(self):
+        self.checkedContours = ""
         for i in range (0, self.item.numContours):
-          if self.sender() == getattr(self, 'contCheck'+str(i+1)):
-            self.done(i+1)
+          if getattr(self, 'contCheck'+str(i+1)).isChecked():
+            self.checkedContours += "1"
+          else:
+            self.checkedContours += "0"
+        
+        self.checkedContours = int(self.checkedContours)
+        self.done(self.checkedContours)
+     
+
+#    def finish(self): # Return int associated with selected contour
+#        for i in range (0, self.item.numContours):
+#          if self.sender() == getattr(self, 'contCheck'+str(i+1)):
+#            self.done([i+1])
 
 class contourTableItem(QListWidgetItem):
     '''This class has the functionality of a QListWidgetItem while also being able to store a pointer to the contour(s) it represents.'''
@@ -1094,10 +1100,14 @@ class contourTableItem(QListWidgetItem):
             dia.exec_()
         else: # Conflicting or overlapping
             msg = resolveOvlp(item)
-            resolution = msg.result() # msg returns an int referring to the selected contour
-            
-            self.contour = getattr(self, 'contour'+str(resolution))
-            self.setBackground(QColor('lightgreen'))          
+            resolution = str(msg.result())
+            count = 0
+            for ch in resolution:
+              if ch == 1:
+                self.contour = getattr(self, 'contour'+str(count+1))
+              count += 1
+
+              self.setBackground(QColor('lightgreen'))          
 
           
     def forceResolution(self, integer):
