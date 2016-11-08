@@ -829,6 +829,8 @@ class SectionContourHandler(QWidget):
         item.clicked() # See contourTableItem class
         if item.table == self.inPotential:         
           self.moveItems(potentialmov=True)
+        else:
+          potentialmov=False
         self.doneBut.setStyleSheet(QWidget().styleSheet())
     def moveItems(self, potentialmov=False):
         # Move items in which table(s)?
@@ -836,6 +838,7 @@ class SectionContourHandler(QWidget):
             inTable = self.inUniqueOvlps
             outTable = self.outUniqueOvlps
         elif (self.sender() == self.moveSelectedP) or potentialmov:
+                        
             inTable = self.inPotential
             outTable = self.outPotential
 
@@ -843,10 +846,15 @@ class SectionContourHandler(QWidget):
         # Now move items
         selectedIn = inTable.selectedItems()
         selectedOut = outTable.selectedItems()
-        for item in selectedIn:
-            outTable.addItem( inTable.takeItem(inTable.row(item)) )
-        for item in selectedOut:
-            inTable.addItem( outTable.takeItem(outTable.row(item)) )
+
+        if potentialmov:
+          for item in selectedIn:
+              outTable.addItem( inTable.takeItem(inTable.row(item)) )  
+        else:
+          for item in selectedIn:
+              outTable.addItem( inTable.takeItem(inTable.row(item)) )
+          for item in selectedOut:
+              inTable.addItem( outTable.takeItem(outTable.row(item)) )
         inTable.clearSelection()
         outTable.clearSelection()
         self.doneBut.setStyleSheet(QWidget().styleSheet()) # Button not green, indicates lack of save
@@ -1080,34 +1088,44 @@ class contourTableItem(QListWidgetItem):
                   setattr(self,'image'+str(i+1), images[i])
             self.setText(self.contour1.name)
             self.table = table
+            self.resolved = False
         else:
             self.numContours = 1
-            self.contour = contour
-            self.image = images[0]
+            self.contour = [contour]
+            self.image = [images[0]]
             self.setText(contour.name)
             self.table = table
     def clicked(self):
         item = self
-        if self.contour is not None: # single contour
-            try:
-                pic = contourPixmap(self.image, self.contour)
-            except:
-                pic = contourPixmap(self.image1, self.contour)
-            a = QVBoxLayout()
-            a.addWidget(pic)
+        a = QVBoxLayout() 
+        if self.resolved or self.numContours==1: # single contour
+            if self.resolved:
+              pic = []
+              for i in range(0,len(self.contour)):
+                  pic.append(contourPixmap(self.image[i], self.contour[i]))
+              for img in pic:
+                a.addWidget(img)
+            else:
+              pic = contourPixmap(self.image1, self.contour1)
+              a.addWidget(pic)
+            
             dia = QDialog()
             dia.setLayout(a)
             dia.exec_()
         else: # Conflicting or overlapping
             msg = resolveOvlp(item)
             resolution = str(msg.result())
-            count = 0
+            count = 1
+            self.contour = []
+            self.image = []
+            self.resolved = True
             for ch in resolution:
-              if ch == 1:
-                self.contour = getattr(self, 'contour'+str(count+1))
+              if ch == "1":
+                self.contour.append(getattr(self, 'contour'+str(count)))
+                self.image.append(getattr(self, 'image'+str(count)))
               count += 1
 
-              self.setBackground(QColor('lightgreen'))          
+            self.setBackground(QColor('lightgreen'))          
 
           
     def forceResolution(self, integer):
