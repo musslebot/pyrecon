@@ -403,7 +403,7 @@ def start():
     gui = PyreconMainWindow()
     app.exec_()  # Start event-loop
 
-def createMergeTraces(series1, ):
+def createMergeTraces(series1):
   """Return a file with traces merged."""
   m1 = MergeSeries(name=series1.name, series1=series1)
 
@@ -456,12 +456,34 @@ class MergeSection(object):
   
   def checkConflicts(self):
     # Are contours equivalent?
+    #when loaded in here, contours are fine, no duplicates
+
     separated_contours = self.getCategorizedContours(include_overlaps=True)
     
-    self.section_1_unique_contours = sorted(separated_contours[0], key=lambda contour:contour.name)
-    self.definite_shared_contours = sorted(separated_contours[1], key=lambda contour: contour[0].name)
-    self.potential_shared_contours = sorted(separated_contours[2], key=lambda contour: contour[0].name)
+    
+    self.section_1_unique_contours = separated_contours[0]
+    self.definite_shared_contours = separated_contours[1]
+    self.potential_shared_contours = separated_contours[2]
     self.images = self.section1.images
+    print (self.name)
+
+#    print ("unique contours")
+#    for item in self.section_1_unique_contours:
+#      
+#        print(item.name)
+
+#    print ("definite contours")
+#    for item in self.definite_shared_contours:
+#      
+#        print(item.name)
+
+#    print ("potential contours")
+#    for item in self.potential_shared_contours:
+#      if isinstance (item, list):
+#        for item2 in item:
+#          print(item2.name)
+#      else:
+#        print (item.name)
 
   def getCategorizedContours(self, threshold=(1 + 2**(-17)), sameName=True, include_overlaps=False):
       """Returns list of mutually overlapping contours in a Section object."""
@@ -473,15 +495,17 @@ class MergeSection(object):
       overlapsA = []
       overlapsB = []
 
-      for contA in self.section1.contours:
-        for contB in self.section1.contours:
+      counter1 = 0
+      counter2 = 0
+
+      for idx, contA in enumerate(self.section1.contours):
+        for idx2, contB in enumerate(self.section1.contours):
+
+
           if [contB, contA] in potential_overlaps:
-            continue      
-           
-          if [contB, contA] in complete_overlaps:
-            continue    
+            continue
     
-          if contA == contB:
+          if idx == idx2:
             continue
         
           if contA.name != contB.name:
@@ -494,7 +518,8 @@ class MergeSection(object):
           elif is_exact_duplicate(contA.shape, contB.shape):
               overlapsA.append(contA)
               overlapsB.append(contB)
-              complete_overlaps.append([contA, contB])
+              if contA or contB not in complete_overlaps:
+                complete_overlaps.append(contA)
               continue
           if is_potential_duplicate(contA.shape, contB.shape):
               overlapsA.append(contA)
@@ -502,18 +527,18 @@ class MergeSection(object):
               potential_overlaps.append([contA, contB])
 
       if include_overlaps:
-          # Return unique conts from section1, unique conts from section2,
+          # Return unique conts from section1,
           # completely overlapping contours, and incompletely overlapping
           # contours
           new_potential_overlaps = []
           for contA, contB in potential_overlaps:
-              if ([contA, contB] in complete_overlaps) or ([contB, contA] in complete_overlaps):
+              if (contA in complete_overlaps and contB in complete_overlaps):
                   continue
               else:
                   new_potential_overlaps.append([contA, contB])
           potential_overlaps = new_potential_overlaps
           return (
-              [cont for cont in self.section1.contours if cont not in (overlapsA or overlapsB)],
+              [cont for cont in self.section1.contours if cont not in overlapsA and overlapsB],
               complete_overlaps,
               potential_overlaps
           )
@@ -762,8 +787,10 @@ class SectionContourHandler(QWidget):
 
     def loadFunctions(self):
         # Load tables with contour objects
+
         self.loadTable(self.inPotential, self.potential_shared_contours)
         self.loadTable(self.outUniqueOvlps, self.definite_shared_contours)
+        self.loadTable(self.outUniqueOvlps, self.section_1_unique_contours)
         for table in [self.inUniqueOvlps, self.inPotential, self.outUniqueOvlps, self.outPotential]:
             table.setSelectionMode(QAbstractItemView.ExtendedSelection)
             table.itemDoubleClicked.connect(self.doubleClickCheck)
@@ -795,7 +822,7 @@ class SectionContourHandler(QWidget):
         columnContainer.addLayout(potential_overlapsColumn)
 
         section_1_unique_overlapsColumn = QVBoxLayout()
-        section_1_unique_contoursLabel = QLabel('Unique Contours')
+        section_1_unique_contoursLabel = QLabel('Unique or Exact Duplicate Contours')
         section_1_unique_overlapsColumn.addWidget(section_1_unique_contoursLabel)
         section_1_unique_overlapsColumn.addWidget(self.inUniqueOvlps)
         section_1_unique_overlapsColumn.addWidget(self.moveSelectedAO)
@@ -813,18 +840,15 @@ class SectionContourHandler(QWidget):
             listItem = contourTableItem(item, table, [self.merge.section1.images[-1], self.merge.section1.images[-1]])
             if item.__class__.__name__ == 'Contour':
               if item in self.section_1_unique_contours: # Unique contour
-                  table.addItem(listItem)
+                  self.outUniqueOvlps.addItem(listItem)
+                  listItem.setBackground(QColor('lightgreen'))
                   continue
             elif isinstance(item, list):
-                if item in self.potential_shared_contours:
+              if item in self.potential_shared_contours:
                       # Item can be a contour or list of 2 contours, they are handled differently in contourTableItem class upon initialization
-                          listItem.setBackground(QColor('red'))
-                          table.addItem(listItem)
-                          continue
-                if item in self.definite_shared_contours: # Completely ovlping contour
-                          listItem.setBackground(QColor('lightgreen'))
-                          table.addItem(listItem)
-                          continue
+                listItem.setBackground(QColor('red'))
+        
+            table.addItem(listItem)
     def doubleClickCheck(self, item):
         item.clicked() # See contourTableItem class
         if item.table == self.inPotential:         
@@ -1095,6 +1119,7 @@ class contourTableItem(QListWidgetItem):
             self.image = [images[0]]
             self.setText(contour.name)
             self.table = table
+            self.resolved = False
     def clicked(self):
         item = self
         a = QVBoxLayout() 
@@ -1106,7 +1131,7 @@ class contourTableItem(QListWidgetItem):
               for img in pic:
                 a.addWidget(img)
             else:
-              pic = contourPixmap(self.image1, self.contour1)
+              pic = contourPixmap(self.image[0], self.contour[0])
               a.addWidget(pic)
             
             dia = QDialog()
