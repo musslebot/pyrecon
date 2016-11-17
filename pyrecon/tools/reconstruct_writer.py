@@ -211,19 +211,36 @@ def entire_section_to_xml(section):
     for contour in section.contours:
         unique = True
         for tform in unique_transform:
+          if isinstance(contour, list):
+            for item in contour: 
+              if tform == item.transform:
+                unique = False
+                break
+          else:
             if tform == contour.transform:
                 unique = False
                 break
         if unique:
-            unique_transform.append(contour.transform)
+          if isinstance(contour, list):
+            for item in contour: 
+              unique_transform.append(item.transform)
+          else:
+              unique_transform.append(contour.transform)
 
     # - Add contours to their equivalent Transform objects
     for transform in unique_transform:
         transform_elem = transform_to_xml(transform)
         for contour in section.contours:
-            if contour.transform == transform:
-                cont = section_contour_to_xml(contour)
-                transform_elem.append(cont)
+
+            if isinstance(contour, list):
+              for item in contour: 
+                if item.transform == transform:
+                    cont = section_contour_to_xml(item)
+                    transform_elem.append(cont)
+            else:
+              if contour.transform == transform:
+                  cont = section_contour_to_xml(contour)
+                  transform_elem.append(cont)
         root.append(transform_elem)
 
     # Make tree and write
@@ -269,7 +286,7 @@ def write_series(series, directory, outpath=None, sections=False, overwrite=Fals
     if not overwrite and os.path.exists(outpath):
         msg = "CAUTION: Files already exist in ths directory: Do you want to overwrite them?"
         # StdOut
-        a = input("{} (y/n)".format(msg))
+        a = raw_input("{} (y/n)".format(msg))
         overwrite = str(a).lower() in ["y", "yes"]
         if not overwrite:
             raise IOError("\nFilename %s already exists.\nQuiting write command to avoid overwrite"%outpath)

@@ -413,7 +413,7 @@ def createMergeTraces(series1):
     m_secs.append(section_traces)
 
   
-  mergedTraceSet = MergeSet(name=series1.name, merge_series=m1, section_merges=m_secs)
+  mergedTraceSet = MergeSet(name=m1.name, merge_series=m1, section_merges=m_secs)
   return mergedTraceSet
 
 class MergeSet(object):
@@ -423,6 +423,14 @@ class MergeSet(object):
         self.name = kwargs.get("name")
         self.seriesMerge = kwargs.get("merge_series")
         self.sectionMerges = kwargs.get("section_merges", [])
+
+    def isDone(self):
+        sections_done = True
+        for section in self.sectionMerges:
+            if not section.isDone():
+                sections_done = False
+                break
+        return (self.seriesMerge.isDone() and sections_done)
 
 
     def writeMergeSet(self, outpath):
@@ -438,6 +446,7 @@ class MergeSet(object):
 class MergeSection(object):
 
   def __init__(self, *args, **kwargs):
+
       self.name = kwargs.get("name")
       self.section1 = kwargs.get("section1")
 
@@ -465,12 +474,12 @@ class MergeSection(object):
     self.definite_shared_contours = separated_contours[1]
     self.potential_shared_contours = separated_contours[2]
     self.images = self.section1.images
-    print (self.name)
 
 #    print ("unique contours")
 #    for item in self.section_1_unique_contours:
 #      
 #        print(item.name)
+
 
 #    print ("definite contours")
 #    for item in self.definite_shared_contours:
@@ -518,7 +527,7 @@ class MergeSection(object):
           elif is_exact_duplicate(contA.shape, contB.shape):
               overlapsA.append(contA)
               overlapsB.append(contB)
-              if contA or contB not in complete_overlaps:
+              if (contB) not in complete_overlaps:
                 complete_overlaps.append(contA)
               continue
           if is_potential_duplicate(contA.shape, contB.shape):
@@ -552,6 +561,38 @@ class MergeSection(object):
 
       If not resolved (None), defaults to the self.section1 version
       """
+
+#    print ("unique contours")
+#    for item in self.section_1_unique_contours:
+#      
+#        print(item.name)
+
+
+#    print ("definite contours")
+#    for item in self.definite_shared_contours:
+#      
+#        print(item.name)
+
+#    print ("potential contours")
+#    for item in self.potential_shared_contours:
+#      if isinstance (item, list):
+#        for item2 in item:
+#          print(item2.name)
+#      else:
+#        print (item.name)
+
+      if self.contours is not None:
+        self.contours = []
+        for item in self.section_1_unique_contours:
+          self.contours.append(item)
+        for item in self.definite_shared_contours:
+          self.contours.append(item)
+        for item in self.potential_shared_contours:
+          if isinstance (item, list):
+            for item2 in item:
+              self.contours.append(item2)
+          else:
+            self.contours.append(item)
       attributes = self.attributes if self.attributes is not None else self.section1.attributes()
       images = self.images if self.images is not None else self.section1.images
       contours = self.contours if self.contours is not None else self.section1.contours
@@ -885,27 +926,16 @@ class SectionContourHandler(QWidget):
         self.merge.contours = None # Reset MergeSection.contours
     def finish(self):
         # Check ovlp table for unresolved conflicts (red)
-        numItems = self.outOvlp.count()
-        for i in range(numItems):
-            item = self.outOvlp.item(i)
-            if item.background() == QColor('red'):
-                msg = QMessageBox(self)
-                msg.setText('Conflict not resolved. Abort merge...')
-                msg.exec_()
-                return
-        # Gather items from tables
-        oA = [] # Unique A
-        for i in range(self.outUniqueA.count()):
-            oA.append(self.outUniqueA.item(i))
-        oO = [] # Overlap
-        for i in range(self.outOvlp.count()):
-            oO.append(self.outOvlp.item(i))
+
+        oUO = [] # Unique & Definite
+        for i in range(self.outUniqueOvlps.count()):
+            oUO.append(self.outUniqueOvlps.item(i))
         oP = [] # Potential
         for i in range(self.outPotential.count()):
             oP.append(self.outPotential.item(i))
 
         # set self.output to chosen contours
-        output = [item.contour for item in oA]+[item.contour for item in oP]+[item.contour for item in oO]
+        output = [item.contour for item in oP]+[item.contour for item in oUO]
         self.merge.contours = output
         self.doneBut.setStyleSheet('background-color:lightgreen;') # Button to green
     # Quick merge functions
