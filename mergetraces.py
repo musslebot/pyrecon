@@ -581,18 +581,7 @@ class MergeSection(object):
 #      else:
 #        print (item.name)
 
-      if self.contours is not None:
-        self.contours = []
-        for item in self.section_1_unique_contours:
-          self.contours.append(item)
-        for item in self.definite_shared_contours:
-          self.contours.append(item)
-        for item in self.potential_shared_contours:
-          if isinstance (item, list):
-            for item2 in item:
-              self.contours.append(item2)
-          else:
-            self.contours.append(item)
+
       attributes = self.attributes if self.attributes is not None else self.section1.attributes()
       images = self.images if self.images is not None else self.section1.images
       contours = self.contours if self.contours is not None else self.section1.contours
