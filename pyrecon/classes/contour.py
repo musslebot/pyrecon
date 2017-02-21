@@ -16,7 +16,7 @@ class Contour(object):
         self.mode = kwargs.get("mode")
         self.border = kwargs.get("border")
         self.fill = kwargs.get("fill")
-        self.points = kwargs.get("points", [])
+        self.points = list(kwargs.get("points", []))
         # Non-RECONSTRUCT attributes
         self.transform = kwargs.get("transform")
 
@@ -57,9 +57,10 @@ class Contour(object):
             raise Exception("No points found: {}".format(self))
 
         # Normalize points
-        array = numpy.asarray(self.points)
+        array = numpy.asarray(list(self.points))
         normalized_points = self.transform._tform.inverse(array)
-
+        self.normalized_points = normalized_points
+        
         if len(normalized_points) == 1:
             return Point(*normalized_points)
         elif len(normalized_points) == 2:
