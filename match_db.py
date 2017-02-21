@@ -68,9 +68,9 @@ from pyrecon.tools.mergetool import is_contacting, is_exact_duplicate, is_potent
 
 # Read Reconstruct file into PyReconstruct
 # We're just playing around with a single Section here
-section_1 = process_section_file("/home/musslebot/Downloads/FHLTD.212")
-section_2 = process_section_file("/home/musslebot/Downloads/FHLTD.211")
-section_number = 20
+section_1 = process_section_file("/home/musslebot/Downloads/FHLTD/FHLTD.91")
+section_2 = process_section_file("/home/musslebot/Downloads/FHLTD/FHLTD.91")
+section_number = 91
 # Go through each Contour in the Section and create a DB Contour tuple (row)
 for i, cont in enumerate(section_1.contours):
     session.add(Contour(
@@ -96,9 +96,7 @@ def create_matches_from_contours(db_contours_1, db_contours_2, section_contours_
         contA = section_contours_a[db_contour_A.index]
         for idy, db_contour_B in enumerate(db_contours_2):
             contB = section_contours_b[db_contour_B.index]
-            if idx >= idy:  # TODO: verify logic here -- Does this make sense?
-                continue
-            elif contA.name != contB.name:
+            if contA.name != contB.name:
                 continue
             elif contA.shape != contB.shape:
                 # TODO: this could be problematic (e.g. polygon vs linestring)
@@ -112,7 +110,7 @@ def create_matches_from_contours(db_contours_1, db_contours_2, section_contours_
                     id2=db_contour_B.id,
                     match_type=match_type
                 ))
-            if is_potential_duplicate(contA.shape, contB.shape):
+            elif is_potential_duplicate(contA.shape, contB.shape):
                 match_type = "potential"
                 matches.append(ContourMatch(
                     id1=db_contour_A.id,
@@ -190,7 +188,7 @@ for id_ in db_contour_ids:
 # ]
 
 section_matches = {
-    'section': 20,
+    'section': 91,
     'exact': [],
     'potential': [],
     'unique': []
@@ -215,13 +213,13 @@ for contour_A_id, match_dict in grouped.iteritems():
         match_list = [main_contour_data]
         for match_id in matches:
             already_added.append(match_id)
+            db_contour_B = session.query(Contour).get(match_id)
             if db_contour_B.series == 1:
                 reconstruct_contour_b = section_1.contours[db_contour_B.index]
                 image = section_1.images[0]._path + "/{}".format(section_1.images[0].src),
             elif db_contour_B.series == 2:
                 reconstruct_contour_b = section_2.contours[db_contour_B.index]
                 image = section_2.images[0]._path + "/{}".format(section_2.images[0].src),
-            db_contour_B = session.query(Contour).get(match_id)
             match_list.append({
                 'name': reconstruct_contour_b.name,
                 'points': reconstruct_contour_b.points,
