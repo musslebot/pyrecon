@@ -420,13 +420,13 @@ class resolveDialog(QtWidgets.QDialog):
         super(resolveDialog, self).__init__()
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
+        self.pixmap1 = QtGui.QPixmap()
+        self.pixmap2 = QtGui.QPixmap()
         self.item = item
         global itemData
         itemData = item.data()
         self.initializeData()
-        self.crop()
-        self.scale()
-        self.drawOnPixmap()
+        self.ui.pix1.setPixmap(self.pixmap1)
         self.exec_()
 
     def initializeData(self):
@@ -435,19 +435,27 @@ class resolveDialog(QtWidgets.QDialog):
         self.ui.nameEdit1.setText(name1)
         self.ui.nameEdit2.setText(name2)
         myBool = QtCore.QFileInfo(itemData[0]["image"]).exists()
-        self.ui.pix1.setPixmap(QtGui.QPixmap(itemData[0]["image"]))
-        self.ui.pix2.setPixmap(QtGui.QPixmap(itemData[1]["image"]))
-        initialTransform = transformTrace(itemData[0]["txcoef"], itemData[0]["tycoef"], itemData[0]["tdim"])
-        transformedPoints = list(map(tuple, initialTransform.inverse(numpy.asarray(itemData[0]["points"]) / itemData[0]['mag'])))
+        self.pixmap1 = (QtGui.QPixmap(itemData[0]["image"]))
+        self.pixmap2 = (QtGui.QPixmap(itemData[1]["image"]))
         if not myBool:
-            minx, miny, maxx, maxy = itemData[0]["bounds"]
+            minx, miny, maxx, maxy = itemData[0]['nullpoints']
             self.ui.pix1.setPixmap(QtGui.QPixMap(maxx-minx+200, maxy-miny+200))
             self.ui.pix1.fill(fillColor=Qt.black)
 
-        flipVector = numpy.array([1, -1])
-        translationVector = numpy.array([0, self.ui.pix1.size().height()])
-        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(itemData[0]["coords"]))*flipVector)))
-        itemData[0]["points"] = transformedPoints
+        self.pixmap1 = self.pixmap1.copy(itemData[0]['rect'])
+        self.pixmap2 = self.pixmap2.copy(itemData[1]['rect'])
+
+        self.pixmap1 = self.pixmap1.copy().scaled(300, 300, QtCore.Qt.KeepAspectRatio)
+        self.pixmap2 = self.pixmap2.copy().scaled(300, 300, QtCore.Qt.KeepAspectRatio)
+
+        polygon = QtGui.QPolygon()
+        for point in itemData[0]["points"]:
+            polygon.append(QtCore.QPoint(*point))
+
+        painter = QtGui.QPainter()
+        painter.begin(self.pixmap1)
+        painter.setPen(QtGui.QColor('red'))
+        painter.drawConvexPolygon(polygon)   
 
     def crop(self):
         minx, miny, maxx, maxy = itemData[0]["bounds"]
@@ -456,8 +464,7 @@ class resolveDialog(QtWidgets.QDialog):
         width = maxx-x+100
         height = maxy-y+100
 
-        copyPixmap = self.ui.pix1.pixmap().copy(x, y, width, height)
-        self.ui.pix1.setPixmap(copyPixmap)
+#        self.pixmap1 = self.pixmap1.copy(x, y, width, height)
         cropVector = numpy.array([x,y])
         croppedPoints = list(map(tuple, numpy.array(itemData[0]["points"]) - cropVector))
 
@@ -467,8 +474,8 @@ class resolveDialog(QtWidgets.QDialog):
 #            minx,miny,maxx,maxy = 
 
     def scale(self):
-        preCropSize = self.ui.pix1.pixmap().size()
-        self.ui.pix1.pixmap().copy().scaled(500, 500, QtCore.Qt.KeepAspectRatio)
+        preCropSize = self.pixmap1.size()
+        self.pixmap1.copy().scaled(500, 500, QtCore.Qt.KeepAspectRatio)
 
         preWidth = float(preCropSize.width())
         preHeight = float(preCropSize.height())
@@ -477,21 +484,14 @@ class resolveDialog(QtWidgets.QDialog):
             preWidth = 1.0
             preHeight = 1.0
 
-        wScale = self.ui.pix1.pixmap().size().width()/preWidth
-        hScale = self.ui.pix1.pixmap().size().height()/preHeight
+        wScale = self.pixmap1.size().width()/preWidth
+        hScale = self.pixmap1.size().height()/preHeight
         scale = numpy.array([wScale, hScale])
         scaledPoints = list(map(tuple, numpy.array(itemData[0]["points"]) * scale))
         itemData[0]["points"] = scaledPoints
 
     def drawOnPixmap(self, pen=QtGui.QColor('red')):
-        polygon = QtGui.QPolygon()
-        for point in itemData[0]["points"]:
-            polygon.append(QtCore.QPoint(*point))
 
-        painter = QtGui.QPainter()
-        painter.begin(self.ui.pix1.pixmap())
-        painter.setPen(pen)
-        painter.drawConvexPolygon(polygon)
 
     def changeName(self):
         print ("change name")
@@ -626,7 +626,7 @@ class Ui_Dialog(object):
 def main():
 
     app = QtWidgets.QApplication(sys.argv)
-    mockData = json.load(open('mockdata4.json'))
+    mockData = json.load(open('mockdata5.json'))
 #   initialWindow = Window()
 #   writer = Notepad()
 #   menus = MenuDemo()

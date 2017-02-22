@@ -3,7 +3,9 @@ from sqlalchemy import (Boolean, Column, create_engine, ForeignKey,
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from shapely.geometry import LineString, Point, Polygon
-import json
+import json, numpy
+from PIL import Image
+from copy import deepcopy
 
 
 # Create the in-memory SQLite database
@@ -190,24 +192,79 @@ already_added = []
 for contour_A_id, match_dict in grouped.items():
     db_contour_A = session.query(Contour).get(contour_A_id)
     reconstruct_contour_a = section.contours[db_contour_A.index]
+
+    #converting to pixels
+    reconstruct_contour_a_copy = deepcopy(reconstruct_contour_a)
+    reconstruct_contour_a_copy.points = list(map(tuple, reconstruct_contour_a_copy.transform._tform.inverse(numpy.asarray(reconstruct_contour_a_copy.points)/section.images[0].mag)))
+    
+    #need this
+    nullPoints = reconstruct_contour_a_copy.shape.bounds
+
+    flipVector = numpy.array([1, -1])
+    im = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
+    imWidth, imHeight = im.size
+    translationVector = numpy.array([0, imHeight])
+
+    if isinstance(reconstruct_contour_a_copy.shape, Polygon):
+        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.exterior.coords))*flipVector)))
+   
+    else:
+        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.xy))*flipVector)))        
+    reconstruct_contour_a_copy.points = transformedPoints
+
+    #cropping
+    minx, miny, maxx, maxy = reconstruct_contour_a_copy.shape.bounds
+    x = minx-100
+    y = miny = 100
+    width = maxx-x+100
+    height = maxy-y+100
+
+    #need this
+    rect = [x, y, width, height]
+
+    cropVector = numpy.array([x,y])
+    croppedPoints = list(map(tuple, numpy.array(reconstruct_contour_a_copy.points)-cropVector))
+    reconstruct_contour_a_copy.points = croppedPoints
+
+    #scaling
+    preWidth = float(imWidth)
+    preHeight = float(imHeight)
+
+    #prevent division by 0
+    if preWidth == 0.0 or preHeight == 0.0:
+        preWidth = 1.0
+        preHeight = 1.0
+
+    wScale = 300/preWidth
+    hScale = 300/preHeight
+
+    scale = numpy.array([wScale, hScale])
+
+    scaledPoints = list(map(tuple, numpy.array(reconstruct_contour_a_copy.points)*scale))
+    
+    #need this
+    reconstruct_contour_a_copy.points = scaledPoints
+
+
+
+
     main_contour_data = {
         'name': reconstruct_contour_a.name,
         'points': reconstruct_contour_a.points,
         'image': section.images[0]._path + "/{}".format(section.images[0].src),
         'db_id': contour_A_id,
-        'tdim' : reconstruct_contour_a.transform.dim,
-        'txcoef' : reconstruct_contour_a.transform.xcoef,
-        'tycoef' : reconstruct_contour_a.transform.ycoef,
-        'mag': section.images[0].mag,
-        'bounds': reconstruct_contour_a.shape.bounds
-
+        'nullpoints': nullPoints,
+        'rect': rect,
+        'points': reconstruct_contour_a_copy.points
+#        'transform': 
+        
     }
 
-    if isinstance(reconstruct_contour_a.shape, Polygon):
-        main_contour_data['coords'] = list(reconstruct_contour_a.shape.exterior.coords)
+    # if isinstance(reconstruct_contour_a.shape, Polygon):
+    #     main_contour_data['coords'] = list(reconstruct_contour_a.shape.exterior.coords)
 
-    else:
-        main_contour_data['coords'] = list(zip(*reconstruct_contour_a.shape.xy))          
+    # else:
+    #     main_contour_data['coords'] = list(zip(*reconstruct_contour_a.shape.xy))          
 
     for match_type, matches in match_dict.items():
         match_list = [main_contour_data]
@@ -216,30 +273,81 @@ for contour_A_id, match_dict in grouped.items():
             db_contour_B = session.query(Contour).get(match_id)
             reconstruct_contour_b = section.contours[db_contour_B.index]
 
-            if isinstance(reconstruct_contour_b.shape, Polygon):
-                coords2 = list(reconstruct_contour_b.shape.exterior.coords)
+            #converting to pixels
+            reconstruct_contour_b_copy = deepcopy(reconstruct_contour_b)
+            reconstruct_contour_b_copy.points = list(map(tuple, reconstruct_contour_b_copy.transform._tform.inverse(numpy.asarray(reconstruct_contour_b_copy.points)/section.images[0].mag)))
+            
+            #need this
+            nullPoints1 = reconstruct_contour_b_copy.shape.bounds
 
+            flipVector = numpy.array([1, -1])
+            im = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
+            imWidth, imHeight = im.size
+            translationVector = numpy.array([0, imHeight])
+
+            if isinstance(reconstruct_contour_a_copy.shape, Polygon):
+                transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.exterior.coords))*flipVector)))
+           
             else:
-                coords2 = list(zip(*reconstruct_contour_b.shape.xy))  
+                transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.xy))*flipVector)))             
+            reconstruct_contour_b_copy.points = transformedPoints
+
+            #cropping
+            minx, miny, maxx, maxy = reconstruct_contour_b_copy.shape.bounds
+            x = minx-100
+            y = miny = 100
+            width = maxx-x+100
+            height = maxy-y+100
+
+            #need this
+            rect = [x, y, width, height]
+
+            cropVector = numpy.array([x,y])
+            croppedPoints = list(map(tuple, numpy.array(reconstruct_contour_b_copy.points)-cropVector))
+            reconstruct_contour_b_copy.points = croppedPoints
+
+            #scaling
+            preWidth = float(imWidth)
+            preHeight = float(imHeight)
+
+            #prevent division by 0
+            if preWidth == 0.0 or preHeight == 0.0:
+                preWidth = 1.0
+                preHeight = 1.0
+
+            wScale = 300/preWidth
+            hScale = 300/preHeight
+
+            scale = numpy.array([wScale, hScale])
+
+            scaledPoints = list(map(tuple, numpy.array(reconstruct_contour_b_copy.points)*scale))
+            
+            #need this
+            reconstruct_contour_b_copy.points = scaledPoints
+
+
+            # if isinstance(reconstruct_contour_b.shape, Polygon):
+            #     coords2 = list(reconstruct_contour_b.shape.exterior.coords)
+
+            # else:
+            #     coords2 = list(zip(*reconstruct_contour_b.shape.xy))  
 
             match_list.append({
                 'name': reconstruct_contour_b.name,
                 'points': reconstruct_contour_b.points,
                 'image': section.images[0]._path + "/{}".format(section.images[0].src),
                 'db_id': match_id,
-                'tdim': reconstruct_contour_b.transform.dim,
-                'txcoef': reconstruct_contour_b.transform.xcoef,
-                'tycoef': reconstruct_contour_b.transform.ycoef,
-                'mag': section.images[0].mag,
-                'bounds': reconstruct_contour_b.shape.bounds,
-                'coords': coords2            
+                'nullpoints': nullPoints,
+                'rect': rect,
+                'points': reconstruct_contour_a_copy.points           
             })
         section_matches[match_type].append(match_list)
     if not match_dict.values():
         section_matches["unique"].append(main_contour_data)
     already_added.append(contour_A_id)
 
-
-final_matches = json.dumps(section_matches)
-
+with open('mockdata5.json', 'w') as outfile:
+    outfile.write('[')
+    json.dump(section_matches, outfile)
+    outfile.write(']')
 #import debug
