@@ -10,83 +10,6 @@ import sys, os, csv, json, numpy
 from skimage import transform as tf
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-def transformTrace(xcoef, ycoef, dim):
-    xcoef = xcoef
-    ycoef = ycoef
-    dim = dim
-    if not xcoef or not ycoef or dim is None:
-        return None
-    a = xcoef
-    b = ycoef
-    # Affine transform
-    if dim in range(0, 4):
-        if dim == 0:
-            tmatrix = numpy.array(
-                [1, 0, 0, 0, 1, 0, 0, 0, 1]
-            ).reshape((3, 3))
-        elif dim == 1:
-            tmatrix = numpy.array(
-                [1, 0, a[0], 0, 1, b[0], 0, 0, 1]
-            ).reshape((3, 3))
-        elif dim == 2:  # Special case, swap b[1] and b[2] (look at original Reconstruct code: nform.cpp)
-            tmatrix = numpy.array(
-                [a[1], 0, a[0], 0, b[1], b[0], 0, 0, 1]
-            ).reshape((3, 3))
-        elif dim == 3:
-            tmatrix = numpy.array(
-                [a[1], a[2], a[0], b[1], b[2], b[0], 0, 0, 1]
-            ).reshape((3, 3))
-        return tf.AffineTransform(tmatrix)
-    # Polynomial transform
-    elif dim in range(4, 7):
-        tmatrix = numpy.array(
-            [a[0], a[1], a[2], a[4], a[3], a[5], b[0], b[1], b[2], b[4], b[3], b[5]]
-        ).reshape((2, 6))
-        # create matrix of coefficients
-        tforward = tf.PolynomialTransform(tmatrix)
-
-        def getrevt(pts):  # pts are a np.array
-            newpts = []  # list of final estimates of (x,y)
-            for i in range(len(pts)):
-                # (u,v) for which we want (x,y)
-                u, v = pts[i, 0], pts[i, 1]  # input pts
-                # initial guess of (x,y)
-                x0, y0 = 0.0, 0.0
-                # get forward tform of initial guess
-                uv0 = tforward(numpy.array([x0, y0]).reshape([1, 2]))[0]
-                u0 = uv0[0]
-                v0 = uv0[1]
-                e = 1.0  # reduce error to this limit
-                epsilon = 5e-10
-                i = 0
-                while e > epsilon and i < 100:  # NOTE: 10 -> 100
-                    i += 1
-                    # compute Jacobian
-                    l = a[1] + a[3] * y0 + 2.0 * a[4] * x0
-                    m = a[2] + a[3] * x0 + 2.0 * a[5] * y0
-                    n = b[1] + b[3] * y0 + 2.0 * b[4] * x0
-                    o = b[2] + b[3] * x0 + 2.0 * b[5] * y0
-                    p = l * o - m * n  # determinant for inverse
-                    if abs(p) > epsilon:
-                        # increment x0,y0 by inverse of Jacobian
-                        x0 = x0 + ((o * (u - u0) - m * (v - v0)) / p)
-                        y0 = y0 + ((l * (v - v0) - n * (u - u0)) / p)
-                    else:
-                        # try Jacobian transpose instead
-                        x0 = x0 + (l * (u - u0) + n * (v - v0))
-                        y0 = y0 + (m * (u - u0) + o * (v - v0))
-                    # get forward tform of current guess
-                    uv0 = tforward(np.array([x0, y0]).reshape([1, 2]))[0]
-                    u0 = uv0[0]
-                    v0 = uv0[1]
-                    # compute closeness to goal
-                    e = abs(u - u0) + abs(v - v0)
-                # append final estimate of (x,y) to newpts list
-                newpts.append((x0, y0))
-            newpts = numpy.asarray(newpts)
-            return newpts
-        tforward.inverse = getrevt
-        return tforward
 
 class Ui_loadDialog(object):
 
@@ -321,8 +244,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def initializeDataset(self):
         for i in range (len(self.data)):
-            print (i)
-#           if len(mockData[i]["potential"]) > 0:
             if len(self.data[i]["potential"]) > 0:
                 for j in range (len(self.data[i]["potential"])):
                     unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][0]["name"])
@@ -423,10 +344,12 @@ class resolveDialog(QtWidgets.QDialog):
         self.pixmap1 = QtGui.QPixmap()
         self.pixmap2 = QtGui.QPixmap()
         self.item = item
+
+#        for len(item):
+
         global itemData
         itemData = item.data()
         self.initializeData()
-        self.ui.pix1.setPixmap(self.pixmap1)
         self.exec_()
 
     def initializeData(self):
@@ -435,50 +358,27 @@ class resolveDialog(QtWidgets.QDialog):
         self.ui.nameEdit1.setText(name1)
         self.ui.nameEdit2.setText(name2)
         myBool = QtCore.QFileInfo(itemData[0]["image"]).exists()
-        self.pixmap1 = (QtGui.QPixmap(itemData[0]["image"]))
-        self.pixmap2 = (QtGui.QPixmap(itemData[1]["image"]))
+
         if not myBool:
             minx, miny, maxx, maxy = itemData[0]['nullpoints']
-            self.ui.pix1.setPixmap(QtGui.QPixMap(maxx-minx+200, maxy-miny+200))
-            self.ui.pix1.fill(fillColor=Qt.black)
+            self.pixmap1 = QtGui.QPixMap(maxx-minx+100, maxy-miny+100)
+            self.pixmap1.fill(fillColor=Qt.black)     
+        
+        else:       
+            self.pixmap1 = (QtGui.QPixmap(itemData[0]["image"]))
+            self.pixmap2 = (QtGui.QPixmap(itemData[1]["image"]))
 
-        self.pixmap1 = self.pixmap1.copy(itemData[0]['rect'])
-        self.pixmap2 = self.pixmap2.copy(itemData[1]['rect'])
+        self.pixmap1 = self.pixmap1.copy(*(itemData[0]['rect']))
+        self.pixmap2 = self.pixmap2.copy(*(itemData[1]['rect']))
+
+        preCropSize1 = self.pixmap1.size()
+        preCropSize2 = self.pixmap2.size()
 
         self.pixmap1 = self.pixmap1.copy().scaled(300, 300, QtCore.Qt.KeepAspectRatio)
         self.pixmap2 = self.pixmap2.copy().scaled(300, 300, QtCore.Qt.KeepAspectRatio)
 
-        polygon = QtGui.QPolygon()
-        for point in itemData[0]["points"]:
-            polygon.append(QtCore.QPoint(*point))
-
-        painter = QtGui.QPainter()
-        painter.begin(self.pixmap1)
-        painter.setPen(QtGui.QColor('red'))
-        painter.drawConvexPolygon(polygon)   
-
-    def crop(self):
-        minx, miny, maxx, maxy = itemData[0]["bounds"]
-        x = minx-100
-        y = miny-100
-        width = maxx-x+100
-        height = maxy-y+100
-
-#        self.pixmap1 = self.pixmap1.copy(x, y, width, height)
-        cropVector = numpy.array([x,y])
-        croppedPoints = list(map(tuple, numpy.array(itemData[0]["points"]) - cropVector))
-
-        itemData[0]["points"] = croppedPoints
-
-#        if not myBool:
-#            minx,miny,maxx,maxy = 
-
-    def scale(self):
-        preCropSize = self.pixmap1.size()
-        self.pixmap1.copy().scaled(500, 500, QtCore.Qt.KeepAspectRatio)
-
-        preWidth = float(preCropSize.width())
-        preHeight = float(preCropSize.height())
+        preWidth = float(preCropSize1.width())
+        preHeight = float(preCropSize1.height())
 
         if preWidth == 0.0 or preHeight == 0.0:
             preWidth = 1.0
@@ -486,12 +386,21 @@ class resolveDialog(QtWidgets.QDialog):
 
         wScale = self.pixmap1.size().width()/preWidth
         hScale = self.pixmap1.size().height()/preHeight
+
         scale = numpy.array([wScale, hScale])
-        scaledPoints = list(map(tuple, numpy.array(itemData[0]["points"]) * scale))
-        itemData[0]["points"] = scaledPoints
 
-    def drawOnPixmap(self, pen=QtGui.QColor('red')):
+        scaledPoints = list(map(tuple, numpy.array(itemData[0]['croppedPoints'])*scale))
+        points = scaledPoints
 
+        polygon = QtGui.QPolygon()
+        for point in points:
+            polygon.append(QtCore.QPoint(*point))
+
+        painter = QtGui.QPainter()
+        painter.begin(self.pixmap1)
+        painter.setPen(QtGui.QColor('red'))
+        painter.drawConvexPolygon(polygon)   
+        self.ui.pix1.setPixmap(self.pixmap1)
 
     def changeName(self):
         print ("change name")
@@ -627,10 +536,6 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
     mockData = json.load(open('mockdata5.json'))
-#   initialWindow = Window()
-#   writer = Notepad()
-#   menus = MenuDemo()
-#   writerWithBar = Writer()
     initialWindow = loadDialog()
     series = initialWindow.output
     print (series)

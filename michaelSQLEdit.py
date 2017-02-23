@@ -209,44 +209,27 @@ for contour_A_id, match_dict in grouped.items():
         transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.exterior.coords))*flipVector)))
    
     else:
-        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.xy))*flipVector)))        
+        x, y = reconstruct_contour_a_copy.shape.xy
+        x = list(x)
+        y = list(y)
+        coords = zip(x,y)
+        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(coords))*flipVector)))        
     reconstruct_contour_a_copy.points = transformedPoints
 
     #cropping
     minx, miny, maxx, maxy = reconstruct_contour_a_copy.shape.bounds
-    x = minx-100
-    y = miny = 100
-    width = maxx-x+100
-    height = maxy-y+100
+    x = minx-50
+    y = miny - 50
+    width = maxx-x+50
+    height = maxy-y+50
 
     #need this
     rect = [x, y, width, height]
 
     cropVector = numpy.array([x,y])
-    croppedPoints = list(map(tuple, numpy.array(reconstruct_contour_a_copy.points)-cropVector))
-    reconstruct_contour_a_copy.points = croppedPoints
 
-    #scaling
-    preWidth = float(imWidth)
-    preHeight = float(imHeight)
-
-    #prevent division by 0
-    if preWidth == 0.0 or preHeight == 0.0:
-        preWidth = 1.0
-        preHeight = 1.0
-
-    wScale = 300/preWidth
-    hScale = 300/preHeight
-
-    scale = numpy.array([wScale, hScale])
-
-    scaledPoints = list(map(tuple, numpy.array(reconstruct_contour_a_copy.points)*scale))
-    
     #need this
-    reconstruct_contour_a_copy.points = scaledPoints
-
-
-
+    croppedPoints = list(map(tuple, numpy.array(reconstruct_contour_a_copy.points)-cropVector))
 
     main_contour_data = {
         'name': reconstruct_contour_a.name,
@@ -255,16 +238,10 @@ for contour_A_id, match_dict in grouped.items():
         'db_id': contour_A_id,
         'nullpoints': nullPoints,
         'rect': rect,
-        'points': reconstruct_contour_a_copy.points
+        'croppedPoints': croppedPoints
 #        'transform': 
         
-    }
-
-    # if isinstance(reconstruct_contour_a.shape, Polygon):
-    #     main_contour_data['coords'] = list(reconstruct_contour_a.shape.exterior.coords)
-
-    # else:
-    #     main_contour_data['coords'] = list(zip(*reconstruct_contour_a.shape.xy))          
+    }    
 
     for match_type, matches in match_dict.items():
         match_list = [main_contour_data]
@@ -278,7 +255,7 @@ for contour_A_id, match_dict in grouped.items():
             reconstruct_contour_b_copy.points = list(map(tuple, reconstruct_contour_b_copy.transform._tform.inverse(numpy.asarray(reconstruct_contour_b_copy.points)/section.images[0].mag)))
             
             #need this
-            nullPoints1 = reconstruct_contour_b_copy.shape.bounds
+            nullPoints = reconstruct_contour_b_copy.shape.bounds
 
             flipVector = numpy.array([1, -1])
             im = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
@@ -289,48 +266,27 @@ for contour_A_id, match_dict in grouped.items():
                 transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.exterior.coords))*flipVector)))
            
             else:
-                transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.xy))*flipVector)))             
+                x, y = reconstruct_contour_b_copy.shape.xy
+                x = list(x)
+                y = list(y)
+                coords = list(zip(x,y))
+                transformedPoints = list(map(tuple, translationVector+coords*flipVector))              
             reconstruct_contour_b_copy.points = transformedPoints
 
             #cropping
             minx, miny, maxx, maxy = reconstruct_contour_b_copy.shape.bounds
-            x = minx-100
-            y = miny = 100
-            width = maxx-x+100
-            height = maxy-y+100
+            x = minx-50
+            y = miny - 50
+            width = maxx-x+50
+            height = maxy-y+50
 
             #need this
             rect = [x, y, width, height]
 
             cropVector = numpy.array([x,y])
-            croppedPoints = list(map(tuple, numpy.array(reconstruct_contour_b_copy.points)-cropVector))
-            reconstruct_contour_b_copy.points = croppedPoints
 
-            #scaling
-            preWidth = float(imWidth)
-            preHeight = float(imHeight)
-
-            #prevent division by 0
-            if preWidth == 0.0 or preHeight == 0.0:
-                preWidth = 1.0
-                preHeight = 1.0
-
-            wScale = 300/preWidth
-            hScale = 300/preHeight
-
-            scale = numpy.array([wScale, hScale])
-
-            scaledPoints = list(map(tuple, numpy.array(reconstruct_contour_b_copy.points)*scale))
-            
             #need this
-            reconstruct_contour_b_copy.points = scaledPoints
-
-
-            # if isinstance(reconstruct_contour_b.shape, Polygon):
-            #     coords2 = list(reconstruct_contour_b.shape.exterior.coords)
-
-            # else:
-            #     coords2 = list(zip(*reconstruct_contour_b.shape.xy))  
+            croppedPoints = list(map(tuple, numpy.array(reconstruct_contour_b_copy.points)-cropVector))
 
             match_list.append({
                 'name': reconstruct_contour_b.name,
@@ -339,7 +295,7 @@ for contour_A_id, match_dict in grouped.items():
                 'db_id': match_id,
                 'nullpoints': nullPoints,
                 'rect': rect,
-                'points': reconstruct_contour_a_copy.points           
+                'croppedPoints': croppedPoints         
             })
         section_matches[match_type].append(match_list)
     if not match_dict.values():
