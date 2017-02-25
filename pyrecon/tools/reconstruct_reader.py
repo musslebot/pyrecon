@@ -292,7 +292,12 @@ def extract_transform_attributes(node):
             try:  # TODO
                 return int(input)
             except:
-                print "\n\treconstruct_reader.intorfloat():",input,"converted to float",float(input),"\n"
+                print(
+                    "\n\treconstruct_reader.intorfloat(): "
+                    "{} "
+                    "converted to float "
+                    "{}".format(input, float(input))
+                )
                 return float(input)
     attributes = {
         "dim": int(node.get("dim")),
