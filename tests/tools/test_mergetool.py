@@ -40,11 +40,6 @@ class MergetoolTests(TestCase):
         (15.1004, 17.5219),
     ]
 
-    def test_get_bounding_box(self):
-        polygon = Polygon(numpy.asarray(self.polygon_points))
-        box = mergetool.get_bounding_box(polygon)
-        self.assertEqual(box.bounds, (15.1004, 17.4528, 16.0188, 18.2499))
-
     def test_is_reverse(self):
         reverse_points = self.polygon_points[::-1]
         reverse_polygon = Polygon(numpy.asarray(reverse_points))
