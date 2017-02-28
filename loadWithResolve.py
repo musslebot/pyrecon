@@ -116,6 +116,7 @@ class Ui_MainWindow(object):
         self.unresolvedModel = QtGui.QStandardItemModel(self.unresolvedView)
         self.unresolvedView.setModel(self.unresolvedModel)
         self.unresolvedView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.unresolvedView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         self.unresolvedView.setObjectName("unresolvedView")
         self.verticalLayout_2.addWidget(self.unresolvedView)
@@ -148,6 +149,7 @@ class Ui_MainWindow(object):
         self.resolvedModel = QtGui.QStandardItemModel(self.resolvedView)
         self.resolvedView.setModel(self.resolvedModel)        
         self.resolvedView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.resolvedView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         self.resolvedView.setObjectName("resolvedView")
         self.verticalLayout.addWidget(self.resolvedView)
@@ -246,29 +248,38 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range (len(self.data)):
             if len(self.data[i]["potential"]) > 0:
                 for j in range (len(self.data[i]["potential"])):
-                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][0]["name"])
+                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][1]["name"])
                     data = self.data[i]["potential"][j]
                     unresolvedItem.setData(data)
-                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["potential"][j][0]["name"]))
+                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["potential"][j][1]["name"]))
+                    self.ui.unresolvedModel.appendRow(unresolvedItem)
+                    unresolvedItem.setBackground(QtGui.QColor('red'))
+
+            if len(self.data[i]["potential_realigned"]) > 0:
+                for j in range (len(self.data[i]["potential_realigned"])):
+                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][1]["name"])
+                    data = self.data[i]["potential"][j]
+                    unresolvedItem.setData(data)
+                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["potential"][j][1]["name"]))
                     self.ui.unresolvedModel.appendRow(unresolvedItem)
                     unresolvedItem.setBackground(QtGui.QColor('red'))
 
 
             if len(self.data[i]["exact"]) > 0:
                 for j in range (len(self.data[i]["exact"])):
-                    resolvedItem = QtGui.QStandardItem(self.data[i]["exact"][j][0]["name"])
+                    resolvedItem = QtGui.QStandardItem(self.data[i]["exact"][j][1]["name"])
                     data = self.data[i]["exact"][j]
                     resolvedItem.setData(data)
-                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["exact"][j][0]["name"]))
+                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["exact"][j][1]["name"]))
                     self.ui.resolvedModel.appendRow(resolvedItem)
-                    resolvedItem.setBackground(QtGui.QColor('yellow'))
+                    resolvedItem.setBackground(QtGui.QColor('cyan'))
 
             if len(self.data[i]["unique"]) > 0:        
                 for j in range (len(self.data[i]["unique"])):
-                    resolvedItem = QtGui.QStandardItem(self.data[i]["unique"][j]["name"])
+                    resolvedItem = QtGui.QStandardItem(self.data[i]["unique"][j][1]["name"])
                     data = self.data[i]["unique"][j]
                     resolvedItem.setData(data)
-                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["unique"][j]["name"]))
+                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["unique"][j][1]["name"]))
                     self.ui.resolvedModel.appendRow(resolvedItem)
                     resolvedItem.setBackground(QtGui.QColor('green'))
 
@@ -281,12 +292,10 @@ class MainWindow(QtWidgets.QMainWindow):
         print("load series")
 
     def transferAllRight(self):
-        initialRowCount = self.ui.unresolvedModel.rowCount()
-        for idx in range (0, initialRowCount):
-            i = 0
-            indexObj = self.ui.unresolvedModel.index(i, 0)
+        for idx in range (0, self.ui.unresolvedModel.rowCount()):
+            indexObj = self.ui.unresolvedModel.index(0, 0)
             selectedItem = self.ui.unresolvedModel.itemFromIndex(indexObj)
-            self.ui.unresolvedModel.takeRow(i)
+            self.ui.unresolvedModel.takeRow(0)
             self.ui.resolvedModel.appendRow(selectedItem)
 
         self.ui.resolvedView.update()
@@ -315,7 +324,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def viewAll(self):
-        print ("view all")
+        for idx in range (0, self.ui.unresolvedModel.rowCount()):
+            nextItemIndex = self.ui.unresolvedModel.index(0, 0)
+            nextItem = self.ui.unresolvedModel.itemFromIndex(nextItemIndex)
+            resolution = resolveDialog(nextItem)
+            resoMarker = resolution.saveState
+            
+            if resoMarker:
+                self.ui.unresolvedModel.takeRow(0)
+                self.ui.resolvedModel.appendRow(nextItem)        
+
+        self.ui.resolvedView.update()
+        self.ui.unresolvedView.update()            
 
     def saveSeries(self):
         print ("save series")
@@ -324,95 +344,107 @@ class MainWindow(QtWidgets.QMainWindow):
         selected = self.ui.unresolvedView.selectedIndexes()
         for idx in selected:
             selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)        
-        resolveDialog(selectedItem)
-        print ("load resolve unchanged")
+            resolution = resolveDialog(selectedItem)
+            resoMarker = resolution.saveState
+        
+            if resoMarker:
+                self.ui.unresolvedModel.takeRow(idx.row())
+                self.ui.resolvedModel.appendRow(selectedItem)        
 
+                self.ui.resolvedView.update()
+                self.ui.unresolvedView.update()
 
     def loadResolveChanged(self, item):
         selected = self.ui.resolvedView.selectedIndexes()   
         for idx in selected:
             selectedItem = self.ui.resolvedModel.itemFromIndex(idx)           
-        resolution = resolveDialog(selectedItem)        
-        print ("load resolve changed")
+        resolveDialog(selectedItem)        
 
 
 class resolveDialog(QtWidgets.QDialog):
     def __init__(self, item):
         super(resolveDialog, self).__init__()
-        self.ui = Ui_Dialog()
-        self.ui.setupUi(self)
-        self.pixmap1 = QtGui.QPixmap()
-        self.pixmap2 = QtGui.QPixmap()
-        self.item = item
-
-#        for len(item):
-
         global itemData
-        itemData = item.data()
+        itemData = item.data()        
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self, itemData[0])
+        self.nameState = False
+        self.updatedState = False
+        self.saveState = False
         self.initializeData()
         self.exec_()
 
     def initializeData(self):
-        name1 = itemData[0]["name"]
-        name2 = itemData[1]["name"]
-        self.ui.nameEdit1.setText(name1)
-        self.ui.nameEdit2.setText(name2)
-        myBool = QtCore.QFileInfo(itemData[0]["image"]).exists()
+        for i in range (0, len(itemData[0])):
+            getattr(self.ui, 'nameEdit'+str(i+1)).setText(itemData[i+1]["name"])
 
-        if not myBool:
-            minx, miny, maxx, maxy = itemData[0]['nullpoints']
-            self.pixmap1 = QtGui.QPixMap(maxx-minx+100, maxy-miny+100)
-            self.pixmap1.fill(fillColor=Qt.black)     
+            myBool = QtCore.QFileInfo(itemData[1]["image"]).exists()
+
+            if not myBool:
+                minx, miny, maxx, maxy = itemData[i+1]['nullpoints']
+                pixmap = QtGui.QPixMap(maxx-minx+100, maxy-miny+100)
+                pixmap.fill(fillColor=Qt.black)     
         
-        else:       
-            self.pixmap1 = (QtGui.QPixmap(itemData[0]["image"]))
-            self.pixmap2 = (QtGui.QPixmap(itemData[1]["image"]))
+            else:       
+                pixmap = (QtGui.QPixmap(itemData[i+1]["image"]))
 
-        self.pixmap1 = self.pixmap1.copy(*(itemData[0]['rect']))
-        self.pixmap2 = self.pixmap2.copy(*(itemData[1]['rect']))
+            pixmap = pixmap.copy(*(itemData[i+1]['rect']))
 
-        preCropSize1 = self.pixmap1.size()
-        preCropSize2 = self.pixmap2.size()
+            preCropSize = pixmap.size()
 
-        self.pixmap1 = self.pixmap1.copy().scaled(300, 300, QtCore.Qt.KeepAspectRatio)
-        self.pixmap2 = self.pixmap2.copy().scaled(300, 300, QtCore.Qt.KeepAspectRatio)
+            pixmap = pixmap.copy().scaled(300, 300, QtCore.Qt.KeepAspectRatio)
 
-        preWidth = float(preCropSize1.width())
-        preHeight = float(preCropSize1.height())
+            preWidth = float(preCropSize.width())
+            preHeight = float(preCropSize.height())
 
-        if preWidth == 0.0 or preHeight == 0.0:
-            preWidth = 1.0
-            preHeight = 1.0
+            if preWidth == 0.0 or preHeight == 0.0:
+                preWidth = 1.0
+                preHeight = 1.0
 
-        wScale = self.pixmap1.size().width()/preWidth
-        hScale = self.pixmap1.size().height()/preHeight
+            wScale = pixmap.size().width()/preWidth
+            hScale = pixmap.size().height()/preHeight
 
-        scale = numpy.array([wScale, hScale])
+            scale = numpy.array([wScale, hScale])
 
-        scaledPoints = list(map(tuple, numpy.array(itemData[0]['croppedPoints'])*scale))
-        points = scaledPoints
+            scaledPoints = list(map(tuple, numpy.array(itemData[i+1]['croppedPoints'])*scale))
+            points = scaledPoints
 
-        polygon = QtGui.QPolygon()
-        for point in points:
-            polygon.append(QtCore.QPoint(*point))
+            polygon = QtGui.QPolygon()
+            for point in points:
+                polygon.append(QtCore.QPoint(*point))
 
-        painter = QtGui.QPainter()
-        painter.begin(self.pixmap1)
-        painter.setPen(QtGui.QColor('red'))
-        painter.drawConvexPolygon(polygon)   
-        self.ui.pix1.setPixmap(self.pixmap1)
+            painter = QtGui.QPainter()
+            painter.begin(pixmap)
+            painter.setPen(QtGui.QColor('red'))
+            painter.drawConvexPolygon(polygon)   
+            painter.end()
+            getattr(self.ui, 'pix'+str(i+1)).setPixmap(pixmap)
 
     def changeName(self):
-        print ("change name")
+        self.nameState == True
 
     def saveResolutions(self):
-        print ("save resolutions")
+        self.saveState = True
+        if self.nameState == True:
+            for i in range (0, len(itemData[0])):
+                itemData[i+1]['name'] = getattr(self.ui, 'nameEdit'+str(i+1)).text()
 
-    def updateContour(self):
+        if self.updatedState == True:
+            for i in range (0, len(itemData[0])):
+                if getattr(self.ui, 'checkBox'+str(i+1)).isChecked():
+                    itemData[0][i] = 1
+                else:
+                    itemData[0][i] = 0
+
+
+    def updateContour(self, item):
         print ("update contour")
+        self.updatedState = True
+
 
 class Ui_Dialog(object):
-    def setupUi(self, Dialog):
+    def setupUi(self, Dialog, listString):
+        self.listString = listString
         Dialog.setObjectName("Dialog")
         Dialog.resize(736, 649)
         self.verticalLayoutWidget = QtWidgets.QWidget(Dialog)
@@ -427,107 +459,94 @@ class Ui_Dialog(object):
         self.resolveLabel.setWordWrap(False)
         self.resolveLabel.setObjectName("resolveLabel")
         self.verticalLayout.addWidget(self.resolveLabel)
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.pix1 = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.pix1.setMaximumSize(QtCore.QSize(300, 300))
-        self.pix1.setText("")
-#        self.pix1.setPixmap(QtGui.QPixmap("brain4.png"))
-        self.pix1.setScaledContents(True)
-        self.pix1.setWordWrap(False)
-        self.pix1.setObjectName("pix1")
-        self.horizontalLayout_3.addWidget(self.pix1)
-        self.pix2 = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.pix2.setMaximumSize(QtCore.QSize(300, 300))
-        self.pix2.setText("")
-#        self.pix2.setPixmap(QtGui.QPixmap("brain4.png"))
-        self.pix2.setScaledContents(True)
-        self.pix2.setWordWrap(False)
-        self.pix2.setObjectName("pix2")
-        self.horizontalLayout_3.addWidget(self.pix2)
-        self.verticalLayout.addLayout(self.horizontalLayout_3)
-        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_4.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
-        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.nameLabel1 = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.nameLabel1.setMaximumSize(QtCore.QSize(50, 16777215))
-        self.nameLabel1.setObjectName("nameLabel1")
-        self.horizontalLayout.addWidget(self.nameLabel1)
-        self.nameEdit1 = QtWidgets.QLineEdit(self.verticalLayoutWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.nameEdit1.sizePolicy().hasHeightForWidth())
-        self.nameEdit1.setSizePolicy(sizePolicy)
-        self.nameEdit1.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.nameEdit1.setObjectName("nameEdit1")
-        self.horizontalLayout.addWidget(self.nameEdit1)
-        self.verticalLayout_2.addLayout(self.horizontalLayout)
-        self.checkBox1 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.checkBox1.setMaximumSize(QtCore.QSize(16777215, 20))
-        self.checkBox1.setObjectName("checkBox1")
-        self.verticalLayout_2.addWidget(self.checkBox1)
-        self.horizontalLayout_4.addLayout(self.verticalLayout_2)
-        self.verticalLayout_4 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.nameLabel2 = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.nameLabel2.setMaximumSize(QtCore.QSize(50, 16777215))
-        self.nameLabel2.setObjectName("nameLabel2")
-        self.horizontalLayout_2.addWidget(self.nameLabel2)
-        self.nameEdit2 = QtWidgets.QLineEdit(self.verticalLayoutWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.nameEdit2.sizePolicy().hasHeightForWidth())
-        self.nameEdit2.setSizePolicy(sizePolicy)
-        self.nameEdit2.setMaximumSize(QtCore.QSize(200, 16777215))
-        self.nameEdit2.setObjectName("nameEdit2")
-        self.horizontalLayout_2.addWidget(self.nameEdit2)
-        self.verticalLayout_4.addLayout(self.horizontalLayout_2)
-        self.checkBox2 = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.checkBox2.setMaximumSize(QtCore.QSize(16777215, 20))
-        self.checkBox2.setObjectName("checkBox2")
-        self.verticalLayout_4.addWidget(self.checkBox2)
-        self.horizontalLayout_4.addLayout(self.verticalLayout_4)
-        self.verticalLayout_3 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
+
+        #generate photos
+        for i in range(0, len(self.listString)):
+            setattr(self, 'pix'+str(i+1), QtWidgets.QLabel(self.verticalLayoutWidget))
+            getattr(self, 'pix'+str(i+1)).setMaximumSize(QtCore.QSize(300, 300))
+            
+            getattr(self, 'pix'+str(i+1)).setText("")
+            getattr(self, 'pix'+str(i+1)).setScaledContents(True)
+            getattr(self, 'pix'+str(i+1)).setWordWrap(False)
+            getattr(self, 'pix'+str(i+1)).setObjectName("pix"+str(i+1))
+            self.horizontalLayout.addWidget(getattr(self, 'pix'+str(i+1)))
+        
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.horizontalLayout_1 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_1.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
+        self.horizontalLayout_1.setObjectName("horizontalLayout_1")
+
+
+
+
+
+        #generate name label and name edit
+        for i in range(0, len(self.listString)):
+            setattr(self, 'verticalLayout_'+str(i+2), QtWidgets.QVBoxLayout())
+            getattr(self, 'verticalLayout_'+str(i+2)).setObjectName("verticalLayout_"+str(i+2))
+            setattr(self, 'horizontalLayout_'+str(i+2), QtWidgets.QHBoxLayout())
+            getattr(self, 'horizontalLayout_'+str(i+2)).setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
+            getattr(self, 'horizontalLayout_'+str(i+2)).setObjectName("horizontalLayout_"+str(i+2))  
+
+            setattr(self, 'nameLabel'+str(i+1), QtWidgets.QLabel(self.verticalLayoutWidget))
+            getattr(self, 'nameLabel'+str(i+1)).setMaximumSize(QtCore.QSize(50, 16777215))
+            
+            getattr(self, 'nameLabel'+str(i+1)).setObjectName("nameLabel"+str(i+1))
+            getattr(self, 'nameLabel'+str(i+1)).setText("Name:")
+            getattr(self, 'horizontalLayout_'+str(i+2)).addWidget(getattr(self, 'nameLabel'+str(i+1)))
+
+            setattr(self, 'nameEdit'+str(i+1), QtWidgets.QLineEdit(self.verticalLayoutWidget))
+            sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            sizePolicy.setHeightForWidth(getattr(self, 'nameEdit'+str(i+1)).sizePolicy().hasHeightForWidth())
+            getattr(self, 'nameEdit'+str(i+1)).setSizePolicy(sizePolicy)
+            getattr(self, 'nameEdit'+str(i+1)).setMaximumSize(QtCore.QSize(200, 16777215))
+            getattr(self, 'nameEdit'+str(i+1)).setObjectName("nameEdit"+str(i+1))
+            getattr(self, 'horizontalLayout_'+str(i+2)).addWidget(getattr(self, 'nameEdit'+str(i+1)))
+            getattr(self, 'verticalLayout_'+str(i+2)).addLayout(getattr(self, 'horizontalLayout_'+str(i+2)))
+            getattr(self, 'nameEdit'+str(i+1)).textEdited['QString'].connect(Dialog.changeName)
+
+            
+            #generate checkboxes
+            setattr(self, 'checkBox'+str(i+1), QtWidgets.QCheckBox(self.verticalLayoutWidget))            
+            getattr(self, 'checkBox'+str(i+1)).setMaximumSize(QtCore.QSize(16777215, 20))
+            getattr(self, 'checkBox'+str(i+1)).setObjectName("checkBox1")
+            getattr(self, 'checkBox'+str(i+1)).setChecked(self.listString[i])
+            getattr(self, 'checkBox'+str(i+1)).stateChanged['int'].connect(Dialog.updateContour)
+            getattr(self, 'checkBox'+str(i+1)).setText("Contour "+str(i+1))
+            getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'checkBox'+str(i+1)))
+
+            self.horizontalLayout_1.addLayout(getattr(self, 'verticalLayout_'+str(i+2)))            
+
+        
+        self.verticalLayout_1 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_1.setObjectName("verticalLayout_1")
         self.saveChangesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.saveChangesButton.setMaximumSize(QtCore.QSize(16777215, 30))
         self.saveChangesButton.setObjectName("saveChangesButton")
-        self.verticalLayout_3.addWidget(self.saveChangesButton)
+        self.verticalLayout_1.addWidget(self.saveChangesButton)
         self.cancelButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.cancelButton.setMaximumSize(QtCore.QSize(16777215, 30))
         self.cancelButton.setObjectName("cancelButton")
-        self.verticalLayout_3.addWidget(self.cancelButton)
-        self.horizontalLayout_4.addLayout(self.verticalLayout_3)
-        self.verticalLayout.addLayout(self.horizontalLayout_4)
+        self.verticalLayout_1.addWidget(self.cancelButton)
+        self.horizontalLayout_1.addLayout(self.verticalLayout_1)
+        self.verticalLayout.addLayout(self.horizontalLayout_1)
         self.verticalLayout.setStretch(1, 1)
 
         self.retranslateUi(Dialog)
-        self.nameEdit1.textChanged['QString'].connect(Dialog.changeName)
-        self.nameEdit2.textChanged['QString'].connect(Dialog.changeName)
+ 
         self.saveChangesButton.clicked.connect(Dialog.saveResolutions)
         self.cancelButton.clicked.connect(Dialog.reject)
         self.saveChangesButton.clicked.connect(Dialog.accept)
-        self.checkBox1.stateChanged['int'].connect(Dialog.updateContour)
-        self.checkBox2.stateChanged['int'].connect(Dialog.updateContour)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.resolveLabel.setText(_translate("Dialog", "Resolve Duplicate Contours"))
-        self.nameLabel1.setText(_translate("Dialog", "Name:"))
-        self.checkBox1.setText(_translate("Dialog", "Contour 1"))
-        self.nameLabel2.setText(_translate("Dialog", "Name:"))
-        self.checkBox2.setText(_translate("Dialog", "Contour 2"))
         self.saveChangesButton.setText(_translate("Dialog", "Save"))
         self.cancelButton.setText(_translate("Dialog", "Cancel"))
 
@@ -536,9 +555,9 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
     mockData = json.load(open('mockdata5.json'))
-    initialWindow = loadDialog()
-    series = initialWindow.output
-    print (series)
+    #initialWindow = loadDialog()
+    #series = initialWindow.output
+    #print (series)
     mainWindow = MainWindow(mockData)
     mainWindow.show()
     app.exec_()

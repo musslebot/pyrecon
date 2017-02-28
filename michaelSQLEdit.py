@@ -185,6 +185,7 @@ section_matches = {
     'section': 20,
     'exact': [],
     'potential': [],
+    'potential_realigned': [],
     'unique': []
 }
 
@@ -218,10 +219,10 @@ for contour_A_id, match_dict in grouped.items():
 
     #cropping
     minx, miny, maxx, maxy = reconstruct_contour_a_copy.shape.bounds
-    x = minx-50
-    y = miny - 50
-    width = maxx-x+50
-    height = maxy-y+50
+    x = minx-100
+    y = miny - 100
+    width = maxx-x+100
+    height = maxy-y+100
 
     #need this
     rect = [x, y, width, height]
@@ -244,8 +245,15 @@ for contour_A_id, match_dict in grouped.items():
     }    
 
     for match_type, matches in match_dict.items():
-        match_list = [main_contour_data]
+        matchNum = len(matches)
+        if (match_type == 'potential') or (match_type == 'potential_realigned'):
+            matchCounter = [1]*(matchNum+1)
+        elif (match_type == 'exact'):
+            matchCounter = [1]
+            matchCounter += [0]*(matchNum)
+        match_list = [list(matchCounter), main_contour_data]
         for match_id in matches:
+
             already_added.append(match_id)
             db_contour_B = session.query(Contour).get(match_id)
             reconstruct_contour_b = section.contours[db_contour_B.index]
@@ -257,13 +265,13 @@ for contour_A_id, match_dict in grouped.items():
             #need this
             nullPoints = reconstruct_contour_b_copy.shape.bounds
 
-            flipVector = numpy.array([1, -1])
-            im = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
-            imWidth, imHeight = im.size
-            translationVector = numpy.array([0, imHeight])
+            # flipVector = numpy.array([1, -1])
+            # im = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
+            # imWidth, imHeight = im.size
+            # translationVector = numpy.array([0, imHeight])
 
-            if isinstance(reconstruct_contour_a_copy.shape, Polygon):
-                transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.exterior.coords))*flipVector)))
+            if isinstance(reconstruct_contour_b_copy.shape, Polygon):
+                transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_b_copy.shape.exterior.coords))*flipVector)))
            
             else:
                 x, y = reconstruct_contour_b_copy.shape.xy
@@ -275,10 +283,10 @@ for contour_A_id, match_dict in grouped.items():
 
             #cropping
             minx, miny, maxx, maxy = reconstruct_contour_b_copy.shape.bounds
-            x = minx-50
-            y = miny - 50
-            width = maxx-x+50
-            height = maxy-y+50
+            x = minx-100
+            y = miny - 100
+            width = maxx-x+100
+            height = maxy-y+100
 
             #need this
             rect = [x, y, width, height]
@@ -299,7 +307,7 @@ for contour_A_id, match_dict in grouped.items():
             })
         section_matches[match_type].append(match_list)
     if not match_dict.values():
-        section_matches["unique"].append(main_contour_data)
+        section_matches["unique"].append([[1], main_contour_data])
     already_added.append(contour_A_id)
 
 with open('mockdata5.json', 'w') as outfile:
