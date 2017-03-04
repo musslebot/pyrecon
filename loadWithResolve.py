@@ -114,12 +114,18 @@ class Ui_MainWindow(object):
 
         self.unresolvedView = QtWidgets.QListView(self.gridLayoutWidget)
         self.unresolvedModel = QtGui.QStandardItemModel(self.unresolvedView)
+
         self.unresolvedView.setModel(self.unresolvedModel)
         self.unresolvedView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.unresolvedView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.unresolvedView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.unresolvedView.customContextMenuRequested.connect(MainWindow.unresolvedMenu)
 
         self.unresolvedView.setObjectName("unresolvedView")
         self.verticalLayout_2.addWidget(self.unresolvedView)
+        self.resolveButton = QtWidgets.QPushButton(self.gridLayoutWidget)
+        self.resolveButton.setObjectName("resolveButton")
+        self.verticalLayout_2.addWidget(self.resolveButton)        
         self.transferLeftButton = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.transferLeftButton.setObjectName("transferLeftButton")
         self.verticalLayout_2.addWidget(self.transferLeftButton)
@@ -217,9 +223,10 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.changeSeriesButton.setText(_translate("MainWindow", "Change Series..."))
         self.unresolvedLabel.setText(_translate("MainWindow", "Unresolved Potential Duplicates"))
+        self.resolveButton.setText(_translate("MainWindow", "Resolve Selected")) 
         self.transferLeftButton.setText(_translate("MainWindow", "Transfer >>"))
-        self.viewAllButton.setText(_translate("MainWindow", "View All"))
-        self.transferAllButton.setText(_translate("MainWindow", "Transfer All (Ignore)"))
+        self.viewAllButton.setText(_translate("MainWindow", "Resolve All"))
+        self.transferAllButton.setText(_translate("MainWindow", "Transfer All"))
         self.resolvedLabel.setText(_translate("MainWindow", "Resolved Duplicates, Exact Duplicates, and Unique Traces"))
         self.transferRightButton.setText(_translate("MainWindow", "Transfer <<"))
         self.completeButton.setText(_translate("MainWindow", "Resolve Complete"))
@@ -232,7 +239,6 @@ class Ui_MainWindow(object):
         self.actionTransfer_all.setText(_translate("MainWindow", "Transfer All"))
         self.actionView_All.setText(_translate("MainWindow", "View All"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
-
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -262,7 +268,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     unresolvedItem.setData(data)
                     unresolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["potential"][j][1]["name"]))
                     self.ui.unresolvedModel.appendRow(unresolvedItem)
-                    unresolvedItem.setBackground(QtGui.QColor('red'))
+                    unresolvedItem.setBackground(QtGui.QColor('orange'))
 
 
             if len(self.data[i]["exact"]) > 0:
@@ -272,7 +278,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     resolvedItem.setData(data)
                     resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["exact"][j][1]["name"]))
                     self.ui.resolvedModel.appendRow(resolvedItem)
-                    resolvedItem.setBackground(QtGui.QColor('cyan'))
+                    resolvedItem.setBackground(QtGui.QColor('yellow'))
 
             if len(self.data[i]["unique"]) > 0:        
                 for j in range (len(self.data[i]["unique"])):
@@ -292,7 +298,8 @@ class MainWindow(QtWidgets.QMainWindow):
         print("load series")
 
     def transferAllRight(self):
-        for idx in range (0, self.ui.unresolvedModel.rowCount()):
+        rowCount = self.ui.unresolvedModel.rowCount())
+        for idx in range (0, rowCount):
             indexObj = self.ui.unresolvedModel.index(0, 0)
             selectedItem = self.ui.unresolvedModel.itemFromIndex(indexObj)
             self.ui.unresolvedModel.takeRow(0)
@@ -304,20 +311,40 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def transferFromLeft(self):
         selected = self.ui.unresolvedView.selectedIndexes()
+        rowNumbers = []
         for idx in selected:
-            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)
-            self.ui.unresolvedModel.takeRow(idx.row())
+            rowNumbers.append(idx.row())
+
+        oldIndex = 0
+
+        rowNumbers = sorted(rowNumbers)
+
+        for i in range (len(rowNumbers)):
+            indexObj = self.ui.unresolvedModel.index(rowNumbers[i] - oldIndex, 0)
+            selectedItem = self.ui.unresolvedModel.itemFromIndex(indexObj)
+            self.ui.unresolvedModel.takeRow(rowNumbers[i] - oldIndex)
             self.ui.resolvedModel.appendRow(selectedItem)
+            oldIndex +=1
 
         self.ui.resolvedView.update()
         self.ui.unresolvedView.update()
 
+
     def transferFromRight(self):
         selected = self.ui.resolvedView.selectedIndexes()
+        rowNumbers = []
         for idx in selected:
-            selectedItem = self.ui.resolvedModel.itemFromIndex(idx)
-            self.ui.resolvedModel.takeRow(idx.row())
+            rowNumbers.append(idx.row())
+
+        oldIndex = 0
+        rowNumbers = sorted(rowNumbers)
+
+        for i in range (len(rowNumbers)):
+            indexObj = self.ui.resolvedModel.index(rowNumbers[i] - oldIndex, 0)
+            selectedItem = self.ui.resolvedModel.itemFromIndex(indexObj)
+            self.ui.resolvedModel.takeRow(rowNumbers[i] - oldIndex)
             self.ui.unresolvedModel.appendRow(selectedItem)
+            oldIndex +=1
 
         self.ui.resolvedView.update()
         self.ui.unresolvedView.update()
@@ -340,7 +367,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def saveSeries(self):
         print ("save series")
 
-    def loadResolveUnchanged(self, item):
+    def loadResolveUnchanged(self):
         selected = self.ui.unresolvedView.selectedIndexes()
         for idx in selected:
             selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)        
@@ -354,41 +381,140 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.ui.resolvedView.update()
                 self.ui.unresolvedView.update()
 
-    def loadResolveChanged(self, item):
+    def loadResolveChanged(self):
         selected = self.ui.resolvedView.selectedIndexes()   
         for idx in selected:
             selectedItem = self.ui.resolvedModel.itemFromIndex(idx)           
-        resolveDialog(selectedItem)        
+        resolveDialog(selectedItem)    
+
+    def selectAllLeft(self):
+        selected = self.ui.unresolvedView.selectedIndexes()   
+        for idx in selected:
+            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
+            selectedData = selectedItem.data()
+
+            for i in range (0, len(selectedData[0])):
+                if i == 0:
+                    selectedData[0][i] = 1
+                else:
+                    selectedData[0][i] = 0
+
+            selectedItem.setData(selectedData)
+
+    def selectAllRight(self):
+        selected = self.ui.unresolvedView.selectedIndexes()   
+        for idx in selected:
+            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
+            selectedData = selectedItem.data()
+
+            if len(selectedData[0]) == 1:
+                selectedData[0][0] = 1
+
+            else:
+                for i in range (0, len(selectedData[0])):
+                    if i == 1:
+                        selectedData[0][i] = 1
+                    else:
+                        selectedData[0][i] = 0
+
+            selectedItem.setData(selectedData)
+
+    def deselectAllTraces(self):
+        selected = self.ui.unresolvedView.selectedIndexes()   
+        for idx in selected:
+            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
+            selectedData = selectedItem.data()
+
+            for i in range (0, len(selectedData[0])):
+                    selectedData[0][i] = 0
+
+            selectedItem.setData(selectedData)        
+
+    def selectAllTraces(self):
+        selected = self.ui.unresolvedView.selectedIndexes()   
+        for idx in selected:
+            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
+            selectedData = selectedItem.data()
+
+            for i in range (0, len(selectedData[0])):
+                    selectedData[0][i] = 1
+
+            selectedItem.setData(selectedData)         
+
+    def unresolvedMenu(self, position):
+        menu = QtWidgets.QMenu()
+
+        resolveAction = menu.addAction("Resolve")
+        transferAction = menu.addAction("Transfer")
+        selectAllLeftAction = menu.addAction("Select All Left")
+        selectAllRightAction = menu.addAction("Select All Right")
+        deselectAllTracesAction = menu.addAction("Deselect All Traces")
+        selectAllTracesAction = menu.addAction("Select All Traces")
+
+
+        action = menu.exec_(self.ui.unresolvedView.mapToGlobal(position))
+
+        if action == resolveAction:
+            self.loadResolveUnchanged()
+
+        elif action == transferAction:
+            self.transferFromLeft()
+
+        elif action == selectAllLeftAction:
+            response = leftDialog()
+            if response.result() == 1:
+                self.selectAllLeft()
+            else:
+                pass
+
+        elif action == selectAllRightAction:
+            response = rightDialog()
+            if response.result() == 1:
+                self.selectAllRight()
+            else:
+                pass
+
+        # TODO: add dialog
+        elif action == deselectAllTracesAction:
+            self.deselectAllTraces()
+    
+        # TODO: add dialog
+        elif action == selectAllTracesAction:
+            self.selectAllTraces()
+
+
 
 
 class resolveDialog(QtWidgets.QDialog):
     def __init__(self, item):
         super(resolveDialog, self).__init__()
-        global itemData
-        itemData = item.data()        
+        self.itemData = item.data()        
         self.ui = Ui_Dialog()
-        self.ui.setupUi(self, itemData[0])
+        self.ui.setupUi(self, self.itemData[0])
         self.nameState = False
         self.updatedState = False
         self.saveState = False
         self.initializeData()
         self.exec_()
 
-    def initializeData(self):
-        for i in range (0, len(itemData[0])):
-            getattr(self.ui, 'nameEdit'+str(i+1)).setText(itemData[i+1]["name"])
+        if self.updatedState == True:
+            item.setData(self.itemData)
 
-            myBool = QtCore.QFileInfo(itemData[1]["image"]).exists()
+    def initializeData(self):
+        for i in range (0, len(self.itemData[0])):
+            getattr(self.ui, 'nameEdit'+str(i+1)).setText(self.itemData[i+1]["name"])
+
+            myBool = QtCore.QFileInfo(self.itemData[1]["image"]).exists()
 
             if not myBool:
-                minx, miny, maxx, maxy = itemData[i+1]['nullpoints']
+                minx, miny, maxx, maxy = self.itemData[i+1]['nullpoints']
                 pixmap = QtGui.QPixMap(maxx-minx+100, maxy-miny+100)
                 pixmap.fill(fillColor=Qt.black)     
         
             else:       
-                pixmap = (QtGui.QPixmap(itemData[i+1]["image"]))
+                pixmap = (QtGui.QPixmap(self.itemData[i+1]["image"]))
 
-            pixmap = pixmap.copy(*(itemData[i+1]['rect']))
+            pixmap = pixmap.copy(*(self.itemData[i+1]['rect']))
 
             preCropSize = pixmap.size()
 
@@ -406,7 +532,7 @@ class resolveDialog(QtWidgets.QDialog):
 
             scale = numpy.array([wScale, hScale])
 
-            scaledPoints = list(map(tuple, numpy.array(itemData[i+1]['croppedPoints'])*scale))
+            scaledPoints = list(map(tuple, numpy.array(self.itemData[i+1]['croppedPoints'])*scale))
             points = scaledPoints
 
             polygon = QtGui.QPolygon()
@@ -423,19 +549,18 @@ class resolveDialog(QtWidgets.QDialog):
     def changeName(self):
         self.nameState == True
 
-    def saveResolutions(self):
+    def saveResolutions(self,item):
         self.saveState = True
         if self.nameState == True:
-            for i in range (0, len(itemData[0])):
-                itemData[i+1]['name'] = getattr(self.ui, 'nameEdit'+str(i+1)).text()
+            for i in range (0, len(self.itemData[0])):
+                self.itemData[i+1]['name'] = getattr(self.ui, 'nameEdit'+str(i+1)).text()
 
         if self.updatedState == True:
-            for i in range (0, len(itemData[0])):
+            for i in range (0, len(self.itemData[0])):
                 if getattr(self.ui, 'checkBox'+str(i+1)).isChecked():
-                    itemData[0][i] = 1
+                    self.itemData[0][i] = 1
                 else:
-                    itemData[0][i] = 0
-
+                    self.itemData[0][i] = 0
 
     def updateContour(self, item):
         print ("update contour")
@@ -550,6 +675,85 @@ class Ui_Dialog(object):
         self.saveChangesButton.setText(_translate("Dialog", "Save"))
         self.cancelButton.setText(_translate("Dialog", "Cancel"))
 
+class Ui_LeftDialog(object):
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Select All Left")
+        Dialog.resize(400, 300)
+        self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label = QtWidgets.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setPointSize(36)
+        self.label.setFont(font)
+        self.label.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.label.setTextFormat(QtCore.Qt.AutoText)
+        self.label.setScaledContents(False)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setWordWrap(True)
+        self.label.setObjectName("label")
+        self.verticalLayout.addWidget(self.label)
+        self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.buttonBox)
+
+        self.retranslateUi(Dialog)
+        self.buttonBox.accepted.connect(Dialog.accept)
+        self.buttonBox.rejected.connect(Dialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        Dialog.setWindowTitle(_translate("Dialog", "Select All Left"))
+        self.label.setText(_translate("Dialog", "Are you sure you want to select all traces on the left?"))
+
+class leftDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super(leftDialog, self).__init__()       
+        self.ui = Ui_LeftDialog()
+        self.ui.setupUi(self)
+        self.exec_()
+
+class Ui_RightDialog(object):
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Dialog")
+        Dialog.resize(400, 300)
+        self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label = QtWidgets.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setPointSize(36)
+        self.label.setFont(font)
+        self.label.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.label.setTextFormat(QtCore.Qt.AutoText)
+        self.label.setScaledContents(False)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setWordWrap(True)
+        self.label.setObjectName("label")
+        self.verticalLayout.addWidget(self.label)
+        self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.buttonBox)
+
+        self.retranslateUi(Dialog)
+        self.buttonBox.accepted.connect(Dialog.accept)
+        self.buttonBox.rejected.connect(Dialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        Dialog.setWindowTitle(_translate("Dialog", "Select All Right"))
+        self.label.setText(_translate("Dialog", "Are you sure you want to select all traces on the right?"))
+
+class rightDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super(rightDialog, self).__init__()       
+        self.ui = Ui_RightDialog()
+        self.ui.setupUi(self)
+        self.exec_()
 
 def main():
 
