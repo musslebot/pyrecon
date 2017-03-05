@@ -1,3 +1,4 @@
+import os
 from sqlalchemy import (Boolean, Column, create_engine, ForeignKey,
     CheckConstraint, Integer, String)
 from sqlalchemy.ext.declarative import declarative_base
@@ -11,42 +12,7 @@ from copy import deepcopy
 # Create the in-memory SQLite database
 engine = create_engine("sqlite://", echo=True)
 
-# Create a base class that allows us communicate with the DB using Python
-# objects
-Base = declarative_base()
-
-
-class Contour(Base):
-    """ Contour knows where its corresponding PyReconstruct Contour is
-        within a Series, by storing the Section number and index within
-        Section.contours
-    """
-    __tablename__ = "contours"
-    id = Column(Integer, primary_key=True)
-    section = Column(Integer, nullable=False)
-    index = Column(Integer, nullable=False)
-
-
-class ContourMatch(Base):
-    """ This relation JOINs two Contours.
-    """
-    __tablename__ = "matches"
-    __table_args__ = (
-        # This constraint makes sure we dont duplicate the bidirectional join
-        # between two contours: (A, B) & (B, A)
-        CheckConstraint("id1 < id2", name="check_oneway"),
-    )
-    id1 = Column(
-        ForeignKey(Contour.id),
-        nullable=False,
-        primary_key=True
-    )
-    id2 = Column(
-        ForeignKey(Contour.id),
-        nullable=False,
-        primary_key=True
-    )
-    match_type = Column(String, nullable=False)
+from pyrecon.tools.mergetool.models import Base, Contour, ContourMatch
 
 # Create a session and bind it to the DB
 session = sessionmaker(bind=engine)()
@@ -67,16 +33,25 @@ Base.metadata.create_all(engine)
 
 
 from pyrecon.tools.reconstruct_reader import process_section_file
-from pyrecon.tools.mergetool import is_contacting, is_exact_duplicate, is_potential_duplicate
+from pyrecon.tools.mergetool.utils import is_contacting, is_exact_duplicate, is_potential_duplicate
 
 # Read Reconstruct file into PyReconstruct
-# We're just playing around with a single Section here
-section = process_section_file("/Users/Masha/Documents/RECONSTRUCT/CLZBJ_photos/CLZBJ_final_elastic_done_v2 export.20")
-section_number = 20
+section_1 = process_section_file(os.environ["SECTION_PATH"])
+section_2 = process_section_file(os.environ["SECTION_PATH"])
 # Go through each Contour in the Section and create a DB Contour tuple (row)
-for i, cont in enumerate(section.contours):
+section_number = section_1.index
+
+for i, cont in enumerate(section_1.contours):
     session.add(Contour(
         section=section_number,
+        series=1,
+        index=i
+    ))
+    session.commit()
+for i, cont in enumerate(section_2.contours):
+    session.add(Contour(
+        section=section_number,
+        series=2,
         index=i
     ))
     session.commit()
@@ -84,15 +59,13 @@ for i, cont in enumerate(section.contours):
 
 # Know we're going to categorize the PyReconstruct Contours by overlap
 # and then store a tuple (row) in the DB relation (table).
-def create_matches_from_contours(db_contours, section_contours):
+def create_matches_from_contours(db_contours_1, db_contours_2, section_contours_a, section_contours_b):
     matches = []
-    for idx, db_contour_A in enumerate(db_contours):
-        contA = section_contours[db_contour_A.index]
-        for idy, db_contour_B in enumerate(db_contours):
-            contB = section_contours[db_contour_B.index]
-            if idx >= idy:  # TODO: verify logic here -- Does this make sense?
-                continue
-            elif contA.name != contB.name:
+    for idx, db_contour_A in enumerate(db_contours_1):
+        contA = section_contours_a[db_contour_A.index]
+        for idy, db_contour_B in enumerate(db_contours_2):
+            contB = section_contours_b[db_contour_B.index]
+            if contA.name != contB.name:
                 continue
             elif contA.shape != contB.shape:
                 # TODO: this could be problematic (e.g. polygon vs linestring)
@@ -106,7 +79,7 @@ def create_matches_from_contours(db_contours, section_contours):
                     id2=db_contour_B.id,
                     match_type=match_type
                 ))
-            if is_potential_duplicate(contA.shape, contB.shape):
+            elif is_potential_duplicate(contA.shape, contB.shape):
                 if (contA.points == contB.points) and (contA.transform != contB.transform):
                     match_type = "potential_realigned"
                 else:
@@ -119,12 +92,13 @@ def create_matches_from_contours(db_contours, section_contours):
     return matches
 
 
-def get_section_contours(section_number):
+def get_section_contours(series_number, section_number):
     """ Return all of the DB Contours that belong in the given section number.
     """
     return session.query(
         Contour
     ).filter(
+        Contour.series == series_number,
         Contour.section == section_number
     ).all()
 
@@ -139,12 +113,17 @@ def get_matches():
     ).all()
 
 
-db_contours = get_section_contours(section_number)
-section_contours = section.contours
-matches = create_matches_from_contours(db_contours, section_contours)
+db_contours_1 = get_section_contours(1, section_number)
+db_contours_2 = get_section_contours(2, section_number)
+section_contours_a = section_1.contours
+section_contours_b = section_2.contours
+matches = create_matches_from_contours(
+    db_contours_1, db_contours_2,
+    section_contours_a, section_contours_b)
 # Commit matches to the DB
 session.add_all(matches)
 session.commit()
+
 
 from collections import defaultdict
 # Here we create an intermediate representation of our DB matches, structured
@@ -182,12 +161,14 @@ for id_ in db_contour_ids:
 # ]
 
 section_matches = {
-    'section': 20,
+    'section': section_number,
     'exact': [],
     'potential': [],
     'unique': []
 }
+import pdb; pdb.set_trace()
 
+# TODO: refactor pixel conversion stuff
 already_added = []
 for contour_A_id, match_dict in grouped.items():
     db_contour_A = session.query(Contour).get(contour_A_id)
@@ -196,7 +177,7 @@ for contour_A_id, match_dict in grouped.items():
     #converting to pixels
     reconstruct_contour_a_copy = deepcopy(reconstruct_contour_a)
     reconstruct_contour_a_copy.points = list(map(tuple, reconstruct_contour_a_copy.transform._tform.inverse(numpy.asarray(reconstruct_contour_a_copy.points)/section.images[0].mag)))
-    
+
     #need this
     nullPoints = reconstruct_contour_a_copy.shape.bounds
 
@@ -207,13 +188,13 @@ for contour_A_id, match_dict in grouped.items():
 
     if isinstance(reconstruct_contour_a_copy.shape, Polygon):
         transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.exterior.coords))*flipVector)))
-   
+
     else:
         x, y = reconstruct_contour_a_copy.shape.xy
         x = list(x)
         y = list(y)
         coords = zip(x,y)
-        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(coords))*flipVector)))        
+        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(coords))*flipVector)))
     reconstruct_contour_a_copy.points = transformedPoints
 
     #cropping
@@ -239,9 +220,9 @@ for contour_A_id, match_dict in grouped.items():
         'nullpoints': nullPoints,
         'rect': rect,
         'croppedPoints': croppedPoints
-#        'transform': 
-        
-    }    
+#        'transform':
+
+    }
 
     for match_type, matches in match_dict.items():
         match_list = [main_contour_data]
@@ -253,7 +234,7 @@ for contour_A_id, match_dict in grouped.items():
             #converting to pixels
             reconstruct_contour_b_copy = deepcopy(reconstruct_contour_b)
             reconstruct_contour_b_copy.points = list(map(tuple, reconstruct_contour_b_copy.transform._tform.inverse(numpy.asarray(reconstruct_contour_b_copy.points)/section.images[0].mag)))
-            
+
             #need this
             nullPoints = reconstruct_contour_b_copy.shape.bounds
 
@@ -264,13 +245,13 @@ for contour_A_id, match_dict in grouped.items():
 
             if isinstance(reconstruct_contour_a_copy.shape, Polygon):
                 transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.exterior.coords))*flipVector)))
-           
+
             else:
                 x, y = reconstruct_contour_b_copy.shape.xy
                 x = list(x)
                 y = list(y)
                 coords = list(zip(x,y))
-                transformedPoints = list(map(tuple, translationVector+coords*flipVector))              
+                transformedPoints = list(map(tuple, translationVector+coords*flipVector))
             reconstruct_contour_b_copy.points = transformedPoints
 
             #cropping
@@ -295,7 +276,7 @@ for contour_A_id, match_dict in grouped.items():
                 'db_id': match_id,
                 'nullpoints': nullPoints,
                 'rect': rect,
-                'croppedPoints': croppedPoints         
+                'croppedPoints': croppedPoints
             })
         section_matches[match_type].append(match_list)
     if not match_dict.values():

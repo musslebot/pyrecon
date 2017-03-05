@@ -74,12 +74,14 @@ def _create_db_contourmatch_from_db_contours_and_pyrecon_section(db_contour_A, d
     elif not is_contacting(pyrecon_contour_a.shape, pyrecon_contour_b.shape):
         db_match = None
     elif is_exact_duplicate(pyrecon_contour_a.shape, pyrecon_contour_b.shape):
+        import pdb; pdb.set_trace()
         db_match = ContourMatch(
             id1=db_contour_A.id,
             id2=db_contour_B.id,
             match_type="exact"
         )
     elif is_potential_duplicate(pyrecon_contour_a.shape, pyrecon_contour_b.shape):
+        import pdb; pdb.set_trace()
         if (pyrecon_contour_a.points == pyrecon_contour_b.points) and \
            (pyrecon_contour_a.transform != pyrecon_contour_b.transform):
             # TODO: consider better pushing this logic down into the core
@@ -87,12 +89,12 @@ def _create_db_contourmatch_from_db_contours_and_pyrecon_section(db_contour_A, d
             match_type = "potential_realigned"
         else:
             match_type = "potential"
-        match = ContourMatch(
+        db_match = ContourMatch(
             id1=db_contour_A.id,
             id2=db_contour_B.id,
             match_type=match_type
         )
-    return match
+    return db_match
 
 
 def _create_db_contourmatches_from_db_contours_and_pyrecon_section(db_contours, section):
@@ -103,8 +105,6 @@ def _create_db_contourmatches_from_db_contours_and_pyrecon_section(db_contours, 
         contA = section.contours[db_contour_A.index]
         for idy, db_contour_B in enumerate(db_contours):
             contB = section.contours[db_contour_B.index]
-            if idx >= idy:
-                continue
             match = _create_db_contourmatch_from_db_contours_and_pyrecon_section(
                 db_contour_A, db_contour_B, section)
             if match:

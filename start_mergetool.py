@@ -30,5 +30,4 @@ if __name__ == "__main__":
         session, db_contours, section
     )
     # TODO: db_contourmatches not working as expected
-    import pdb; pdb.set_trace()
 
