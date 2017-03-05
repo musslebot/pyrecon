@@ -298,7 +298,7 @@ class MainWindow(QtWidgets.QMainWindow):
         print("load series")
 
     def transferAllRight(self):
-        rowCount = self.ui.unresolvedModel.rowCount())
+        rowCount = self.ui.unresolvedModel.rowCount()
         for idx in range (0, rowCount):
             indexObj = self.ui.unresolvedModel.index(0, 0)
             selectedItem = self.ui.unresolvedModel.itemFromIndex(indexObj)
@@ -474,13 +474,19 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 pass
 
-        # TODO: add dialog
         elif action == deselectAllTracesAction:
-            self.deselectAllTraces()
+            response = deselectDialog()
+            if response.result() == 1:
+                self.deselectAllTraces()
+            else:
+                pass            
     
-        # TODO: add dialog
         elif action == selectAllTracesAction:
-            self.selectAllTraces()
+            response = selectDialog()
+            if response.result() == 1:
+                self.selectAllTraces()
+            else:
+                pass    
 
 
 
@@ -752,6 +758,86 @@ class rightDialog(QtWidgets.QDialog):
     def __init__(self):
         super(rightDialog, self).__init__()       
         self.ui = Ui_RightDialog()
+        self.ui.setupUi(self)
+        self.exec_()
+
+class Ui_DeselectDialog(object):
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Dialog")
+        Dialog.resize(400, 300)
+        self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label = QtWidgets.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setPointSize(36)
+        self.label.setFont(font)
+        self.label.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.label.setTextFormat(QtCore.Qt.AutoText)
+        self.label.setScaledContents(False)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setWordWrap(True)
+        self.label.setObjectName("label")
+        self.verticalLayout.addWidget(self.label)
+        self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.buttonBox)
+
+        self.retranslateUi(Dialog)
+        self.buttonBox.accepted.connect(Dialog.accept)
+        self.buttonBox.rejected.connect(Dialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        Dialog.setWindowTitle(_translate("Dialog", "Select All Right"))
+        self.label.setText(_translate("Dialog", "Are you sure you want to deselect all traces?"))
+
+class deselectDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super(deselectDialog, self).__init__()       
+        self.ui = Ui_DeselectDialog()
+        self.ui.setupUi(self)
+        self.exec_()
+
+class Ui_SelectDialog(object):
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Dialog")
+        Dialog.resize(400, 300)
+        self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label = QtWidgets.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setPointSize(36)
+        self.label.setFont(font)
+        self.label.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.label.setTextFormat(QtCore.Qt.AutoText)
+        self.label.setScaledContents(False)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setWordWrap(True)
+        self.label.setObjectName("label")
+        self.verticalLayout.addWidget(self.label)
+        self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.buttonBox)
+
+        self.retranslateUi(Dialog)
+        self.buttonBox.accepted.connect(Dialog.accept)
+        self.buttonBox.rejected.connect(Dialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        Dialog.setWindowTitle(_translate("Dialog", "Select All Right"))
+        self.label.setText(_translate("Dialog", "Are you sure you want to select all traces?"))
+
+class selectDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super(selectDialog, self).__init__()       
+        self.ui = Ui_SelectDialog()
         self.ui.setupUi(self)
         self.exec_()
 
