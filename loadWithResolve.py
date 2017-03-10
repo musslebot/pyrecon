@@ -254,38 +254,38 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range (len(self.data)):
             if len(self.data[i]["potential"]) > 0:
                 for j in range (len(self.data[i]["potential"])):
-                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][1]["name"])
+                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][0]["name"])
                     data = self.data[i]["potential"][j]
                     unresolvedItem.setData(data)
-                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["potential"][j][1]["name"]))
+                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["potential"][j][0]["name"]))
                     self.ui.unresolvedModel.appendRow(unresolvedItem)
                     unresolvedItem.setBackground(QtGui.QColor('red'))
 
             if len(self.data[i]["potential_realigned"]) > 0:
                 for j in range (len(self.data[i]["potential_realigned"])):
-                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][1]["name"])
+                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][0]["name"])
                     data = self.data[i]["potential"][j]
                     unresolvedItem.setData(data)
-                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["potential"][j][1]["name"]))
+                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["potential"][j][0]["name"]))
                     self.ui.unresolvedModel.appendRow(unresolvedItem)
                     unresolvedItem.setBackground(QtGui.QColor('orange'))
 
 
             if len(self.data[i]["exact"]) > 0:
                 for j in range (len(self.data[i]["exact"])):
-                    resolvedItem = QtGui.QStandardItem(self.data[i]["exact"][j][1]["name"])
+                    resolvedItem = QtGui.QStandardItem(self.data[i]["exact"][j][0]["name"])
                     data = self.data[i]["exact"][j]
                     resolvedItem.setData(data)
-                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["exact"][j][1]["name"]))
+                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["exact"][j][0]["name"]))
                     self.ui.resolvedModel.appendRow(resolvedItem)
                     resolvedItem.setBackground(QtGui.QColor('yellow'))
 
             if len(self.data[i]["unique"]) > 0:        
                 for j in range (len(self.data[i]["unique"])):
-                    resolvedItem = QtGui.QStandardItem(self.data[i]["unique"][j][1]["name"])
+                    resolvedItem = QtGui.QStandardItem(self.data[i]["unique"][j][0]["name"])
                     data = self.data[i]["unique"][j]
                     resolvedItem.setData(data)
-                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["unique"][j][1]["name"]))
+                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["unique"][j][0]["name"]))
                     self.ui.resolvedModel.appendRow(resolvedItem)
                     resolvedItem.setBackground(QtGui.QColor('green'))
 
@@ -393,11 +393,11 @@ class MainWindow(QtWidgets.QMainWindow):
             selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
             selectedData = selectedItem.data()
 
-            for i in range (0, len(selectedData[0])):
+            for i in range (0, len(selectedData)):
                 if i == 0:
-                    selectedData[0][i] = 1
+                    selectedData[i]['keepBool'] = True
                 else:
-                    selectedData[0][i] = 0
+                    selectedData[i]['keepBool'] = False
 
             selectedItem.setData(selectedData)
 
@@ -407,15 +407,15 @@ class MainWindow(QtWidgets.QMainWindow):
             selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
             selectedData = selectedItem.data()
 
-            if len(selectedData[0]) == 1:
-                selectedData[0][0] = 1
+            if len(selectedData) == 1:
+                selectedData[i]['keepBool'] = True
 
             else:
-                for i in range (0, len(selectedData[0])):
+                for i in range (0, len(selectedData)):
                     if i == 1:
-                        selectedData[0][i] = 1
+                        selectedData[i]['keepBool'] = True
                     else:
-                        selectedData[0][i] = 0
+                        selectedData[i]['keepBool'] = False
 
             selectedItem.setData(selectedData)
 
@@ -425,8 +425,8 @@ class MainWindow(QtWidgets.QMainWindow):
             selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
             selectedData = selectedItem.data()
 
-            for i in range (0, len(selectedData[0])):
-                    selectedData[0][i] = 0
+            for i in range (0, len(selectedData)):
+                    selectedData[i]['keepBool'] = False
 
             selectedItem.setData(selectedData)        
 
@@ -436,8 +436,8 @@ class MainWindow(QtWidgets.QMainWindow):
             selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
             selectedData = selectedItem.data()
 
-            for i in range (0, len(selectedData[0])):
-                    selectedData[0][i] = 1
+            for i in range (0, len(selectedData)):
+                    selectedData[i]['keepBool'] = True
 
             selectedItem.setData(selectedData)         
 
@@ -496,7 +496,7 @@ class resolveDialog(QtWidgets.QDialog):
         super(resolveDialog, self).__init__()
         self.itemData = item.data()        
         self.ui = Ui_Dialog()
-        self.ui.setupUi(self, self.itemData[0])
+        self.ui.setupUi(self, self.itemData)
         self.nameState = False
         self.updatedState = False
         self.saveState = False
@@ -507,20 +507,20 @@ class resolveDialog(QtWidgets.QDialog):
             item.setData(self.itemData)
 
     def initializeData(self):
-        for i in range (0, len(self.itemData[0])):
-            getattr(self.ui, 'nameEdit'+str(i+1)).setText(self.itemData[i+1]["name"])
+        for i in range (0, len(self.itemData)):
+            getattr(self.ui, 'nameEdit'+str(i+1)).setText(self.itemData[i]["name"])
 
-            myBool = QtCore.QFileInfo(self.itemData[1]["image"]).exists()
+            myBool = QtCore.QFileInfo(self.itemData[0]["image"]).exists()
 
             if not myBool:
-                minx, miny, maxx, maxy = self.itemData[i+1]['nullpoints']
+                minx, miny, maxx, maxy = self.itemData[i]['nullpoints']
                 pixmap = QtGui.QPixMap(maxx-minx+100, maxy-miny+100)
                 pixmap.fill(fillColor=Qt.black)     
         
             else:       
-                pixmap = (QtGui.QPixmap(self.itemData[i+1]["image"]))
+                pixmap = (QtGui.QPixmap(self.itemData[i]["image"]))
 
-            pixmap = pixmap.copy(*(self.itemData[i+1]['rect']))
+            pixmap = pixmap.copy(*(self.itemData[i]['rect']))
 
             preCropSize = pixmap.size()
 
@@ -538,7 +538,7 @@ class resolveDialog(QtWidgets.QDialog):
 
             scale = numpy.array([wScale, hScale])
 
-            scaledPoints = list(map(tuple, numpy.array(self.itemData[i+1]['croppedPoints'])*scale))
+            scaledPoints = list(map(tuple, numpy.array(self.itemData[i]['croppedPoints'])*scale))
             points = scaledPoints
 
             polygon = QtGui.QPolygon()
@@ -558,15 +558,15 @@ class resolveDialog(QtWidgets.QDialog):
     def saveResolutions(self,item):
         self.saveState = True
         if self.nameState == True:
-            for i in range (0, len(self.itemData[0])):
+            for i in range (0, len(self.itemData)):
                 self.itemData[i+1]['name'] = getattr(self.ui, 'nameEdit'+str(i+1)).text()
 
         if self.updatedState == True:
-            for i in range (0, len(self.itemData[0])):
+            for i in range (0, len(self.itemData)):
                 if getattr(self.ui, 'checkBox'+str(i+1)).isChecked():
-                    self.itemData[0][i] = 1
+                    self.itemData[i]['keepBool'] = True
                 else:
-                    self.itemData[0][i] = 0
+                    self.itemData[i]['keepBool'] = False
 
     def updateContour(self, item):
         print ("update contour")
@@ -574,8 +574,8 @@ class resolveDialog(QtWidgets.QDialog):
 
 
 class Ui_Dialog(object):
-    def setupUi(self, Dialog, listString):
-        self.listString = listString
+    def setupUi(self, Dialog, itemData):
+        self.itemData = itemData
         Dialog.setObjectName("Dialog")
         Dialog.resize(736, 649)
         self.verticalLayoutWidget = QtWidgets.QWidget(Dialog)
@@ -594,7 +594,7 @@ class Ui_Dialog(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
 
         #generate photos
-        for i in range(0, len(self.listString)):
+        for i in range(0, len(self.itemData)):
             setattr(self, 'pix'+str(i+1), QtWidgets.QLabel(self.verticalLayoutWidget))
             getattr(self, 'pix'+str(i+1)).setMaximumSize(QtCore.QSize(300, 300))
             
@@ -614,7 +614,7 @@ class Ui_Dialog(object):
 
 
         #generate name label and name edit
-        for i in range(0, len(self.listString)):
+        for i in range(0, len(self.itemData)):
             setattr(self, 'verticalLayout_'+str(i+2), QtWidgets.QVBoxLayout())
             getattr(self, 'verticalLayout_'+str(i+2)).setObjectName("verticalLayout_"+str(i+2))
             setattr(self, 'horizontalLayout_'+str(i+2), QtWidgets.QHBoxLayout())
@@ -645,7 +645,7 @@ class Ui_Dialog(object):
             setattr(self, 'checkBox'+str(i+1), QtWidgets.QCheckBox(self.verticalLayoutWidget))            
             getattr(self, 'checkBox'+str(i+1)).setMaximumSize(QtCore.QSize(16777215, 20))
             getattr(self, 'checkBox'+str(i+1)).setObjectName("checkBox1")
-            getattr(self, 'checkBox'+str(i+1)).setChecked(self.listString[i])
+            getattr(self, 'checkBox'+str(i+1)).setChecked(self.itemData[i]['keepBool'])
             getattr(self, 'checkBox'+str(i+1)).stateChanged['int'].connect(Dialog.updateContour)
             getattr(self, 'checkBox'+str(i+1)).setText("Contour "+str(i+1))
             getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'checkBox'+str(i+1)))
@@ -844,7 +844,7 @@ class selectDialog(QtWidgets.QDialog):
 def main():
 
     app = QtWidgets.QApplication(sys.argv)
-    mockData = json.load(open('mockdata5.json'))
+    mockData = json.load(open('CLZBJ_86.json'))
     #initialWindow = loadDialog()
     #series = initialWindow.output
     #print (series)

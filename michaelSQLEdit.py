@@ -71,8 +71,8 @@ from pyrecon.tools.mergetool import is_contacting, is_exact_duplicate, is_potent
 
 # Read Reconstruct file into PyReconstruct
 # We're just playing around with a single Section here
-section = process_section_file("/Users/Masha/Documents/RECONSTRUCT/CLZBJ_photos/CLZBJ_final_elastic_done_v2 export.20")
-section_number = 20
+section = process_section_file("/Users/Masha/Documents/RECONSTRUCT/CLZBJ_photos/CLZBJ_final_elastic_done_v2 export.86")
+section_number = 86
 # Go through each Contour in the Section and create a DB Contour tuple (row)
 for i, cont in enumerate(section.contours):
     session.add(Contour(
@@ -106,7 +106,7 @@ def create_matches_from_contours(db_contours, section_contours):
                     id2=db_contour_B.id,
                     match_type=match_type
                 ))
-            if is_potential_duplicate(contA.shape, contB.shape):
+            elif is_potential_duplicate(contA.shape, contB.shape):
                 if (contA.points == contB.points) and (contA.transform != contB.transform):
                     match_type = "potential_realigned"
                 else:
@@ -182,7 +182,7 @@ for id_ in db_contour_ids:
 # ]
 
 section_matches = {
-    'section': 20,
+    'section': 86,
     'exact': [],
     'potential': [],
     'potential_realigned': [],
@@ -239,19 +239,22 @@ for contour_A_id, match_dict in grouped.items():
         'db_id': contour_A_id,
         'nullpoints': nullPoints,
         'rect': rect,
-        'croppedPoints': croppedPoints
+        'croppedPoints': croppedPoints,
+        'keepBool' : True
 #        'transform': 
         
     }    
 
     for match_type, matches in match_dict.items():
-        matchNum = len(matches)
-        if (match_type == 'potential') or (match_type == 'potential_realigned'):
-            matchCounter = [1]*(matchNum+1)
-        elif (match_type == 'exact'):
-            matchCounter = [1]
-            matchCounter += [0]*(matchNum)
-        match_list = [list(matchCounter), main_contour_data]
+        # matchNum = len(matches)
+        # if (match_type == 'potential') or (match_type == 'potential_realigned'):
+        #     matchCounter = [1]*(matchNum+1)
+        # elif (match_type == 'exact'):
+        #     matchCounter = [1]
+        #     matchCounter += [0]*(matchNum)
+
+#        match_list = [list(matchCounter), main_contour_data]
+        match_list = [main_contour_data]
         for match_id in matches:
 
             already_added.append(match_id)
@@ -264,11 +267,6 @@ for contour_A_id, match_dict in grouped.items():
             
             #need this
             nullPoints = reconstruct_contour_b_copy.shape.bounds
-
-            # flipVector = numpy.array([1, -1])
-            # im = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
-            # imWidth, imHeight = im.size
-            # translationVector = numpy.array([0, imHeight])
 
             if isinstance(reconstruct_contour_b_copy.shape, Polygon):
                 transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_b_copy.shape.exterior.coords))*flipVector)))
@@ -296,6 +294,11 @@ for contour_A_id, match_dict in grouped.items():
             #need this
             croppedPoints = list(map(tuple, numpy.array(reconstruct_contour_b_copy.points)-cropVector))
 
+            if (match_type == 'potential') or (match_type == 'potential_realigned'):
+                keepBool = True
+            elif (match_type == 'exact'):
+                keepBool = False            
+
             match_list.append({
                 'name': reconstruct_contour_b.name,
                 'points': reconstruct_contour_b.points,
@@ -303,11 +306,16 @@ for contour_A_id, match_dict in grouped.items():
                 'db_id': match_id,
                 'nullpoints': nullPoints,
                 'rect': rect,
-                'croppedPoints': croppedPoints         
+                'croppedPoints': croppedPoints,
+                'keepBool': keepBool
             })
+
+
+
+
         section_matches[match_type].append(match_list)
     if not match_dict.values():
-        section_matches["unique"].append([[1], main_contour_data])
+        section_matches["unique"].append([main_contour_data])
     already_added.append(contour_A_id)
 
 with open('mockdata5.json', 'w') as outfile:
