@@ -10,13 +10,15 @@ import sys, os, csv, json, numpy
 from skimage import transform as tf
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+#pyuic5 design.ui > design.py
 
 class Ui_loadDialog(object):
 
     def setupUi(self, loadDialog):
-        loadDialog.setObjectName("loadDialog")
-        loadDialog.resize(400, 300)
-        self.verticalLayoutWidget = QtWidgets.QWidget(loadDialog)
+        self.loadDialog = loadDialog
+        self.loadDialog.setObjectName("loadDialog")
+        self.loadDialog.resize(400, 300)
+        self.verticalLayoutWidget = QtWidgets.QWidget(self.loadDialog)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 381, 281))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
@@ -42,6 +44,9 @@ class Ui_loadDialog(object):
         self.horizontalLayout_3.addWidget(self.loadSeriesButton)
         self.verticalLayout_3.addLayout(self.horizontalLayout_3)
         self.gridLayout.addLayout(self.verticalLayout_3, 0, 0, 1, 1)
+        self.addSeriesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.addSeriesButton.setObjectName("addSeriesButton")
+        self.gridLayout.addWidget(self.addSeriesButton, 1, 0, 1, 1)        
         self.verticalLayout_2.addLayout(self.gridLayout)
         self.verticalLayout.addLayout(self.verticalLayout_2)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
@@ -54,20 +59,22 @@ class Ui_loadDialog(object):
         self.horizontalLayout_4.addWidget(self.selectButton)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
 
-        self.retranslateUi(loadDialog)
-        self.loadSeriesButton.clicked.connect(loadDialog.loadSeries)
-        self.cancelButton.clicked.connect(loadDialog.reject)
-        self.selectButton.clicked.connect(loadDialog.startMainWindow)
-        QtCore.QMetaObject.connectSlotsByName(loadDialog)
+        self.retranslateUi(self.loadDialog)
+        self.loadSeriesButton.clicked.connect(self.loadDialog.loadSeries)
+        self.cancelButton.clicked.connect(self.loadDialog.reject)
+        self.selectButton.clicked.connect(self.loadDialog.startMainWindow)
+        self.addSeriesButton.clicked.connect(self.loadDialog.addSeries)
+        QtCore.QMetaObject.connectSlotsByName(self.loadDialog)
 
 
     def retranslateUi(self, loadDialog):
         _translate = QtCore.QCoreApplication.translate
         loadDialog.setWindowTitle(_translate("loadDialog", "Dialog"))
         self.welcomeLabel.setText(_translate("loadDialog", "Welcome to pyRECONSTRUCT! Please select a series."))
+        self.addSeriesButton.setText(_translate("loadDialog", "Add Series..."))
         self.loadSeriesButton.setText(_translate("loadDialog", "Load Series..."))
         self.cancelButton.setText(_translate("loadDialog", "Cancel"))
-        self.selectButton.setText(_translate("loadDialog", "Select"))
+        self.selectButton.setText(_translate("loadDialog", "Import Series"))
 
 class loadDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -75,18 +82,121 @@ class loadDialog(QtWidgets.QDialog):
 
         self.ui = Ui_loadDialog()
         self.ui.setupUi(self)
+        self.counter = 5
+        self.fileList = []
         self.exec_()
 
     def loadSeries(self):
         fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Open Series", "/home/", "Series File (*.ser)")
         if fileName != None:
-            self.ui.loadLineEdit.setText(str(fileName[0]))
-            self.output = str(fileName[0])
+            if (self.sender().objectName() == 'loadSeriesButton'):
+                self.ui.loadLineEdit.setText(str(fileName[0]))
+            else:
+                number = (self.sender().objectName())[-1]
+                getattr(self.ui, 'loadLineEdit_'+str(self.counter)).setText(str(fileName[0]))
+
+        self.fileList.append(str(fileName[0]))
+        self.output = str(fileName[0])
+
+    def addSeries(self):
+        self.counter += 1
+
+        setattr(self.ui, 'horizontalLayout_'+str(self.counter), QtWidgets.QHBoxLayout())
+        setattr(self.ui, 'loadLineEdit_'+str(self.counter), QtWidgets.QLineEdit(self.ui.verticalLayoutWidget))
+        getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadLineEdit_'+str(self.counter)))
+        setattr(self.ui, 'loadSeriesButton'+str(self.counter),QtWidgets.QPushButton(self.ui.verticalLayoutWidget))
+        getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadSeriesButton'+str(self.counter)))
+        getattr(self.ui, 'loadSeriesButton'+str(self.counter)).setText("Load Series...")
+        getattr(self.ui, 'loadSeriesButton'+str(self.counter)).setObjectName('loadSeriesButton'+str(self.counter))
+        getattr(self.ui, 'loadSeriesButton'+str(self.counter)).clicked.connect(self.ui.loadDialog.loadSeries)
+
+        self.ui.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 381, 281+(30*(self.counter - 5))))
+        self.ui.loadDialog.resize(400, 300 + (30*(self.counter - 5)))
+
+        self.ui.verticalLayout_3.addLayout(getattr(self.ui, 'horizontalLayout_'+str(self.counter)))
+        
 
 
     def startMainWindow(self):
+        if (len(self.fileList) > 1):
+            alignSelection = MultipleSeriesDialog(self.fileList)
+            alignSelection = alignSelection.exec_()
+            print (alignSelection)    
+
         #series = openSeries(self.fileName)
-        self.close()
+        #passes self.fileList to Michael's script
+        #self.close()
+
+class Ui_MultipleSeriesDialog(object):
+    def setupUi(self, MultipleSeriesDialog, fileList):
+        MultipleSeriesDialog.setObjectName("MultipleSeriesDialog")
+        MultipleSeriesDialog.resize(400, 300)
+        self.verticalLayoutWidget = QtWidgets.QWidget(MultipleSeriesDialog)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(9, 0, 381, 291))
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.questionLabel = QtWidgets.QLabel(self.verticalLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.questionLabel.setFont(font)
+        self.questionLabel.setWordWrap(True)
+        self.questionLabel.setObjectName("questionLabel")
+        self.verticalLayout.addWidget(self.questionLabel)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.noButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.noButton.setObjectName("noButton")
+        self.horizontalLayout.addWidget(self.noButton)
+        self.yesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.yesButton.setObjectName("yesButton")
+        self.horizontalLayout.addWidget(self.yesButton)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.question2Label = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.question2Label.setObjectName("question2Label")
+        self.verticalLayout.addWidget(self.question2Label)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.series1Button = QtWidgets.QRadioButton(self.verticalLayoutWidget)
+        self.series1Button.setObjectName("series1Button")
+        self.horizontalLayout_2.addWidget(self.series1Button)
+        self.series2Button = QtWidgets.QRadioButton(self.verticalLayoutWidget)
+        self.series2Button.setObjectName("series2Button")
+        self.horizontalLayout_2.addWidget(self.series2Button)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.buttonBox_2 = QtWidgets.QDialogButtonBox(self.verticalLayoutWidget)
+        self.buttonBox_2.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox_2.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox_2.setObjectName("buttonBox_2")
+        self.verticalLayout.addWidget(self.buttonBox_2)
+
+        self.noButton.clicked.connect(MultipleSeriesDialog.reject)
+        #self.yesButton.clicked.connect(self.MultipleSeriesDialog.rejected)
+
+        self.retranslateUi(MultipleSeriesDialog)
+        QtCore.QMetaObject.connectSlotsByName(MultipleSeriesDialog)
+
+    def retranslateUi(self, MultipleSeriesDialog):
+        _translate = QtCore.QCoreApplication.translate
+        MultipleSeriesDialog.setWindowTitle(_translate("MultipleSeriesDialog", "Dialog"))
+        self.questionLabel.setText(_translate("MultipleSeriesDialog", "You have selected multiple series. Do these series have differing alignments?"))
+        self.noButton.setText(_translate("MultipleSeriesDialog", "No"))
+        self.yesButton.setText(_translate("MultipleSeriesDialog", "Yes"))
+        self.question2Label.setText(_translate("MultipleSeriesDialog", "Which series/alignment would you like to output to?"))
+        self.series1Button.setText(_translate("MultipleSeriesDialog", "Series 1"))
+        self.series2Button.setText(_translate("MultipleSeriesDialog", "Series 2"))
+
+class MultipleSeriesDialog(QtWidgets.QDialog):
+    def __init__(self, fileList):
+        super(MultipleSeriesDialog, self).__init__()
+
+        self.ui = Ui_MultipleSeriesDialog()
+        self.ui.setupUi(self, fileList)
+        #self.exec_()
+
+    #def yesClicked(self):
+        #whatever
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -844,12 +954,12 @@ class selectDialog(QtWidgets.QDialog):
 def main():
 
     app = QtWidgets.QApplication(sys.argv)
-    mockData = json.load(open('CLZBJ_86.json'))
-    #initialWindow = loadDialog()
+    mockData = json.load(open('FHLTD_54.json'))
+    initialWindow = loadDialog()
     #series = initialWindow.output
     #print (series)
-    mainWindow = MainWindow(mockData)
-    mainWindow.show()
+    #mainWindow = MainWindow(mockData)
+    #mainWindow.show()
     app.exec_()
 
 main()
