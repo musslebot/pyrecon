@@ -25,11 +25,13 @@ if __name__ == "__main__":
 
     section = process_section_file(section_path)
 
+    # Load Section contours into database and determine matches
     db_contours = backend.load_db_contours_from_pyrecon_section(session, section)
     db_contourmatches = backend.load_db_contourmatches_from_db_contours_and_pyrecon_section(
         session, db_contours, section
     )
 
-    # TODO: db_contourmatches not working as expected
-    import pdb; pdb.set_trace()
-
+    # group all matches together by match_type
+    grouped = backend.group_all_matches(session)
+    # prepare payload for frontend
+    section_matches = backend.prepare_frontend_payload(session, section, grouped)
