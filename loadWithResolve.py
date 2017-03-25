@@ -120,8 +120,23 @@ class loadDialog(QtWidgets.QDialog):
     def startMainWindow(self):
         if (len(self.fileList) > 1):
             alignSelection = MultipleSeriesDialog(self.fileList)
-            alignSelection = alignSelection.exec_()
-            print (alignSelection)    
+            if alignSelection.exec_():
+                newFileList = alignSelection.returnFileList()
+                print (newFileList)  
+            else:
+                newFileList = alignSelection.returnFileList()
+                print (newFileList)                  
+
+            #alignSelection = alignSelection.exec_()
+  
+
+            # if alignSelection == 0:
+            #     #this is not an aligned series
+            #     pass
+            # else:
+
+            #elif alignSelection == 1:
+
 
         #series = openSeries(self.fileName)
         #passes self.fileList to Michael's script
@@ -129,12 +144,19 @@ class loadDialog(QtWidgets.QDialog):
 
 class Ui_MultipleSeriesDialog(object):
     def setupUi(self, MultipleSeriesDialog, fileList):
-        MultipleSeriesDialog.setObjectName("MultipleSeriesDialog")
-        MultipleSeriesDialog.resize(400, 300)
-        self.verticalLayoutWidget = QtWidgets.QWidget(MultipleSeriesDialog)
+        self.MultipleSeriesDialog = MultipleSeriesDialog
+        self.MultipleSeriesDialog.setObjectName("MultipleSeriesDialog")
+        self.MultipleSeriesDialog.resize(400, 300)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        # sizePolicy.setHorizontalStretch(0)
+        # sizePolicy.setVerticalStretch(0)
+        #sizePolicy.setHeightForWidth(MultipleSeriesDialog.sizePolicy().hasHeightForWidth())
+        self.MultipleSeriesDialog.setSizePolicy(sizePolicy)
+        self.verticalLayoutWidget = QtWidgets.QWidget(self.MultipleSeriesDialog)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(9, 0, 381, 291))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.questionLabel = QtWidgets.QLabel(self.verticalLayoutWidget)
@@ -143,39 +165,28 @@ class Ui_MultipleSeriesDialog(object):
         self.questionLabel.setFont(font)
         self.questionLabel.setWordWrap(True)
         self.questionLabel.setObjectName("questionLabel")
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        self.questionLabel.setSizePolicy(sizePolicy)        
         self.verticalLayout.addWidget(self.questionLabel)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
+        self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
         self.noButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.noButton.setObjectName("noButton")
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        self.noButton.setSizePolicy(sizePolicy)
         self.horizontalLayout.addWidget(self.noButton)
         self.yesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.yesButton.setObjectName("yesButton")
+        self.yesButton.setSizePolicy(sizePolicy)
         self.horizontalLayout.addWidget(self.yesButton)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.question2Label = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.question2Label.setObjectName("question2Label")
-        self.verticalLayout.addWidget(self.question2Label)
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.series1Button = QtWidgets.QRadioButton(self.verticalLayoutWidget)
-        self.series1Button.setObjectName("series1Button")
-        self.horizontalLayout_2.addWidget(self.series1Button)
-        self.series2Button = QtWidgets.QRadioButton(self.verticalLayoutWidget)
-        self.series2Button.setObjectName("series2Button")
-        self.horizontalLayout_2.addWidget(self.series2Button)
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
-        self.buttonBox_2 = QtWidgets.QDialogButtonBox(self.verticalLayoutWidget)
-        self.buttonBox_2.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox_2.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox_2.setObjectName("buttonBox_2")
-        self.verticalLayout.addWidget(self.buttonBox_2)
 
-        self.noButton.clicked.connect(MultipleSeriesDialog.reject)
-        #self.yesButton.clicked.connect(self.MultipleSeriesDialog.rejected)
+        self.noButton.clicked.connect(self.MultipleSeriesDialog.reject)
+        self.yesButton.clicked.connect(self.MultipleSeriesDialog.yesClicked)
 
-        self.retranslateUi(MultipleSeriesDialog)
-        QtCore.QMetaObject.connectSlotsByName(MultipleSeriesDialog)
+        self.retranslateUi(self.MultipleSeriesDialog)
+        QtCore.QMetaObject.connectSlotsByName(self.MultipleSeriesDialog)
 
     def retranslateUi(self, MultipleSeriesDialog):
         _translate = QtCore.QCoreApplication.translate
@@ -183,9 +194,7 @@ class Ui_MultipleSeriesDialog(object):
         self.questionLabel.setText(_translate("MultipleSeriesDialog", "You have selected multiple series. Do these series have differing alignments?"))
         self.noButton.setText(_translate("MultipleSeriesDialog", "No"))
         self.yesButton.setText(_translate("MultipleSeriesDialog", "Yes"))
-        self.question2Label.setText(_translate("MultipleSeriesDialog", "Which series/alignment would you like to output to?"))
-        self.series1Button.setText(_translate("MultipleSeriesDialog", "Series 1"))
-        self.series2Button.setText(_translate("MultipleSeriesDialog", "Series 2"))
+
 
 class MultipleSeriesDialog(QtWidgets.QDialog):
     def __init__(self, fileList):
@@ -193,10 +202,67 @@ class MultipleSeriesDialog(QtWidgets.QDialog):
 
         self.ui = Ui_MultipleSeriesDialog()
         self.ui.setupUi(self, fileList)
+        savedFileList = fileList
+        self.fileList = savedFileList
         #self.exec_()
 
-    #def yesClicked(self):
+    def yesClicked(self):
+        self.ui.question2Label = QtWidgets.QLabel(self.ui.verticalLayoutWidget)
+        self.ui.question2Label.setText("Which series/alignment would you like to output to?")
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        self.ui.question2Label.setSizePolicy(sizePolicy)
+        self.ui.question2Label.setObjectName("question2Label")
+        self.ui.verticalLayout.addWidget(self.ui.question2Label)
+
+        self.ui.verticalLayout_5 = QtWidgets.QVBoxLayout()
+        self.ui.verticalLayout_5.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
+        self.ui.verticalLayout_5.setObjectName("verticalLayout_5")
+
+        for i in range (len(self.fileList)):
+            setattr(self.ui, 'horizontalLayout_'+str(i), QtWidgets.QHBoxLayout())
+            setattr(self.ui, 'series'+str(i)+'button', QtWidgets.QRadioButton(self.ui.verticalLayoutWidget))
+            sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+ 
+            getattr(self.ui, 'series'+str(i)+'button').setSizePolicy(sizePolicy)
+            getattr(self.ui, 'series'+str(i)+'button').setMinimumSize(QtCore.QSize(0, 20))
+            getattr(self.ui, 'series'+str(i)+'button').setText("")
+            getattr(self.ui, 'horizontalLayout_'+str(i)).addWidget(getattr(self.ui, 'series'+str(i)+'button'))
+            setattr(self.ui,'lineEdit'+str(i), QtWidgets.QLineEdit(self.ui.verticalLayoutWidget))
+            getattr(self.ui,'lineEdit'+str(i)).setReadOnly(True)
+            getattr(self.ui, 'horizontalLayout_'+str(i)).addWidget(getattr(self.ui,'lineEdit'+str(i)))
+            getattr(self.ui, 'horizontalLayout_'+str(i)).setStretch(1,20)
+            self.ui.verticalLayout_5.addWidget(getattr(self.ui, 'series'+str(i)+'button'))
+            getattr(self.ui,'lineEdit'+str(i)).setText(str(self.fileList[i]))
+            self.ui.verticalLayout_5.addLayout(getattr(self.ui, 'horizontalLayout_'+str(i)))
+            self.ui.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 381, 281+(50*(i-1))))
+            self.ui.MultipleSeriesDialog.resize(400, 300 + (50*(i - 1)))
+
+
+        self.ui.verticalLayout.addLayout(self.ui.verticalLayout_5)        
         #whatever
+        self.ui.buttonBox_2 = QtWidgets.QDialogButtonBox(self.ui.verticalLayoutWidget)
+        self.ui.buttonBox_2.setOrientation(QtCore.Qt.Horizontal)
+        self.ui.buttonBox_2.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.ui.buttonBox_2.accepted.connect(self.seriesSelected)
+        self.ui.buttonBox_2.rejected.connect(self.close)
+        self.ui.buttonBox_2.setObjectName("buttonBox_2")
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        self.ui.buttonBox_2.setSizePolicy(sizePolicy)
+        self.ui.verticalLayout.addWidget(self.ui.buttonBox_2)
+
+
+    def seriesSelected(self):
+        for i in range (len(self.fileList)):
+            if getattr(self.ui, 'series'+str(i)+'button').isChecked():
+                self.fileList.insert(0, self.fileList.pop(i))
+                self.ui.MultipleSeriesDialog.accept()
+                break
+            else:
+                continue
+
+    def returnFileList(self):
+        return self.fileList
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -956,10 +1022,15 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     mockData = json.load(open('FHLTD_54.json'))
     initialWindow = loadDialog()
+    #fileList = ['mash', 'mash', 'meesh']
+
+    # test = MultipleSeriesDialog(fileList)
+    # test = test.exec_()
+
     #series = initialWindow.output
     #print (series)
     #mainWindow = MainWindow(mockData)
     #mainWindow.show()
-    app.exec_()
+    #app.exec_()
 
 main()

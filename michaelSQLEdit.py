@@ -71,8 +71,8 @@ from pyrecon.tools.mergetool import is_contacting, is_exact_duplicate, is_potent
 
 # Read Reconstruct file into PyReconstruct
 # We're just playing around with a single Section here
-section = process_section_file("/Users/Masha/Documents/RECONSTRUCT/CLZBJ_photos/CLZBJ_final_elastic_done_v2 export.86")
-section_number = 86
+section = process_section_file("/Users/Masha/Documents/RECONSTRUCT/FHLTD/FHLTD.91")
+section_number = 91
 # Go through each Contour in the Section and create a DB Contour tuple (row)
 for i, cont in enumerate(section.contours):
     session.add(Contour(
@@ -94,9 +94,14 @@ def create_matches_from_contours(db_contours, section_contours):
                 continue
             elif contA.name != contB.name:
                 continue
-            elif contA.shape != contB.shape:
-                # TODO: this could be problematic (e.g. polygon vs linestring)
-                continue
+            elif (contA.points == contB.points) and (contA.transform != contB.transform):
+                print ("realigned found!")
+                match_type = "potential_realigned"
+                matches.append(ContourMatch(
+                    id1=db_contour_A.id,
+                    id2=db_contour_B.id,
+                    match_type=match_type
+                ))
             elif not is_contacting(contA.shape, contB.shape):
                 continue
             elif is_exact_duplicate(contA.shape, contB.shape):
@@ -107,10 +112,7 @@ def create_matches_from_contours(db_contours, section_contours):
                     match_type=match_type
                 ))
             elif is_potential_duplicate(contA.shape, contB.shape):
-                if (contA.points == contB.points) and (contA.transform != contB.transform):
-                    match_type = "potential_realigned"
-                else:
-                    match_type = "potential"
+                match_type = "potential"
                 matches.append(ContourMatch(
                     id1=db_contour_A.id,
                     id2=db_contour_B.id,
@@ -182,7 +184,7 @@ for id_ in db_contour_ids:
 # ]
 
 section_matches = {
-    'section': 86,
+    'section': 91,
     'exact': [],
     'potential': [],
     'potential_realigned': [],
@@ -318,7 +320,7 @@ for contour_A_id, match_dict in grouped.items():
         section_matches["unique"].append([main_contour_data])
     already_added.append(contour_A_id)
 
-with open('mockdata5.json', 'w') as outfile:
+with open('FHLTDprac.json', 'w') as outfile:
     outfile.write('[')
     json.dump(section_matches, outfile)
     outfile.write(']')
