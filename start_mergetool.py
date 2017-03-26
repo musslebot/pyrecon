@@ -1,9 +1,10 @@
+import json
 import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from pyrecon.tools.reconstruct_reader import process_section_file
+from pyrecon.tools.reconstruct_reader import process_series_directory
 from pyrecon.tools.mergetool import backend
 
 
@@ -18,20 +19,26 @@ if __name__ == "__main__":
     if bool(os.getenv("CREATE_DB", 1)):
         backend.create_database(engine)
 
-    # TODO: handle multiple sections
-    section_path = os.getenv("SECTION_PATH")
-    if not section_path:
-        raise Exception("Expecting SECTION_PATH environment variable")
+    # TODO: handle multiple series
+    series_path = os.getenv("SERIES_PATH")
+    if not series_path:
+        raise Exception("Expecting SERIES_PATH environment variable")
 
-    section = process_section_file(section_path)
+    series = process_series_directory(series_path)
 
-    # Load Section contours into database and determine matches
-    db_contours = backend.load_db_contours_from_pyrecon_section(session, section)
-    db_contourmatches = backend.load_db_contourmatches_from_db_contours_and_pyrecon_section(
-        session, db_contours, section
-    )
+    series_matches = []
+    for section in series.sections:
+        # Load Section contours into database and determine matches
+        db_contours = backend.load_db_contours_from_pyrecon_section(session, section)
+        db_contourmatches = backend.load_db_contourmatches_from_db_contours_and_pyrecon_section(
+            session, db_contours, section
+        )
 
-    # group all matches together by match_type
-    grouped = backend.group_all_matches(session)
-    # prepare payload for frontend
-    section_matches = backend.prepare_frontend_payload(session, section, grouped)
+        # group all matches together by match_type
+        grouped = backend.group_all_matches(session)
+        # prepare payload for frontend
+        section_matches = backend.prepare_frontend_payload(session, section, grouped)
+        series_matches.append(section_matches)
+
+    with open("test_dump.json", "w") as f:
+        json.dump(series_matches, f)
