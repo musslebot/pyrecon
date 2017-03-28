@@ -35,7 +35,7 @@ if __name__ == "__main__":
         )
 
         # group all matches together by match_type
-        grouped = backend.group_all_matches(session)
+        grouped = backend.group_section_matches(session, section.index)
         # prepare payload for frontend
         section_matches = backend.prepare_frontend_payload(session, section, grouped)
         series_matches.append(section_matches)

@@ -142,14 +142,14 @@ def _retrieve_matches_for_db_contour_id(session, db_contour_id):
     ).all()
 
 
-def group_all_matches(session):
+def group_section_matches(session, section_number):
     grouped = defaultdict(lambda: defaultdict(set))
-    for id_ in session.query(Contour.id).all():
+    for id_ in session.query(Contour.id).filter(Contour.section==section_number).all():
         id_ = id_[0]
         matches = _retrieve_matches_for_db_contour_id(session, id_)
         grouped[id_] = defaultdict(set)
         for m in matches:
-            grouped[id_][m.match_type].add(m.id2)
+            grouped[m.id1][m.match_type].add(m.id2)
     return grouped
 
 def prepare_frontend_payload(session, section, grouped):
