@@ -60,13 +60,15 @@ class Contour(object):
         array = numpy.asarray(list(self.points))
         normalized_points = self.transform._tform.inverse(array)
         self.normalized_points = normalized_points
-        
+
         if len(normalized_points) == 1:
             return Point(*normalized_points)
         elif len(normalized_points) == 2:
             return LineString(normalized_points)
         elif self.closed is True:
-            if len(normalized_points) == 3 and self.points[0] == self.points[-1]:
+            # Check for weird, invalid traces
+            if (len(normalized_points) == 3 or \
+                    len (normalized_points) == 4 ) and self.points[0] == self.points[2]:
                 return LineString(normalized_points)
             # Closed trace
             return Polygon(normalized_points)
