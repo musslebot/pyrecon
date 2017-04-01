@@ -75,7 +75,10 @@ def _create_db_contourmatch_from_db_contours_and_pyrecon_section(db_contour_A, d
         return None
     elif pyrecon_contour_a.shape.type != pyrecon_contour_b.shape.type:
         return None
-    elif (pyrecon_contour_a.points == pyrecon_contour_b.points) and \
+
+    shape_a = pyrecon_contour_a.shape
+    shape_b = pyrecon_contour_b.shape
+    if (pyrecon_contour_a.points == pyrecon_contour_b.points) and \
        (pyrecon_contour_a.transform != pyrecon_contour_b.transform):
         match_type = "potential_realigned"
         return ContourMatch(
@@ -83,16 +86,16 @@ def _create_db_contourmatch_from_db_contours_and_pyrecon_section(db_contour_A, d
             id2=db_contour_B.id,
             match_type=match_type
         )
-    elif not is_contacting(pyrecon_contour_a.shape, pyrecon_contour_b.shape):
+    elif not is_contacting(shape_a, shape_b):
         return None
-    elif is_exact_duplicate(pyrecon_contour_a.shape, pyrecon_contour_b.shape):
+    elif is_exact_duplicate(shape_a, shape_b):
         match_type = "exact"
         return ContourMatch(
             id1=db_contour_A.id,
             id2=db_contour_B.id,
             match_type=match_type
         )
-    elif is_potential_duplicate(pyrecon_contour_a.shape, pyrecon_contour_b.shape):
+    elif is_potential_duplicate(shape_a, shape_b):
         match_type = "potential"
         return ContourMatch(
             id1=db_contour_A.id,
@@ -169,7 +172,6 @@ def prepare_frontend_payload(session, section, grouped):
         #converting to pixels
         reconstruct_contour_a_copy = deepcopy(reconstruct_contour_a)
         reconstruct_contour_a_copy.points = list(map(tuple, reconstruct_contour_a_copy.transform._tform.inverse(numpy.asarray(reconstruct_contour_a_copy.points)/section.images[0].mag)))
-
         #need this
         nullPoints = reconstruct_contour_a_copy.shape.bounds
 
