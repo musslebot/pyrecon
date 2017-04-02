@@ -288,7 +288,7 @@ def prepare_frontend_payload(session, section, grouped):
     # Add uniques to payload
     unique_ids_query = prepare_unique_query(session, section)
     for unique_id in unique_ids_query:
-        db_contour_unique = session.query(Contour).get(contour_A_id)
+        db_contour_unique = session.query(Contour).get(unique_id)
         unique_reconstruct_contour = section.contours[db_contour_unique.index]
         unique_dict = prepare_contour_dict_for_frontend(
             unique_reconstruct_contour,
