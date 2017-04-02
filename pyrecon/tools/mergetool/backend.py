@@ -207,6 +207,38 @@ def prepare_contour_dict_for_frontend(contour, db_id, section, keep=True):
     }
 
 
+def prepare_unique_query(session, section):
+    """ Return a query for unique db contour ids in a section.
+    """
+    id1_matches_query = session.query(
+        ContourMatch.id1
+    ).filter(
+        ContourMatch.id1.in_(
+            session.query(
+                Contour.id
+            ).filter(
+                Contour.section == section.index
+            )
+        )
+    )
+    id2_matches_query = session.query(
+        ContourMatch.id2
+    ).filter(
+        ContourMatch.id2.in_(
+            session.query(
+                Contour.id
+            ).filter(
+                Contour.section == section.index
+            )
+        )
+    )
+    matched_ids_union = id1_matches_query.union(id2_matches_query)
+    return session.query(Contour.id).filter(
+        Contour.id.notin_(matched_ids_union),
+        Contour.section == section.index
+    )
+
+
 def prepare_frontend_payload(session, section, grouped):
     section_matches = {
         "section": section.index,
@@ -254,26 +286,15 @@ def prepare_frontend_payload(session, section, grouped):
             section_matches[match_type].append(match_list)
 
     # Add uniques to payload
-    match1s = list(map(lambda x: x[0], session.query(ContourMatch.id1).all()))
-    match2s = list(map(lambda x: x[0], session.query(ContourMatch.id2).all()))
-    matched_ids = set()
-    for m in match1s:
-        matched_ids.add(m)
-    for m in match2s:
-        matched_ids.add(m)
-    unique_ids = list(map(lambda x: x[0], session.query(Contour.id).filter(Contour.id.notin_(matched_ids)).all()))
-    for unique_id in unique_ids:
+    unique_ids_query = prepare_unique_query(session, section)
+    for unique_id in unique_ids_query:
         db_contour_unique = session.query(Contour).get(contour_A_id)
         unique_reconstruct_contour = section.contours[db_contour_unique.index]
-        unique_contour_data = {
-            'name': unique_reconstruct_contour.name,
-            'points': unique_reconstruct_contour.points,
-            'image': section.images[0]._path + "/{}".format(section.images[0].src),
-            'db_id': unique_id,
-            'nullpoints': nullPoints,
-            'rect': rect,
-            'croppedPoints': croppedPoints,
-            'keepBool' : True
-        }
-        section_matches['unique'].append(unique_contour_data)
+        unique_dict = prepare_contour_dict_for_frontend(
+            unique_reconstruct_contour,
+            unique_id,
+            section,
+            keep=True
+        )
+        section_matches['unique'].append(unique_dict)
     return section_matches
