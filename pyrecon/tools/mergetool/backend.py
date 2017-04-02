@@ -159,6 +159,54 @@ def group_section_matches(session, section_number):
             grouped[m.id1][m.match_type].add(m.id2)
     return grouped
 
+
+def prepare_contour_dict_for_frontend(contour, db_id, section, keep=True):
+    """ Converts a contour to a dict expected by the frontend.
+    """
+    #converting to pixels
+    contour_copy = deepcopy(contour)
+    contour_copy.points = list(map(tuple, contour_copy.transform._tform.inverse(
+        numpy.asarray(contour_copy.points)/section.images[0].mag)))
+    nullPoints = contour_copy.shape.bounds
+
+    flipVector = numpy.array([1, -1])
+    im = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
+    imWidth, imHeight = im.size
+    translationVector = numpy.array([0, imHeight])
+
+    if contour_copy.shape.type == "Polygon":
+        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(contour_copy.shape.exterior.coords))*flipVector)))
+
+    else:
+        x, y = contour_copy.shape.xy
+        x = list(x)
+        y = list(y)
+        coords = zip(x,y)
+        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(coords))*flipVector)))
+    contour_copy.points = transformedPoints
+
+    #cropping
+    minx, miny, maxx, maxy = contour_copy.shape.bounds
+    x = minx-100
+    y = miny - 100
+    width = maxx-x+100
+    height = maxy-y+100
+    rect = [x, y, width, height]
+    cropVector = numpy.array([x,y])
+    croppedPoints = list(map(tuple, numpy.array(contour_copy.points)-cropVector))
+
+    return {
+        'name': contour.name,
+        'points': contour.points,
+        'image': section.images[0]._path + "/{}".format(section.images[0].src),
+        'db_id': db_id,
+        'nullpoints': nullPoints,
+        'rect': rect,
+        'croppedPoints': croppedPoints,
+        'keepBool' : keep
+    }
+
+
 def prepare_frontend_payload(session, section, grouped):
     section_matches = {
         "section": section.index,
@@ -172,56 +220,12 @@ def prepare_frontend_payload(session, section, grouped):
     for contour_A_id, match_dict in grouped.items():
         db_contour_A = session.query(Contour).get(contour_A_id)
         reconstruct_contour_a = section.contours[db_contour_A.index]
-
-        #converting to pixels
-        reconstruct_contour_a_copy = deepcopy(reconstruct_contour_a)
-        reconstruct_contour_a_copy.points = list(map(tuple, reconstruct_contour_a_copy.transform._tform.inverse(numpy.asarray(reconstruct_contour_a_copy.points)/section.images[0].mag)))
-        #need this
-        nullPoints = reconstruct_contour_a_copy.shape.bounds
-
-        flipVector = numpy.array([1, -1])
-        im = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
-        imWidth, imHeight = im.size
-        translationVector = numpy.array([0, imHeight])
-
-        if reconstruct_contour_a_copy.shape.type == "Polygon":
-            transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_a_copy.shape.exterior.coords))*flipVector)))
-
-        else:
-            x, y = reconstruct_contour_a_copy.shape.xy
-            x = list(x)
-            y = list(y)
-            coords = zip(x,y)
-            transformedPoints = list(map(tuple, translationVector+(numpy.array(list(coords))*flipVector)))
-        reconstruct_contour_a_copy.points = transformedPoints
-
-        #cropping
-        minx, miny, maxx, maxy = reconstruct_contour_a_copy.shape.bounds
-        x = minx-100
-        y = miny - 100
-        width = maxx-x+100
-        height = maxy-y+100
-
-        #need this
-        rect = [x, y, width, height]
-
-        cropVector = numpy.array([x,y])
-
-        #need this
-        croppedPoints = list(map(tuple, numpy.array(reconstruct_contour_a_copy.points)-cropVector))
-
-        main_contour_data = {
-            'name': reconstruct_contour_a.name,
-            'points': reconstruct_contour_a.points,
-            'image': section.images[0]._path + "/{}".format(section.images[0].src),
-            'db_id': contour_A_id,
-            'nullpoints': nullPoints,
-            'rect': rect,
-            'croppedPoints': croppedPoints,
-            'keepBool' : True
-    #        'transform':
-
-        }
+        main_contour_data = prepare_contour_dict_for_frontend(
+            reconstruct_contour_a,
+            contour_A_id,
+            section,
+            keep=True
+        )
 
         for match_type, matches in match_dict.items():
             # matchNum = len(matches)
@@ -234,58 +238,19 @@ def prepare_frontend_payload(session, section, grouped):
     #        match_list = [list(matchCounter), main_contour_data]
             match_list = [main_contour_data]
             for match_id in matches:
-
                 db_contour_B = session.query(Contour).get(match_id)
                 reconstruct_contour_b = section.contours[db_contour_B.index]
-
-                #converting to pixels
-                reconstruct_contour_b_copy = deepcopy(reconstruct_contour_b)
-                reconstruct_contour_b_copy.points = list(map(tuple, reconstruct_contour_b_copy.transform._tform.inverse(numpy.asarray(reconstruct_contour_b_copy.points)/section.images[0].mag)))
-
-                #need this
-                nullPoints = reconstruct_contour_b_copy.shape.bounds
-
-                if reconstruct_contour_b_copy.shape.type == "Polygon":
-                    transformedPoints = list(map(tuple, translationVector+(numpy.array(list(reconstruct_contour_b_copy.shape.exterior.coords))*flipVector)))
-
-                else:
-                    x, y = reconstruct_contour_b_copy.shape.xy
-                    x = list(x)
-                    y = list(y)
-                    coords = list(zip(x,y))
-                    transformedPoints = list(map(tuple, translationVector+coords*flipVector))
-                reconstruct_contour_b_copy.points = transformedPoints
-
-                #cropping
-                minx, miny, maxx, maxy = reconstruct_contour_b_copy.shape.bounds
-                x = minx-100
-                y = miny - 100
-                width = maxx-x+100
-                height = maxy-y+100
-
-                #need this
-                rect = [x, y, width, height]
-
-                cropVector = numpy.array([x,y])
-
-                #need this
-                croppedPoints = list(map(tuple, numpy.array(reconstruct_contour_b_copy.points)-cropVector))
-
                 if (match_type == 'potential') or (match_type == 'potential_realigned'):
                     keepBool = True
                 elif (match_type == 'exact'):
                     keepBool = False
-
-                match_list.append({
-                    'name': reconstruct_contour_b.name,
-                    'points': reconstruct_contour_b.points,
-                    'image': section.images[0]._path + "/{}".format(section.images[0].src),
-                    'db_id': match_id,
-                    'nullpoints': nullPoints,
-                    'rect': rect,
-                    'croppedPoints': croppedPoints,
-                    'keepBool': keepBool
-                })
+                match_dict = prepare_contour_dict_for_frontend(
+                    reconstruct_contour_b,
+                    match_id,
+                    section,
+                    keep=keepBool
+                )
+                match_list.append(match_dict)
             section_matches[match_type].append(match_list)
 
     # Add uniques to payload
