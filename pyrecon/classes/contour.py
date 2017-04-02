@@ -66,9 +66,40 @@ class Contour(object):
         elif len(normalized_points) == 2:
             return LineString(normalized_points)
         elif self.closed is True:
-            # Check for weird, invalid traces
-            if (len(normalized_points) == 3 or \
-                    len (normalized_points) == 4 ) and self.points[0] == self.points[2]:
+            # Check for weird, invalid traces:
+            #
+            # Contour name=D14 hidden=False closed=True simplified=True
+            # border=(1.0, 0.0, 1.0) fill=(1.0, 0.0, 1.0)
+            # mode=11
+            # points=[(15.9352, 10.8615), (15.9332, 10.8508), (15.9352, 10.8615)]
+
+            # ((CLZBJ.60))
+            # Contour name=D13 hidden=False closed=True simplified=True
+            # border=(0.0, 0.0, 1.0) fill=(0.0, 0.0, 1.0) mode=11
+            # points=[(13.9099, 8.16357), (13.9099, 8.16356), (13.8962, 8.19828)]
+
+            # ((CLZBJ.60))
+            # Contour name=D13 hidden=False closed=True simplified=True
+            # border=(0.0, 0.0, 1.0) fill=(0.0, 0.0, 1.0) mode=11
+            # points=[(13.9099, 8.1626), (13.9092, 8.12801), (13.8936, 8.09571),
+            #	      (13.9093, 8.128)]
+
+            # ((CLZBJ.60))
+            # Contour name=D12 hidden=False closed=True simplified=True
+            # border=(1.0, 0.0, 0.0) fill=(1.0, 0.0, 0.0) mode=11
+            # points=[(13.583, 9.11925), (13.6035, 9.09733), (13.6142, 9.07453),
+            #         (13.6035, 9.09732), (13.583, 9.11925), (13.5765, 9.12278)]
+
+            # NOTE: getting tired of handling individual caseses like this, using is_valid
+            #       to see how that goes.
+            # TODO: Try Polygon.buffer(0) instead of is_valid?
+            if ((len(normalized_points) == 3 or len(normalized_points) == 4) and \
+                (self.points[0] == self.points[2] or \
+                (self.points[0][0] == self.points[1][0] and \
+		 abs(self.points[0][1] - self.points[1][1]) <= 1e-5) or \
+		(self.points[0][0] == self.points[2][0] and \
+		 abs(self.points[0][1] - self.points[2][1]) <= 1e-5)) or \
+		 not Polygon(normalized_points).is_valid):
                 return LineString(normalized_points)
             # Closed trace
             return Polygon(normalized_points)
