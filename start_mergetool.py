@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     series = process_series_directory(series_path)
 
-    series_matches = []
+    series_matches = {}
     for section in series.sections:
         # Load Section contours into database and determine matches
         db_contours = backend.load_db_contours_from_pyrecon_section(session, section)
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         grouped = backend.group_section_matches(session, section.index)
         # prepare payload for frontend
         section_matches = backend.prepare_frontend_payload(session, section, grouped)
-        series_matches.append(section_matches)
+        series_matches[section.index] = section_matches
 
     with open("test_dump.json", "w") as f:
         json.dump(series_matches, f)
