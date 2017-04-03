@@ -296,5 +296,5 @@ def prepare_frontend_payload(session, section, grouped):
             section,
             keep=True
         )
-        section_matches['unique'].append(unique_dict)
+        section_matches['unique'].append([unique_dict])
     return section_matches
