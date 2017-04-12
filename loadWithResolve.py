@@ -11,6 +11,101 @@ from skimage import transform as tf
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 #pyuic5 design.ui > design.py
+#SQLITE_MAX_VARIABLE_NUMBER=10000000 SERIES_PATH=~/Documents/RECONSTRUCT/CLZBJ_photos/ python3 start_mergetool.py
+
+
+class Ui_RestoreDialog(object):
+    def setupUi(self, RestoreDialog):
+        RestoreDialog.setObjectName("RestoreDialog")
+        RestoreDialog.resize(406, 330)
+        self.verticalLayoutWidget = QtWidgets.QWidget(RestoreDialog)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(9, 9, 381, 311))
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.welcomeLabel = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.welcomeLabel.setScaledContents(False)
+        self.welcomeLabel.setWordWrap(True)
+        self.welcomeLabel.setObjectName("welcomeLabel")
+        self.verticalLayout.addWidget(self.welcomeLabel)
+        self.buttonBox = QtWidgets.QDialogButtonBox(self.verticalLayoutWidget)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.No|QtWidgets.QDialogButtonBox.Yes)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.buttonBox)
+
+        self.retranslateUi(RestoreDialog)
+
+        #restoring from json
+        self.buttonBox.accepted.connect(RestoreDialog.yesClicked)
+
+        #not restoring from json
+        self.buttonBox.rejected.connect(RestoreDialog.noClicked)
+        QtCore.QMetaObject.connectSlotsByName(RestoreDialog)
+
+    def retranslateUi(self, RestoreDialog):
+        _translate = QtCore.QCoreApplication.translate
+        RestoreDialog.setWindowTitle(_translate("RestoreDialog", "pyRECONSTRUCT"))
+        self.welcomeLabel.setText(_translate("RestoreDialog", "Welcome to pyRECONSTRUCT! Are you restoring from a previous merge tool session?"))
+
+
+class RestoreDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super(RestoreDialog, self).__init__()
+
+        self.ui = Ui_RestoreDialog()
+        self.ui.setupUi(self)
+        self.reload = False
+        self.restoreBool = True
+        self.fileList = []
+        self.exec_()
+
+    def yesClicked(self):
+        self.ui.selectSessionLabel = QtWidgets.QLabel(self.ui.verticalLayoutWidget)
+        self.ui.selectSessionLabel.setObjectName("selectSessionLabel")
+        self.ui.verticalLayout.addWidget(self.ui.selectSessionLabel)
+        self.ui.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.ui.horizontalLayout.setObjectName("horizontalLayout")
+        self.ui.lineEdit = QtWidgets.QLineEdit(self.ui.verticalLayoutWidget)
+        self.ui.lineEdit.setObjectName("lineEdit")
+        self.ui.horizontalLayout.addWidget(self.ui.lineEdit)
+        self.ui.browseButton = QtWidgets.QPushButton(self.ui.verticalLayoutWidget)
+        self.ui.browseButton.setObjectName("browseButton")
+        self.ui.browseButton.clicked.connect(self.loadJson)
+        self.ui.horizontalLayout.addWidget(self.ui.browseButton)
+        self.ui.verticalLayout.addLayout(self.ui.horizontalLayout)
+
+        #load or cancel the .json file 
+        self.ui.buttonBox_2 = QtWidgets.QDialogButtonBox(self.ui.verticalLayoutWidget)
+        self.ui.buttonBox_2.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.ui.buttonBox_2.setObjectName("buttonBox_2")
+        self.ui.verticalLayout.addWidget(self.ui.buttonBox_2)
+
+        #load the json file 
+        self.ui.buttonBox_2.accepted.connect(self.close)
+
+        #cancel the .json load: just reload restore dialog
+        self.ui.buttonBox_2.rejected.connect(self.cancelClicked)
+        self.ui.buttonBox_2.rejected.connect(self.close)
+        self.ui.selectSessionLabel.setText("Please select the session file you would like to import.")
+        self.ui.browseButton.setText("Browse...")
+        #clicking yes starts the Main Window with the given dictionary
+
+    def noClicked(self):
+        self.restoreBool = False
+        self.close()
+
+    def loadJson(self):
+        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Open Series", "/home/", "Json File (*.json)")
+        self.ui.lineEdit.setText(str(fileName[0]))
+        self.fileList = [fileName[0]]
+
+    def returnFileList(self):
+        return self.fileList
+
+    def cancelClicked(self):
+        self.close()
 
 class Ui_loadDialog(object):
 
@@ -61,7 +156,7 @@ class Ui_loadDialog(object):
 
         self.retranslateUi(self.loadDialog)
         self.loadSeriesButton.clicked.connect(self.loadDialog.loadSeries)
-        self.cancelButton.clicked.connect(self.loadDialog.reject)
+        self.cancelButton.clicked.connect(self.loadDialog.close)
         self.selectButton.clicked.connect(self.loadDialog.startMainWindow)
         self.addSeriesButton.clicked.connect(self.loadDialog.addSeries)
         QtCore.QMetaObject.connectSlotsByName(self.loadDialog)
@@ -122,25 +217,10 @@ class loadDialog(QtWidgets.QDialog):
             alignSelection = MultipleSeriesDialog(self.fileList)
             if alignSelection.exec_():
                 newFileList = alignSelection.returnFileList()
-                print (newFileList)  
             else:
                 newFileList = alignSelection.returnFileList()
-                print (newFileList)                  
 
-            #alignSelection = alignSelection.exec_()
-  
-
-            # if alignSelection == 0:
-            #     #this is not an aligned series
-            #     pass
-            # else:
-
-            #elif alignSelection == 1:
-
-
-        #series = openSeries(self.fileName)
-        #passes self.fileList to Michael's script
-        #self.close()
+            self.fileList = newFileList
 
 class Ui_MultipleSeriesDialog(object):
     def setupUi(self, MultipleSeriesDialog, fileList):
@@ -148,9 +228,6 @@ class Ui_MultipleSeriesDialog(object):
         self.MultipleSeriesDialog.setObjectName("MultipleSeriesDialog")
         self.MultipleSeriesDialog.resize(400, 300)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        # sizePolicy.setHorizontalStretch(0)
-        # sizePolicy.setVerticalStretch(0)
-        #sizePolicy.setHeightForWidth(MultipleSeriesDialog.sizePolicy().hasHeightForWidth())
         self.MultipleSeriesDialog.setSizePolicy(sizePolicy)
         self.verticalLayoutWidget = QtWidgets.QWidget(self.MultipleSeriesDialog)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(9, 0, 381, 291))
@@ -191,7 +268,7 @@ class Ui_MultipleSeriesDialog(object):
     def retranslateUi(self, MultipleSeriesDialog):
         _translate = QtCore.QCoreApplication.translate
         MultipleSeriesDialog.setWindowTitle(_translate("MultipleSeriesDialog", "Dialog"))
-        self.questionLabel.setText(_translate("MultipleSeriesDialog", "You have selected multiple series. Do these series have differing alignments?"))
+        self.questionLabel.setText(_translate("MultipleSeriesDialog", "You have selected multiple series. Do these series have differing alignments or attributes?"))
         self.noButton.setText(_translate("MultipleSeriesDialog", "No"))
         self.yesButton.setText(_translate("MultipleSeriesDialog", "Yes"))
 
@@ -338,9 +415,15 @@ class Ui_MainWindow(object):
         self.transferRightButton = QtWidgets.QPushButton(self.gridLayoutWidget_2)
         self.transferRightButton.setObjectName("transferRightButton")
         self.verticalLayout.addWidget(self.transferRightButton)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.saveStatusButton = QtWidgets.QPushButton(self.gridLayoutWidget_2)
+        self.saveStatusButton.setObjectName("saveStatusButton")
+        self.horizontalLayout.addWidget(self.saveStatusButton)
         self.completeButton = QtWidgets.QPushButton(self.gridLayoutWidget_2)
         self.completeButton.setObjectName("completeButton")
-        self.verticalLayout.addWidget(self.completeButton)
+        self.horizontalLayout.addWidget(self.completeButton)
+        self.verticalLayout.addLayout(self.horizontalLayout)
         self.gridLayout_2.addLayout(self.verticalLayout, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -381,13 +464,18 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.changeSeriesButton.clicked.connect(MainWindow.loadSeries)
+        self.resolveButton.clicked.connect(MainWindow.loadResolveLeft)
         self.actionChange_Series.triggered.connect(MainWindow.loadSeries)
         self.transferAllButton.clicked.connect(MainWindow.transferAllRight)
         self.transferLeftButton.clicked.connect(MainWindow.transferFromLeft)
         self.transferRightButton.clicked.connect(MainWindow.transferFromRight)
         self.viewAllButton.clicked.connect(MainWindow.viewAll)
+
+
+        #TODO: fix this for complete output
         self.completeButton.clicked.connect(MainWindow.saveSeries)
         self.actionSave_Resolutions.triggered.connect(MainWindow.saveSeries)
+        self.saveStatusButton.clicked.connect(MainWindow.saveSeries)        
         self.actionExit.triggered.connect(MainWindow.close)
         self.actionTransfer_all.triggered.connect(MainWindow.transferAllRight)
         self.actionView_All.triggered.connect(MainWindow.viewAll)
@@ -405,6 +493,7 @@ class Ui_MainWindow(object):
         self.transferAllButton.setText(_translate("MainWindow", "Transfer All"))
         self.resolvedLabel.setText(_translate("MainWindow", "Resolved Duplicates, Exact Duplicates, and Unique Traces"))
         self.transferRightButton.setText(_translate("MainWindow", "Transfer <<"))
+        self.saveStatusButton.setText(_translate("MainWindow", "Save Current Status"))
         self.completeButton.setText(_translate("MainWindow", "Resolve Complete"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
@@ -428,47 +517,76 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def initializeDataset(self):
         for i in range (len(self.data)):
-            if len(self.data[i]["potential"]) > 0:
-                for j in range (len(self.data[i]["potential"])):
-                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][0]["name"])
-                    data = self.data[i]["potential"][j]
+            if len(self.data[str(i)]["potential"]) > 0:
+                for j in range (0, len(self.data[str(i)]["potential"])):
+                    unresolvedItem = QtGui.QStandardItem(self.data[str(i)]["potential"][j][0]["name"])
+                    data = self.data[str(i)]["potential"][j]
                     unresolvedItem.setData(data)
-                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["potential"][j][0]["name"]))
-                    self.ui.unresolvedModel.appendRow(unresolvedItem)
+                    unresolvedItem.setText(str(self.data[str(i)]["section"])+"."+str(data[0]["name"]))
+
+                    if data[0].get("side"):
+                        if data[0]["side"] == ("L"):
+                            self.ui.unresolvedModel.appendRow(unresolvedItem)
+                        elif data[0]["side"] == ("R"):
+                            self.ui.resolvedModel.appendRow(unresolvedItem)
+
+                    else:
+                        self.ui.unresolvedModel.appendRow(unresolvedItem)
                     unresolvedItem.setBackground(QtGui.QColor('red'))
 
-            if len(self.data[i]["potential_realigned"]) > 0:
-                for j in range (len(self.data[i]["potential_realigned"])):
-                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][0]["name"])
-                    data = self.data[i]["potential"][j]
+            if len(self.data[str(i)]["potential_realigned"]) > 0:
+                for j in range (0, len(self.data[str(i)]["potential_realigned"])):
+                    unresolvedItem = QtGui.QStandardItem(self.data[str(i)]["potential_realigned"][j][0]["name"])
+                    data = self.data[str(i)]["potential_realigned"][j]
                     unresolvedItem.setData(data)
-                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["potential"][j][0]["name"]))
-                    self.ui.unresolvedModel.appendRow(unresolvedItem)
+                    unresolvedItem.setText(str(self.data[str(i)]["section"])+"."+str(data[0]["name"]))
+                    if data[0].get("side"):
+                        if data[0]["side"] == ("L"):
+                            self.ui.unresolvedModel.appendRow(unresolvedItem)
+                        elif data[0]["side"] == ("R"):
+                            self.ui.resolvedModel.appendRow(unresolvedItem)
+
+                    else:
+                        self.ui.unresolvedModel.appendRow(unresolvedItem)                    
+
                     unresolvedItem.setBackground(QtGui.QColor('orange'))
 
 
-            if len(self.data[i]["exact"]) > 0:
-                for j in range (len(self.data[i]["exact"])):
-                    resolvedItem = QtGui.QStandardItem(self.data[i]["exact"][j][0]["name"])
-                    data = self.data[i]["exact"][j]
+            if len(self.data[str(i)]["exact"]) > 0:
+                for j in range (0, len(self.data[str(i)]["exact"])):
+                    resolvedItem = QtGui.QStandardItem(self.data[str(i)]["exact"][j][0]["name"])
+                    data = self.data[str(i)]["exact"][j]
                     resolvedItem.setData(data)
-                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["exact"][j][0]["name"]))
-                    self.ui.resolvedModel.appendRow(resolvedItem)
+                    resolvedItem.setText(str(self.data[str(i)]["section"])+"."+str(data[0]["name"]))
+                    if data[0].get("side"):
+                        if data[0]["side"] == ("L"):
+                            self.ui.unresolvedModel.appendRow(resolvedItem)
+                        elif data[0]["side"] == ("R"):
+                            self.ui.resolvedModel.appendRow(resolvedItem)
+
+                    else:
+                        self.ui.resolvedModel.appendRow(resolvedItem) 
+                    
                     resolvedItem.setBackground(QtGui.QColor('yellow'))
 
-            if len(self.data[i]["unique"]) > 0:        
-                for j in range (len(self.data[i]["unique"])):
-                    resolvedItem = QtGui.QStandardItem(self.data[i]["unique"][j][0]["name"])
-                    data = self.data[i]["unique"][j]
+            if len(self.data[str(i)]["unique"]) > 0:        
+                for j in range (0, len(self.data[str(i)]["unique"])):
+                    resolvedItem = QtGui.QStandardItem(self.data[str(i)]["unique"][j][0]["name"])
+                    data = self.data[str(i)]["unique"][j]
                     resolvedItem.setData(data)
-                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(self.data[i]["unique"][j][0]["name"]))
-                    self.ui.resolvedModel.appendRow(resolvedItem)
+                    resolvedItem.setText(str(self.data[str(i)]["section"])+"."+str(data[0]["name"]))
+                    if data[0].get("side"):
+                        if data[0]["side"] == ("L"):
+                            self.ui.unresolvedModel.appendRow(resolvedItem)
+                        elif data[0]["side"] == ("R"):
+                            self.ui.resolvedModel.appendRow(resolvedItem)
+
+                    else:
+                        self.ui.resolvedModel.appendRow(resolvedItem) 
                     resolvedItem.setBackground(QtGui.QColor('green'))
 
-        self.ui.unresolvedView.doubleClicked.connect(self.loadResolveUnchanged)
-        self.ui.resolvedView.doubleClicked.connect(self.loadResolveChanged)
-     
-        print ("initalizes dataset")
+        self.ui.unresolvedView.doubleClicked.connect(self.loadResolveLeft)
+        self.ui.resolvedView.doubleClicked.connect(self.loadResolveRight)
 
     def loadSeries(self):
         print("load series")
@@ -531,7 +649,7 @@ class MainWindow(QtWidgets.QMainWindow):
             nextItemIndex = self.ui.unresolvedModel.index(0, 0)
             nextItem = self.ui.unresolvedModel.itemFromIndex(nextItemIndex)
             resolution = resolveDialog(nextItem)
-            resoMarker = resolution.saveState
+            resoMarker = resolution.DialogCode()
             
             if resoMarker:
                 self.ui.unresolvedModel.takeRow(0)
@@ -542,26 +660,119 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def saveSeries(self):
         print ("save series")
+        outputDict = {}
+        outputDict['0'] = {"potential_realigned":[], "unique":[], "potential":[], "exact":[], "section":0}
 
-    def loadResolveUnchanged(self):
+
+        for idx in range (0, self.ui.unresolvedModel.rowCount()):
+            nextItemIndex = self.ui.unresolvedModel.index(idx, 0)
+            nextItem = self.ui.unresolvedModel.itemFromIndex(nextItemIndex)
+            nextItemSection = nextItem.data()[0]["section"]
+            nextItemData = nextItem.data()
+            nextItemData[0]["side"] = "L"
+            nextItem.setData(nextItemData)
+
+            if outputDict.get(str(nextItemSection)):
+                if (nextItem.background().color().name()) == "#ff0000":
+                    outputDict[str(nextItemSection)]['potential'].append(nextItem.data())
+
+
+                #     print ("POTENTIAL")
+                elif (nextItem.background().color().name()) == "#ffa500":
+                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
+
+                elif (nextItem.background().color().name()) == "#008000":
+                    outputDict[str(nextItemSection)]['unique'].append(nextItem.data())
+
+                elif (nextItem.background().color().name()) == "#ffff00":
+                    outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
+
+            else:
+                outputDict[str(nextItemSection)] = {"potential_realigned":[], "unique":[], "potential":[], "exact":[], "section":nextItemSection}
+                if (nextItem.background().color().name()) == "#ff0000":
+                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
+                elif (nextItem.background().color().name()) == "#ffa500":
+                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
+
+                elif (nextItem.background().color().name()) == "#008000":
+                    outputDict[str(nextItemSection)]['unique'].append(nextItem.data())
+
+                elif (nextItem.background().color().name()) == "#ffff00":
+                    outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
+
+
+        for idx in range (0, self.ui.resolvedModel.rowCount()):
+            nextItemIndex = self.ui.resolvedModel.index(idx, 0)
+            nextItem = self.ui.resolvedModel.itemFromIndex(nextItemIndex)
+            nextItemSection = nextItem.data()[0]["section"]
+            nextItemData = nextItem.data()
+            nextItemData[0]["side"] = "R"
+            nextItem.setData(nextItemData)
+
+            if outputDict.get(str(nextItemSection)):
+                if (nextItem.background().color().name()) == "#ff0000":
+                    outputDict[str(nextItemSection)]['potential'].append(nextItem.data())
+
+
+                #     print ("POTENTIAL")
+                elif (nextItem.background().color().name()) == "#ffa500":
+                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
+
+                elif (nextItem.background().color().name()) == "#008000":
+                    outputDict[str(nextItemSection)]['unique'].append(nextItem.data())
+
+                elif (nextItem.background().color().name()) == "#ffff00":
+                    outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
+
+            else:
+                outputDict[str(nextItemSection)] = {"potential_realigned":[], "unique":[], "potential":[], "exact":[], "section":nextItemSection}
+                if (nextItem.background().color().name()) == "#ff0000":
+                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
+                elif (nextItem.background().color().name()) == "#ffa500":
+                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
+
+                elif (nextItem.background().color().name()) == "#008000":
+                    outputDict[str(nextItemSection)]['unique'].append(nextItem.data())
+
+                elif (nextItem.background().color().name()) == "#ffff00":
+                    outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
+
+        with open("savedstatus.json", "w") as f:
+            json.dump(outputDict, f)
+
+    def loadResolveLeft(self):
         selected = self.ui.unresolvedView.selectedIndexes()
+        rowNumbers = []
         for idx in selected:
-            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)        
+            rowNumbers.append(idx.row())
+
+        oldIndex = 0
+
+        rowNumbers = sorted(rowNumbers)
+
+        for i in range (len(rowNumbers)):
+            indexObj = self.ui.unresolvedModel.index(rowNumbers[i] - oldIndex, 0)
+            selectedItem = self.ui.unresolvedModel.itemFromIndex(indexObj)
             resolution = resolveDialog(selectedItem)
-            resoMarker = resolution.saveState
-        
-            if resoMarker:
-                self.ui.unresolvedModel.takeRow(idx.row())
+            if (resolution.result() == 0):
+                break
+            else:
+                self.ui.unresolvedModel.takeRow(rowNumbers[i] - oldIndex)
                 self.ui.resolvedModel.appendRow(selectedItem)        
 
                 self.ui.resolvedView.update()
                 self.ui.unresolvedView.update()
 
-    def loadResolveChanged(self):
+            oldIndex +=1
+
+
+    def loadResolveRight(self):
         selected = self.ui.resolvedView.selectedIndexes()   
         for idx in selected:
-            selectedItem = self.ui.resolvedModel.itemFromIndex(idx)           
-        resolveDialog(selectedItem)    
+            selectedItem = self.ui.resolvedModel.itemFromIndex(idx)    
+            resolution = resolveDialog(selectedItem)
+            if (resolution.result() == 0):
+                break
 
     def selectAllLeft(self):
         selected = self.ui.unresolvedView.selectedIndexes()   
@@ -631,7 +842,7 @@ class MainWindow(QtWidgets.QMainWindow):
         action = menu.exec_(self.ui.unresolvedView.mapToGlobal(position))
 
         if action == resolveAction:
-            self.loadResolveUnchanged()
+            self.loadResolveLeft()
 
         elif action == transferAction:
             self.transferFromLeft()
@@ -675,9 +886,9 @@ class resolveDialog(QtWidgets.QDialog):
         self.ui.setupUi(self, self.itemData)
         self.nameState = False
         self.updatedState = False
-        self.saveState = False
         self.initializeData()
         self.exec_()
+        self.show()
 
         if self.updatedState == True:
             item.setData(self.itemData)
@@ -685,6 +896,9 @@ class resolveDialog(QtWidgets.QDialog):
     def initializeData(self):
         for i in range (0, len(self.itemData)):
             getattr(self.ui, 'nameEdit'+str(i+1)).setText(self.itemData[i]["name"])
+            getattr(self.ui, 'seriesLabel'+str(i)).setText("Series: "+str("srs_name"))
+            getattr(self.ui, 'sectionLabel'+str(i)).setText("Section: "+str(self.itemData[i]["section"]))
+
 
             myBool = QtCore.QFileInfo(self.itemData[0]["image"]).exists()
 
@@ -732,7 +946,7 @@ class resolveDialog(QtWidgets.QDialog):
         self.nameState == True
 
     def saveResolutions(self,item):
-        self.saveState = True
+        self.setResult(1)
         if self.nameState == True:
             for i in range (0, len(self.itemData)):
                 self.itemData[i+1]['name'] = getattr(self.ui, 'nameEdit'+str(i+1)).text()
@@ -793,6 +1007,18 @@ class Ui_Dialog(object):
         for i in range(0, len(self.itemData)):
             setattr(self, 'verticalLayout_'+str(i+2), QtWidgets.QVBoxLayout())
             getattr(self, 'verticalLayout_'+str(i+2)).setObjectName("verticalLayout_"+str(i+2))
+
+            setattr(self, 'seriesLabel'+str(i), QtWidgets.QLabel(self.verticalLayoutWidget))
+            getattr(self, 'seriesLabel'+str(i)).setObjectName("seriesLabel"+str(i))
+            getattr(self, 'seriesLabel'+str(i)).setText("Series:")
+
+            getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'seriesLabel'+str(i)))
+            setattr(self, 'sectionLabel'+str(i), QtWidgets.QLabel(self.verticalLayoutWidget))
+            getattr(self, 'sectionLabel'+str(i)).setObjectName("sectionLabel"+str(i))
+            getattr(self, 'sectionLabel'+str(i)).setText("Section:")
+            getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'sectionLabel'+str(i)))
+            
+
             setattr(self, 'horizontalLayout_'+str(i+2), QtWidgets.QHBoxLayout())
             getattr(self, 'horizontalLayout_'+str(i+2)).setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
             getattr(self, 'horizontalLayout_'+str(i+2)).setObjectName("horizontalLayout_"+str(i+2))  
@@ -1017,12 +1243,32 @@ class selectDialog(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.exec_()
 
-def main():
+def startLoadDialogs():
 
     app = QtWidgets.QApplication(sys.argv)
-    mockData = json.load(open('FHLTD_54.json'))
-    initialWindow = loadDialog()
-    #fileList = ['mash', 'mash', 'meesh']
+
+    initialWindow = RestoreDialog()
+
+    if (initialWindow.restoreBool == False):
+        loadSeries = loadDialog()
+
+    elif (len(initialWindow.returnFileList()) > 0):
+        jsonList =  (initialWindow.returnFileList())
+        jsonData = json.load(open(str(jsonList[0])))
+        mainWindow = MainWindow(jsonData)
+
+        mainWindow.show()
+
+    app.exec_()
+
+
+def main():
+
+
+    startLoadDialogs()
+    #mockData = json.load(open('savedstatus.json'))
+    #initialWindow = loadDialog()
+    fileList = ['mash', 'mash', 'meesh']
 
     # test = MultipleSeriesDialog(fileList)
     # test = test.exec_()
@@ -1031,6 +1277,5 @@ def main():
     #print (series)
     #mainWindow = MainWindow(mockData)
     #mainWindow.show()
-    #app.exec_()
 
 main()
