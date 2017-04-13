@@ -11,7 +11,7 @@ from skimage import transform as tf
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 #pyuic5 design.ui > design.py
-#SQLITE_MAX_VARIABLE_NUMBER=10000000 SERIES_PATH=~/Documents/RECONSTRUCT/CLZBJ_photos/ python3 start_mergetool.py
+#SQLITE_MAX_VARIABLE_NUMBER=10000000 SERIES_PATH=~/Documents/RECONSTRUCT/FHLTD/FHLTD_mito/FHLTD/ python3 start_mergetool.py
 
 
 class Ui_RestoreDialog(object):
@@ -110,10 +110,9 @@ class RestoreDialog(QtWidgets.QDialog):
 class Ui_loadDialog(object):
 
     def setupUi(self, loadDialog):
-        self.loadDialog = loadDialog
-        self.loadDialog.setObjectName("loadDialog")
-        self.loadDialog.resize(400, 300)
-        self.verticalLayoutWidget = QtWidgets.QWidget(self.loadDialog)
+        loadDialog.setObjectName("loadDialog")
+        loadDialog.resize(400, 300)
+        self.verticalLayoutWidget = QtWidgets.QWidget(loadDialog)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 381, 281))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
@@ -154,12 +153,12 @@ class Ui_loadDialog(object):
         self.horizontalLayout_4.addWidget(self.selectButton)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
 
-        self.retranslateUi(self.loadDialog)
-        self.loadSeriesButton.clicked.connect(self.loadDialog.loadSeries)
-        self.cancelButton.clicked.connect(self.loadDialog.close)
-        self.selectButton.clicked.connect(self.loadDialog.startMainWindow)
-        self.addSeriesButton.clicked.connect(self.loadDialog.addSeries)
-        QtCore.QMetaObject.connectSlotsByName(self.loadDialog)
+        self.retranslateUi(loadDialog)
+        self.loadSeriesButton.clicked.connect(loadDialog.loadSeries)
+        self.cancelButton.clicked.connect(loadDialog.close)
+        self.selectButton.clicked.connect(loadDialog.startMainWindow)
+        self.addSeriesButton.clicked.connect(loadDialog.addSeries)
+        QtCore.QMetaObject.connectSlotsByName(loadDialog)
 
 
     def retranslateUi(self, loadDialog):
@@ -203,10 +202,10 @@ class loadDialog(QtWidgets.QDialog):
         getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadSeriesButton'+str(self.counter)))
         getattr(self.ui, 'loadSeriesButton'+str(self.counter)).setText("Load Series...")
         getattr(self.ui, 'loadSeriesButton'+str(self.counter)).setObjectName('loadSeriesButton'+str(self.counter))
-        getattr(self.ui, 'loadSeriesButton'+str(self.counter)).clicked.connect(self.ui.loadDialog.loadSeries)
+        getattr(self.ui, 'loadSeriesButton'+str(self.counter)).clicked.connect(self.loadSeries)
 
         self.ui.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 381, 281+(30*(self.counter - 5))))
-        self.ui.loadDialog.resize(400, 300 + (30*(self.counter - 5)))
+        self.resize(400, 300 + (30*(self.counter - 5)))
 
         self.ui.verticalLayout_3.addLayout(getattr(self.ui, 'horizontalLayout_'+str(self.counter)))
         
@@ -215,21 +214,23 @@ class loadDialog(QtWidgets.QDialog):
     def startMainWindow(self):
         if (len(self.fileList) > 1):
             alignSelection = MultipleSeriesDialog(self.fileList)
-            if alignSelection.exec_():
-                newFileList = alignSelection.returnFileList()
-            else:
-                newFileList = alignSelection.returnFileList()
 
-            self.fileList = newFileList
+            if (alignSelection.result() == 0):
+                pass
+            elif (alignSelection.result() == 1):
+                newFileList = alignSelection.returnFileList()
+                self.fileList = newFileList
+
+        self.close()
 
 class Ui_MultipleSeriesDialog(object):
     def setupUi(self, MultipleSeriesDialog, fileList):
-        self.MultipleSeriesDialog = MultipleSeriesDialog
-        self.MultipleSeriesDialog.setObjectName("MultipleSeriesDialog")
-        self.MultipleSeriesDialog.resize(400, 300)
+        MultipleSeriesDialog = MultipleSeriesDialog
+        MultipleSeriesDialog.setObjectName("MultipleSeriesDialog")
+        MultipleSeriesDialog.resize(400, 300)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        self.MultipleSeriesDialog.setSizePolicy(sizePolicy)
-        self.verticalLayoutWidget = QtWidgets.QWidget(self.MultipleSeriesDialog)
+        MultipleSeriesDialog.setSizePolicy(sizePolicy)
+        self.verticalLayoutWidget = QtWidgets.QWidget(MultipleSeriesDialog)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(9, 0, 381, 291))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
@@ -259,11 +260,11 @@ class Ui_MultipleSeriesDialog(object):
         self.horizontalLayout.addWidget(self.yesButton)
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.noButton.clicked.connect(self.MultipleSeriesDialog.reject)
-        self.yesButton.clicked.connect(self.MultipleSeriesDialog.yesClicked)
+        self.noButton.clicked.connect(MultipleSeriesDialog.close)
+        self.yesButton.clicked.connect(MultipleSeriesDialog.yesClicked)
 
-        self.retranslateUi(self.MultipleSeriesDialog)
-        QtCore.QMetaObject.connectSlotsByName(self.MultipleSeriesDialog)
+        self.retranslateUi(MultipleSeriesDialog)
+        QtCore.QMetaObject.connectSlotsByName(MultipleSeriesDialog)
 
     def retranslateUi(self, MultipleSeriesDialog):
         _translate = QtCore.QCoreApplication.translate
@@ -276,14 +277,15 @@ class Ui_MultipleSeriesDialog(object):
 class MultipleSeriesDialog(QtWidgets.QDialog):
     def __init__(self, fileList):
         super(MultipleSeriesDialog, self).__init__()
-
+        #self.setResult(0)
         self.ui = Ui_MultipleSeriesDialog()
         self.ui.setupUi(self, fileList)
         savedFileList = fileList
         self.fileList = savedFileList
-        #self.exec_()
+        self.exec_()
 
     def yesClicked(self):
+        self.setResult(1)
         self.ui.question2Label = QtWidgets.QLabel(self.ui.verticalLayoutWidget)
         self.ui.question2Label.setText("Which series/alignment would you like to output to?")
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
@@ -312,7 +314,7 @@ class MultipleSeriesDialog(QtWidgets.QDialog):
             getattr(self.ui,'lineEdit'+str(i)).setText(str(self.fileList[i]))
             self.ui.verticalLayout_5.addLayout(getattr(self.ui, 'horizontalLayout_'+str(i)))
             self.ui.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 381, 281+(50*(i-1))))
-            self.ui.MultipleSeriesDialog.resize(400, 300 + (50*(i - 1)))
+            self.resize(400, 300 + (50*(i - 1)))
 
 
         self.ui.verticalLayout.addLayout(self.ui.verticalLayout_5)        
@@ -332,7 +334,7 @@ class MultipleSeriesDialog(QtWidgets.QDialog):
         for i in range (len(self.fileList)):
             if getattr(self.ui, 'series'+str(i)+'button').isChecked():
                 self.fileList.insert(0, self.fileList.pop(i))
-                self.ui.MultipleSeriesDialog.accept()
+                self.accept()
                 break
             else:
                 continue
@@ -516,13 +518,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.initializeDataset()
 
     def initializeDataset(self):
-        for i in range (len(self.data)):
-            if len(self.data[str(i)]["potential"]) > 0:
-                for j in range (0, len(self.data[str(i)]["potential"])):
-                    unresolvedItem = QtGui.QStandardItem(self.data[str(i)]["potential"][j][0]["name"])
-                    data = self.data[str(i)]["potential"][j]
+        for i in (self.data.keys()):
+            if len(self.data[i]["potential"]) > 0:
+                for j in range (0, len(self.data[i]["potential"])):
+                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][0]["name"])
+                    data = self.data[i]["potential"][j]
                     unresolvedItem.setData(data)
-                    unresolvedItem.setText(str(self.data[str(i)]["section"])+"."+str(data[0]["name"]))
+                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(data[0]["name"]))
 
                     if data[0].get("side"):
                         if data[0]["side"] == ("L"):
@@ -534,12 +536,12 @@ class MainWindow(QtWidgets.QMainWindow):
                         self.ui.unresolvedModel.appendRow(unresolvedItem)
                     unresolvedItem.setBackground(QtGui.QColor('red'))
 
-            if len(self.data[str(i)]["potential_realigned"]) > 0:
-                for j in range (0, len(self.data[str(i)]["potential_realigned"])):
-                    unresolvedItem = QtGui.QStandardItem(self.data[str(i)]["potential_realigned"][j][0]["name"])
-                    data = self.data[str(i)]["potential_realigned"][j]
+            if len(self.data[i]["potential_realigned"]) > 0:
+                for j in range (0, len(self.data[i]["potential_realigned"])):
+                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential_realigned"][j][0]["name"])
+                    data = self.data[i]["potential_realigned"][j]
                     unresolvedItem.setData(data)
-                    unresolvedItem.setText(str(self.data[str(i)]["section"])+"."+str(data[0]["name"]))
+                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(data[0]["name"]))
                     if data[0].get("side"):
                         if data[0]["side"] == ("L"):
                             self.ui.unresolvedModel.appendRow(unresolvedItem)
@@ -552,12 +554,12 @@ class MainWindow(QtWidgets.QMainWindow):
                     unresolvedItem.setBackground(QtGui.QColor('orange'))
 
 
-            if len(self.data[str(i)]["exact"]) > 0:
-                for j in range (0, len(self.data[str(i)]["exact"])):
-                    resolvedItem = QtGui.QStandardItem(self.data[str(i)]["exact"][j][0]["name"])
-                    data = self.data[str(i)]["exact"][j]
+            if len(self.data[i]["exact"]) > 0:
+                for j in range (0, len(self.data[i]["exact"])):
+                    resolvedItem = QtGui.QStandardItem(self.data[i]["exact"][j][0]["name"])
+                    data = self.data[i]["exact"][j]
                     resolvedItem.setData(data)
-                    resolvedItem.setText(str(self.data[str(i)]["section"])+"."+str(data[0]["name"]))
+                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(data[0]["name"]))
                     if data[0].get("side"):
                         if data[0]["side"] == ("L"):
                             self.ui.unresolvedModel.appendRow(resolvedItem)
@@ -569,12 +571,12 @@ class MainWindow(QtWidgets.QMainWindow):
                     
                     resolvedItem.setBackground(QtGui.QColor('yellow'))
 
-            if len(self.data[str(i)]["unique"]) > 0:        
-                for j in range (0, len(self.data[str(i)]["unique"])):
-                    resolvedItem = QtGui.QStandardItem(self.data[str(i)]["unique"][j][0]["name"])
-                    data = self.data[str(i)]["unique"][j]
+            if len(self.data[i]["unique"]) > 0:        
+                for j in range (0, len(self.data[i]["unique"])):
+                    resolvedItem = QtGui.QStandardItem(self.data[i]["unique"][j][0]["name"])
+                    data = self.data[i]["unique"][j]
                     resolvedItem.setData(data)
-                    resolvedItem.setText(str(self.data[str(i)]["section"])+"."+str(data[0]["name"]))
+                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(data[0]["name"]))
                     if data[0].get("side"):
                         if data[0]["side"] == ("L"):
                             self.ui.unresolvedModel.appendRow(resolvedItem)
@@ -1251,6 +1253,11 @@ def startLoadDialogs():
 
     if (initialWindow.restoreBool == False):
         loadSeries = loadDialog()
+        fileList = loadSeries.fileList
+
+
+
+        #pass filelist to Michael
 
     elif (len(initialWindow.returnFileList()) > 0):
         jsonList =  (initialWindow.returnFileList())
