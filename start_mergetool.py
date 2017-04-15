@@ -12,7 +12,7 @@ if __name__ == "__main__":
     # Grab desired database location from environment variables -- default to in-memory
     DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite://")
 
-    engine = create_engine(DATABASE_URI, echo=True)
+    engine = create_engine(DATABASE_URI, echo=False)
     session = sessionmaker(bind=engine)()
 
     # Create database tables (if not yet exists)
