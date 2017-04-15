@@ -5,6 +5,7 @@ from pyrecon.classes import Series, Section
 from pyrecon.tools import reconstruct_writer
 
 TOLERANCE = 1 + 2**-17
+LIMIT = 10.0
 
 
 def is_reverse(shape):
@@ -75,7 +76,7 @@ def is_exact_duplicate(shape1, shape2, threshold=TOLERANCE):
 
 # TODO: investigate way to reduce shared computation with is_duplicate
 # TODO: investigate if support needed for LineString
-def is_potential_duplicate(shape1, shape2, threshold=TOLERANCE):
+def is_potential_duplicate(shape1, shape2, threshold=TOLERANCE, upper_bound=LIMIT):
     """ Return True if two shapes are potential overlaps (exceed tolerance).
     """
     if isinstance(shape1, Point) and isinstance(shape2, Point):
@@ -94,7 +95,7 @@ def is_potential_duplicate(shape1, shape2, threshold=TOLERANCE):
         if not area_of_intersection:
             return False
         union_over_intersection = area_of_union / area_of_intersection
-        if union_over_intersection >= threshold:
+        if threshold <= union_over_intersection < upper_bound:
             return True
         else:
             return False
