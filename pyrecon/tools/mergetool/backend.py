@@ -203,7 +203,8 @@ def prepare_contour_dict_for_frontend(contour, db_id, section, keep=True):
         'nullpoints': nullPoints,
         'rect': rect,
         'croppedPoints': croppedPoints,
-        'keepBool' : keep
+        'keepBool': keep,
+        'section': section.index
     }
 
 
