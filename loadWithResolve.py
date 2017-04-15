@@ -6,9 +6,10 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-import sys, os, csv, json, numpy
+import sys, os, csv, json, numpy, collections
 from skimage import transform as tf
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 #pyuic5 design.ui > design.py
 #SQLITE_MAX_VARIABLE_NUMBER=10000000 SERIES_PATH=~/Documents/RECONSTRUCT/FHLTD/FHLTD_mito/FHLTD/ python3 start_mergetool.py
@@ -106,7 +107,6 @@ class RestoreDialog(QtWidgets.QDialog):
 
     def cancelClicked(self):
         self.close()
-
 class Ui_loadDialog(object):
 
     def setupUi(self, loadDialog):
@@ -170,6 +170,123 @@ class Ui_loadDialog(object):
         self.cancelButton.setText(_translate("loadDialog", "Cancel"))
         self.selectButton.setText(_translate("loadDialog", "Import Series"))
 
+class loadJsonSeriesDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super(loadJsonSeriesDialog, self).__init__()
+
+        self.ui = Ui_loadJsonSeriesDialog()
+        self.ui.setupUi(self)
+        self.counter = 5
+        self.fileList = []
+        self.exec_()
+
+    def loadSeries(self):
+        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Open Series", "/home/", "Series File (*.ser)")
+        if fileName != None:
+            if (self.sender().objectName() == 'loadSeriesButton'):
+                self.ui.loadLineEdit.setText(str(fileName[0]))
+            else:
+                number = (self.sender().objectName())[-1]
+                getattr(self.ui, 'loadLineEdit_'+str(self.counter)).setText(str(fileName[0]))
+
+        self.fileList.append(str(fileName[0]))
+        #self.output = str(fileName[0])
+
+    def addSeries(self):
+        self.counter += 1
+
+        setattr(self.ui, 'horizontalLayout_'+str(self.counter), QtWidgets.QHBoxLayout())
+        setattr(self.ui, 'loadLineEdit_'+str(self.counter), QtWidgets.QLineEdit(self.ui.verticalLayoutWidget))
+        getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadLineEdit_'+str(self.counter)))
+        setattr(self.ui, 'loadSeriesButton'+str(self.counter),QtWidgets.QPushButton(self.ui.verticalLayoutWidget))
+        getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadSeriesButton'+str(self.counter)))
+        getattr(self.ui, 'loadSeriesButton'+str(self.counter)).setText("Load Series...")
+        getattr(self.ui, 'loadSeriesButton'+str(self.counter)).setObjectName('loadSeriesButton'+str(self.counter))
+        getattr(self.ui, 'loadSeriesButton'+str(self.counter)).clicked.connect(self.loadSeries)
+
+        self.ui.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 381, 281+(30*(self.counter - 5))))
+        self.resize(400, 300 + (30*(self.counter - 5)))
+
+        self.ui.verticalLayout_3.addLayout(getattr(self.ui, 'horizontalLayout_'+str(self.counter)))
+        
+
+
+    def startMainWindow(self):
+        if (len(self.fileList) > 1):
+            alignSelection = MultipleSeriesDialog(self.fileList)
+
+            if (alignSelection.result() == 0):
+                pass
+            elif (alignSelection.result() == 1):
+                newFileList = alignSelection.returnFileList()
+                self.fileList = newFileList
+
+        self.close()
+
+
+class Ui_loadJsonSeriesDialog(object):
+
+    def setupUi(self, loadJsonSeriesDialog):
+        loadJsonSeriesDialog.setObjectName("loadJsonSeriesDialog")
+        loadJsonSeriesDialog.resize(400, 300)
+        self.verticalLayoutWidget = QtWidgets.QWidget(loadJsonSeriesDialog)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 381, 281))
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.gridLayout = QtWidgets.QGridLayout()
+        self.gridLayout.setObjectName("gridLayout")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.welcomeLabel = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.welcomeLabel.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.welcomeLabel.setObjectName("welcomeLabel")
+        self.verticalLayout_3.addWidget(self.welcomeLabel)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.loadLineEdit = QtWidgets.QLineEdit(self.verticalLayoutWidget)
+        self.loadLineEdit.setObjectName("loadLineEdit")
+        self.horizontalLayout_3.addWidget(self.loadLineEdit)
+        self.loadSeriesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.loadSeriesButton.setObjectName("loadSeriesButton")
+        self.horizontalLayout_3.addWidget(self.loadSeriesButton)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_3)
+        self.gridLayout.addLayout(self.verticalLayout_3, 0, 0, 1, 1)
+        self.addSeriesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.addSeriesButton.setObjectName("addSeriesButton")
+        self.gridLayout.addWidget(self.addSeriesButton, 1, 0, 1, 1)        
+        self.verticalLayout_2.addLayout(self.gridLayout)
+        self.verticalLayout.addLayout(self.verticalLayout_2)
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.cancelButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.cancelButton.setObjectName("cancelButton")
+        self.horizontalLayout_4.addWidget(self.cancelButton)
+        self.selectButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.selectButton.setObjectName("selectButton")
+        self.horizontalLayout_4.addWidget(self.selectButton)
+        self.verticalLayout.addLayout(self.horizontalLayout_4)
+
+        self.retranslateUi(loadJsonSeriesDialog)
+        self.loadSeriesButton.clicked.connect(loadJsonSeriesDialog.loadSeries)
+        self.cancelButton.clicked.connect(loadJsonSeriesDialog.close)
+        self.selectButton.clicked.connect(loadJsonSeriesDialog.startMainWindow)
+        self.addSeriesButton.clicked.connect(loadJsonSeriesDialog.addSeries)
+        QtCore.QMetaObject.connectSlotsByName(loadJsonSeriesDialog)
+
+
+    def retranslateUi(self, loadJsonSeriesDialog):
+        _translate = QtCore.QCoreApplication.translate
+        loadJsonSeriesDialog.setWindowTitle(_translate("loadJsonSeriesDialog", "Dialog"))
+        self.welcomeLabel.setText(_translate("loadJsonSeriesDialog", "Please select the series used in this .json file."))
+        self.addSeriesButton.setText(_translate("loadJsonSeriesDialog", "Add Series..."))
+        self.loadSeriesButton.setText(_translate("loadJsonSeriesDialog", "Load Series..."))
+        self.cancelButton.setText(_translate("loadJsonSeriesDialog", "Cancel"))
+        self.selectButton.setText(_translate("loadJsonSeriesDialog", "Import Series"))
+
 class loadDialog(QtWidgets.QDialog):
     def __init__(self):
         super(loadDialog, self).__init__()
@@ -190,7 +307,7 @@ class loadDialog(QtWidgets.QDialog):
                 getattr(self.ui, 'loadLineEdit_'+str(self.counter)).setText(str(fileName[0]))
 
         self.fileList.append(str(fileName[0]))
-        self.output = str(fileName[0])
+        #self.output = str(fileName[0])
 
     def addSeries(self):
         self.counter += 1
@@ -518,7 +635,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.initializeDataset()
 
     def initializeDataset(self):
-        for i in (self.data.keys()):
+        self.data = {int(k): v for k,v in self.data.items()}
+        for i in (self.data):
             if len(self.data[i]["potential"]) > 0:
                 for j in range (0, len(self.data[i]["potential"])):
                     unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][0]["name"])
@@ -913,6 +1031,7 @@ class resolveDialog(QtWidgets.QDialog):
                 pixmap = (QtGui.QPixmap(self.itemData[i]["image"]))
 
             pixmap = pixmap.copy(*(self.itemData[i]['rect']))
+            print(self.itemData[i]['rect'])
 
             preCropSize = pixmap.size()
 
@@ -1261,6 +1380,8 @@ def startLoadDialogs():
 
     elif (len(initialWindow.returnFileList()) > 0):
         jsonList =  (initialWindow.returnFileList())
+        loadSeries = loadJsonSeriesDialog()
+        fileList = loadSeries.fileList
         jsonData = json.load(open(str(jsonList[0])))
         mainWindow = MainWindow(jsonData)
 
@@ -1280,8 +1401,6 @@ def main():
     # test = MultipleSeriesDialog(fileList)
     # test = test.exec_()
 
-    #series = initialWindow.output
-    #print (series)
     #mainWindow = MainWindow(mockData)
     #mainWindow.show()
 
