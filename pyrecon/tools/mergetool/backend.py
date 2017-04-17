@@ -300,3 +300,44 @@ def prepare_frontend_payload(session, section, grouped):
         )
         section_matches['unique'].append([unique_dict])
     return section_matches
+
+
+def _get_output_contours_from_section_dict(section_dict):
+    kept_ids = set()
+    to_keep = []
+    types = ["exact", "potential", "potential_realigned", "unique"]
+    for type_ in types:
+        for type_set in section_dict[type_]:
+            for contour_dict in type_set:
+                if contour_dict.get('keepBool', False):
+                    db_id = contour_dict["db_id"]
+                    if db_id not in kept_ids:
+                        to_keep.append({
+                            "db_id": db_id,
+                            "name": contour_dict["name"]
+                        })
+    return to_keep
+
+
+def get_output_contours_from_series_dict(series_dict):
+    to_keep = []
+    for section_number, section_dict in series_dict.items():
+        to_keep.extend(_get_output_contours_from_section_dict(series_dict[section_number]))
+    return to_keep
+
+
+def create_output_series(to_keep, series):
+    series_copy = deepcopy(series)
+    # Wipe section contours
+    for section in series_copy.sections:
+        section.contours = []
+
+    for keep_dict in to_keep:
+        db_id = keep_dict["db_id"]
+        db_contour = session.query(Contour).get(db_id)
+        section_index = db_contour.section
+        contour_index = db_contour.index
+        reconstruct_contour = series.sections[section_index].contours[contour_index]
+        reconstruct_contour.name = keep_dict["name"]
+        series_copy.sections[section_index].contours.append(reconstruct_contour)
+    return series_copy
