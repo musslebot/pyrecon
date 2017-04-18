@@ -861,8 +861,9 @@ class MainWindow(QtWidgets.QMainWindow):
             json.dump(outputDict, f)
 
         if (self.sender().objectName() == "completeButton"):
-            return (outputDict, self.fileList)
             self.close()
+            print ("stuff still happening")
+            return (outputDict, self.fileList)
 
     def loadResolveLeft(self):
         selected = self.ui.unresolvedView.selectedIndexes()
