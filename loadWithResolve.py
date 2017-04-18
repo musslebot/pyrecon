@@ -626,7 +626,7 @@ class Ui_MainWindow(object):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, data):
+    def __init__(self, data, fileList):
         super(MainWindow, self).__init__()
 
         self.data = data
@@ -859,6 +859,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         with open("savedstatus.json", "w") as f:
             json.dump(outputDict, f)
+
+        if (self.sender().objectName() == "completeButton"):
+            return (outputDict, fileList)
+            self.close()
 
     def loadResolveLeft(self):
         selected = self.ui.unresolvedView.selectedIndexes()
@@ -1383,7 +1387,7 @@ def startLoadDialogs():
         loadSeries = loadJsonSeriesDialog()
         fileList = loadSeries.fileList
         jsonData = json.load(open(str(jsonList[0])))
-        mainWindow = MainWindow(jsonData)
+        mainWindow = MainWindow(jsonData, fileList)
 
         mainWindow.show()
 
