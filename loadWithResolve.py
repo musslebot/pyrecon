@@ -6,13 +6,61 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-import sys, os, csv, json, numpy, collections
+import csv
+import json
+import numpy
+import os
+import sys
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from skimage import transform as tf
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from pyrecon.tools.reconstruct_reader import process_series_directory
+from pyrecon.tools.reconstruct_writer import write_series
+from pyrecon.tools.mergetool import backend
 
 #pyuic5 design.ui > design.py
 #SQLITE_MAX_VARIABLE_NUMBER=10000000 SERIES_PATH=~/Documents/RECONSTRUCT/FHLTD/FHLTD_mito/FHLTD/ python3 start_mergetool.py
+
+DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite://")
+
+
+def start_database(series_path):
+    engine = create_engine(DATABASE_URI, echo=False)
+    session = sessionmaker(bind=engine)()
+    if bool(os.getenv("CREATE_DB",  1)):
+        backend.create_database(engine)
+
+    series_matches = {}
+    series = process_series_directory(series_path)
+    for section in series.sections:
+        # Load Section contours into database and determine matches
+        db_contours = backend.load_db_contours_from_pyrecon_section(sesion, section)
+        db_contourmatches = backend.load_db_contourmatches_from_db_contours_and_pyrecon_section(session, db_contours, section)
+
+        # Group matches by match_type
+        grouped = backend.group_section_matches(session, section.index)
+        # Prepare FE payload
+        section_matches = backend.prepare_frontend_payload(session, section, grouped)
+        series_matches[section.index] = section_matches
+
+    json_fp = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
+    json_fp = json_fp + "/mergetool.json"
+    with open(json_fp, "w"):
+        json.dump(series_matches, f)
+    return series_matches
+
+
+def write_merged_series(series_path, series_dict):
+    to_keep = backend.get_output_contours_from_series_dict(series_dict)
+    series = process_series_directory(series_path)
+    merged_fp = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
+    merged_fp = json_fp + "/merged/"
+    new_series = create_output_series(to_keep, series)
+    write_series(series, merged_fp, sections=True, overwrite=False)
+    return True
 
 
 class Ui_RestoreDialog(object):
@@ -63,6 +111,8 @@ class RestoreDialog(QtWidgets.QDialog):
         self.exec_()
 
     def yesClicked(self):
+        """ Restoring from a previous session.
+        """
         self.ui.selectSessionLabel = QtWidgets.QLabel(self.ui.verticalLayoutWidget)
         self.ui.selectSessionLabel.setObjectName("selectSessionLabel")
         self.ui.verticalLayout.addWidget(self.ui.selectSessionLabel)
@@ -77,13 +127,13 @@ class RestoreDialog(QtWidgets.QDialog):
         self.ui.horizontalLayout.addWidget(self.ui.browseButton)
         self.ui.verticalLayout.addLayout(self.ui.horizontalLayout)
 
-        #load or cancel the .json file 
+        #load or cancel the .json file
         self.ui.buttonBox_2 = QtWidgets.QDialogButtonBox(self.ui.verticalLayoutWidget)
         self.ui.buttonBox_2.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.ui.buttonBox_2.setObjectName("buttonBox_2")
         self.ui.verticalLayout.addWidget(self.ui.buttonBox_2)
 
-        #load the json file 
+        #load the json file
         self.ui.buttonBox_2.accepted.connect(self.close)
 
         #cancel the .json load: just reload restore dialog
@@ -94,6 +144,8 @@ class RestoreDialog(QtWidgets.QDialog):
         #clicking yes starts the Main Window with the given dictionary
 
     def noClicked(self):
+        """ Not restoring from a previous session.
+        """
         self.restoreBool = False
         self.close()
 
@@ -140,7 +192,7 @@ class Ui_loadDialog(object):
         self.gridLayout.addLayout(self.verticalLayout_3, 0, 0, 1, 1)
         self.addSeriesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.addSeriesButton.setObjectName("addSeriesButton")
-        self.gridLayout.addWidget(self.addSeriesButton, 1, 0, 1, 1)        
+        self.gridLayout.addWidget(self.addSeriesButton, 1, 0, 1, 1)
         self.verticalLayout_2.addLayout(self.gridLayout)
         self.verticalLayout.addLayout(self.verticalLayout_2)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
@@ -208,7 +260,7 @@ class loadJsonSeriesDialog(QtWidgets.QDialog):
         self.resize(400, 300 + (30*(self.counter - 5)))
 
         self.ui.verticalLayout_3.addLayout(getattr(self.ui, 'horizontalLayout_'+str(self.counter)))
-        
+
 
 
     def startMainWindow(self):
@@ -257,7 +309,7 @@ class Ui_loadJsonSeriesDialog(object):
         self.gridLayout.addLayout(self.verticalLayout_3, 0, 0, 1, 1)
         self.addSeriesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.addSeriesButton.setObjectName("addSeriesButton")
-        self.gridLayout.addWidget(self.addSeriesButton, 1, 0, 1, 1)        
+        self.gridLayout.addWidget(self.addSeriesButton, 1, 0, 1, 1)
         self.verticalLayout_2.addLayout(self.gridLayout)
         self.verticalLayout.addLayout(self.verticalLayout_2)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
@@ -325,7 +377,7 @@ class loadDialog(QtWidgets.QDialog):
         self.resize(400, 300 + (30*(self.counter - 5)))
 
         self.ui.verticalLayout_3.addLayout(getattr(self.ui, 'horizontalLayout_'+str(self.counter)))
-        
+
 
 
     def startMainWindow(self):
@@ -361,7 +413,7 @@ class Ui_MultipleSeriesDialog(object):
         self.questionLabel.setWordWrap(True)
         self.questionLabel.setObjectName("questionLabel")
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        self.questionLabel.setSizePolicy(sizePolicy)        
+        self.questionLabel.setSizePolicy(sizePolicy)
         self.verticalLayout.addWidget(self.questionLabel)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -418,7 +470,7 @@ class MultipleSeriesDialog(QtWidgets.QDialog):
             setattr(self.ui, 'horizontalLayout_'+str(i), QtWidgets.QHBoxLayout())
             setattr(self.ui, 'series'+str(i)+'button', QtWidgets.QRadioButton(self.ui.verticalLayoutWidget))
             sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
- 
+
             getattr(self.ui, 'series'+str(i)+'button').setSizePolicy(sizePolicy)
             getattr(self.ui, 'series'+str(i)+'button').setMinimumSize(QtCore.QSize(0, 20))
             getattr(self.ui, 'series'+str(i)+'button').setText("")
@@ -434,7 +486,7 @@ class MultipleSeriesDialog(QtWidgets.QDialog):
             self.resize(400, 300 + (50*(i - 1)))
 
 
-        self.ui.verticalLayout.addLayout(self.ui.verticalLayout_5)        
+        self.ui.verticalLayout.addLayout(self.ui.verticalLayout_5)
         #whatever
         self.ui.buttonBox_2 = QtWidgets.QDialogButtonBox(self.ui.verticalLayoutWidget)
         self.ui.buttonBox_2.setOrientation(QtCore.Qt.Horizontal)
@@ -497,7 +549,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addWidget(self.unresolvedView)
         self.resolveButton = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.resolveButton.setObjectName("resolveButton")
-        self.verticalLayout_2.addWidget(self.resolveButton)        
+        self.verticalLayout_2.addWidget(self.resolveButton)
         self.transferLeftButton = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.transferLeftButton.setObjectName("transferLeftButton")
         self.verticalLayout_2.addWidget(self.transferLeftButton)
@@ -525,7 +577,7 @@ class Ui_MainWindow(object):
 
         self.resolvedView = QtWidgets.QListView(self.gridLayoutWidget_2)
         self.resolvedModel = QtGui.QStandardItemModel(self.resolvedView)
-        self.resolvedView.setModel(self.resolvedModel)        
+        self.resolvedView.setModel(self.resolvedModel)
         self.resolvedView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.resolvedView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
@@ -594,7 +646,7 @@ class Ui_MainWindow(object):
         #TODO: fix this for complete output
         self.completeButton.clicked.connect(MainWindow.saveSeries)
         self.actionSave_Resolutions.triggered.connect(MainWindow.saveSeries)
-        self.saveStatusButton.clicked.connect(MainWindow.saveSeries)        
+        self.saveStatusButton.clicked.connect(MainWindow.saveSeries)
         self.actionExit.triggered.connect(MainWindow.close)
         self.actionTransfer_all.triggered.connect(MainWindow.transferAllRight)
         self.actionView_All.triggered.connect(MainWindow.viewAll)
@@ -606,7 +658,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.changeSeriesButton.setText(_translate("MainWindow", "Change Series..."))
         self.unresolvedLabel.setText(_translate("MainWindow", "Unresolved Potential Duplicates"))
-        self.resolveButton.setText(_translate("MainWindow", "Resolve Selected")) 
+        self.resolveButton.setText(_translate("MainWindow", "Resolve Selected"))
         self.transferLeftButton.setText(_translate("MainWindow", "Transfer >>"))
         self.viewAllButton.setText(_translate("MainWindow", "Resolve All"))
         self.transferAllButton.setText(_translate("MainWindow", "Transfer All"))
@@ -667,7 +719,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             self.ui.resolvedModel.appendRow(unresolvedItem)
 
                     else:
-                        self.ui.unresolvedModel.appendRow(unresolvedItem)                    
+                        self.ui.unresolvedModel.appendRow(unresolvedItem)
 
                     unresolvedItem.setBackground(QtGui.QColor('orange'))
 
@@ -685,11 +737,11 @@ class MainWindow(QtWidgets.QMainWindow):
                             self.ui.resolvedModel.appendRow(resolvedItem)
 
                     else:
-                        self.ui.resolvedModel.appendRow(resolvedItem) 
-                    
+                        self.ui.resolvedModel.appendRow(resolvedItem)
+
                     resolvedItem.setBackground(QtGui.QColor('yellow'))
 
-            if len(self.data[i]["unique"]) > 0:        
+            if len(self.data[i]["unique"]) > 0:
                 for j in range (0, len(self.data[i]["unique"])):
                     resolvedItem = QtGui.QStandardItem(self.data[i]["unique"][j][0]["name"])
                     data = self.data[i]["unique"][j]
@@ -702,7 +754,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             self.ui.resolvedModel.appendRow(resolvedItem)
 
                     else:
-                        self.ui.resolvedModel.appendRow(resolvedItem) 
+                        self.ui.resolvedModel.appendRow(resolvedItem)
                     resolvedItem.setBackground(QtGui.QColor('green'))
 
         self.ui.unresolvedView.doubleClicked.connect(self.loadResolveLeft)
@@ -770,13 +822,13 @@ class MainWindow(QtWidgets.QMainWindow):
             nextItem = self.ui.unresolvedModel.itemFromIndex(nextItemIndex)
             resolution = resolveDialog(nextItem)
             resoMarker = resolution.DialogCode()
-            
+
             if resoMarker:
                 self.ui.unresolvedModel.takeRow(0)
-                self.ui.resolvedModel.appendRow(nextItem)        
+                self.ui.resolvedModel.appendRow(nextItem)
 
         self.ui.resolvedView.update()
-        self.ui.unresolvedView.update()            
+        self.ui.unresolvedView.update()
 
     def saveSeries(self):
         print ("save series")
@@ -883,7 +935,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 break
             else:
                 self.ui.unresolvedModel.takeRow(rowNumbers[i] - oldIndex)
-                self.ui.resolvedModel.appendRow(selectedItem)        
+                self.ui.resolvedModel.appendRow(selectedItem)
 
                 self.ui.resolvedView.update()
                 self.ui.unresolvedView.update()
@@ -892,17 +944,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def loadResolveRight(self):
-        selected = self.ui.resolvedView.selectedIndexes()   
+        selected = self.ui.resolvedView.selectedIndexes()
         for idx in selected:
-            selectedItem = self.ui.resolvedModel.itemFromIndex(idx)    
+            selectedItem = self.ui.resolvedModel.itemFromIndex(idx)
             resolution = resolveDialog(selectedItem)
             if (resolution.result() == 0):
                 break
 
     def selectAllLeft(self):
-        selected = self.ui.unresolvedView.selectedIndexes()   
+        selected = self.ui.unresolvedView.selectedIndexes()
         for idx in selected:
-            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
+            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)
             selectedData = selectedItem.data()
 
             for i in range (0, len(selectedData)):
@@ -914,9 +966,9 @@ class MainWindow(QtWidgets.QMainWindow):
             selectedItem.setData(selectedData)
 
     def selectAllRight(self):
-        selected = self.ui.unresolvedView.selectedIndexes()   
+        selected = self.ui.unresolvedView.selectedIndexes()
         for idx in selected:
-            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
+            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)
             selectedData = selectedItem.data()
 
             if len(selectedData) == 1:
@@ -932,26 +984,26 @@ class MainWindow(QtWidgets.QMainWindow):
             selectedItem.setData(selectedData)
 
     def deselectAllTraces(self):
-        selected = self.ui.unresolvedView.selectedIndexes()   
+        selected = self.ui.unresolvedView.selectedIndexes()
         for idx in selected:
-            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
+            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)
             selectedData = selectedItem.data()
 
             for i in range (0, len(selectedData)):
                     selectedData[i]['keepBool'] = False
 
-            selectedItem.setData(selectedData)        
+            selectedItem.setData(selectedData)
 
     def selectAllTraces(self):
-        selected = self.ui.unresolvedView.selectedIndexes()   
+        selected = self.ui.unresolvedView.selectedIndexes()
         for idx in selected:
-            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)           
+            selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)
             selectedData = selectedItem.data()
 
             for i in range (0, len(selectedData)):
                     selectedData[i]['keepBool'] = True
 
-            selectedItem.setData(selectedData)         
+            selectedItem.setData(selectedData)
 
     def unresolvedMenu(self, position):
         menu = QtWidgets.QMenu()
@@ -991,14 +1043,14 @@ class MainWindow(QtWidgets.QMainWindow):
             if response.result() == 1:
                 self.deselectAllTraces()
             else:
-                pass            
-    
+                pass
+
         elif action == selectAllTracesAction:
             response = selectDialog()
             if response.result() == 1:
                 self.selectAllTraces()
             else:
-                pass    
+                pass
 
 
 
@@ -1006,7 +1058,7 @@ class MainWindow(QtWidgets.QMainWindow):
 class resolveDialog(QtWidgets.QDialog):
     def __init__(self, item):
         super(resolveDialog, self).__init__()
-        self.itemData = item.data()        
+        self.itemData = item.data()
         self.ui = Ui_Dialog()
         self.ui.setupUi(self, self.itemData)
         self.nameState = False
@@ -1030,9 +1082,9 @@ class resolveDialog(QtWidgets.QDialog):
             if not myBool:
                 minx, miny, maxx, maxy = self.itemData[i]['nullpoints']
                 pixmap = QtGui.QPixMap(maxx-minx+100, maxy-miny+100)
-                pixmap.fill(fillColor=Qt.black)     
-        
-            else:       
+                pixmap.fill(fillColor=Qt.black)
+
+            else:
                 pixmap = (QtGui.QPixmap(self.itemData[i]["image"]))
 
             pixmap = pixmap.copy(*(self.itemData[i]['rect']))
@@ -1064,7 +1116,7 @@ class resolveDialog(QtWidgets.QDialog):
             painter = QtGui.QPainter()
             painter.begin(pixmap)
             painter.setPen(QtGui.QColor('red'))
-            painter.drawConvexPolygon(polygon)   
+            painter.drawConvexPolygon(polygon)
             painter.end()
             getattr(self.ui, 'pix'+str(i+1)).setPixmap(pixmap)
 
@@ -1113,13 +1165,13 @@ class Ui_Dialog(object):
         for i in range(0, len(self.itemData)):
             setattr(self, 'pix'+str(i+1), QtWidgets.QLabel(self.verticalLayoutWidget))
             getattr(self, 'pix'+str(i+1)).setMaximumSize(QtCore.QSize(300, 300))
-            
+
             getattr(self, 'pix'+str(i+1)).setText("")
             getattr(self, 'pix'+str(i+1)).setScaledContents(True)
             getattr(self, 'pix'+str(i+1)).setWordWrap(False)
             getattr(self, 'pix'+str(i+1)).setObjectName("pix"+str(i+1))
             self.horizontalLayout.addWidget(getattr(self, 'pix'+str(i+1)))
-        
+
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.horizontalLayout_1 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_1.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
@@ -1143,15 +1195,15 @@ class Ui_Dialog(object):
             getattr(self, 'sectionLabel'+str(i)).setObjectName("sectionLabel"+str(i))
             getattr(self, 'sectionLabel'+str(i)).setText("Section:")
             getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'sectionLabel'+str(i)))
-            
+
 
             setattr(self, 'horizontalLayout_'+str(i+2), QtWidgets.QHBoxLayout())
             getattr(self, 'horizontalLayout_'+str(i+2)).setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
-            getattr(self, 'horizontalLayout_'+str(i+2)).setObjectName("horizontalLayout_"+str(i+2))  
+            getattr(self, 'horizontalLayout_'+str(i+2)).setObjectName("horizontalLayout_"+str(i+2))
 
             setattr(self, 'nameLabel'+str(i+1), QtWidgets.QLabel(self.verticalLayoutWidget))
             getattr(self, 'nameLabel'+str(i+1)).setMaximumSize(QtCore.QSize(50, 16777215))
-            
+
             getattr(self, 'nameLabel'+str(i+1)).setObjectName("nameLabel"+str(i+1))
             getattr(self, 'nameLabel'+str(i+1)).setText("Name:")
             getattr(self, 'horizontalLayout_'+str(i+2)).addWidget(getattr(self, 'nameLabel'+str(i+1)))
@@ -1168,9 +1220,9 @@ class Ui_Dialog(object):
             getattr(self, 'verticalLayout_'+str(i+2)).addLayout(getattr(self, 'horizontalLayout_'+str(i+2)))
             getattr(self, 'nameEdit'+str(i+1)).textEdited['QString'].connect(Dialog.changeName)
 
-            
+
             #generate checkboxes
-            setattr(self, 'checkBox'+str(i+1), QtWidgets.QCheckBox(self.verticalLayoutWidget))            
+            setattr(self, 'checkBox'+str(i+1), QtWidgets.QCheckBox(self.verticalLayoutWidget))
             getattr(self, 'checkBox'+str(i+1)).setMaximumSize(QtCore.QSize(16777215, 20))
             getattr(self, 'checkBox'+str(i+1)).setObjectName("checkBox1")
             getattr(self, 'checkBox'+str(i+1)).setChecked(self.itemData[i]['keepBool'])
@@ -1178,9 +1230,9 @@ class Ui_Dialog(object):
             getattr(self, 'checkBox'+str(i+1)).setText("Contour "+str(i+1))
             getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'checkBox'+str(i+1)))
 
-            self.horizontalLayout_1.addLayout(getattr(self, 'verticalLayout_'+str(i+2)))            
+            self.horizontalLayout_1.addLayout(getattr(self, 'verticalLayout_'+str(i+2)))
 
-        
+
         self.verticalLayout_1 = QtWidgets.QVBoxLayout()
         self.verticalLayout_1.setObjectName("verticalLayout_1")
         self.saveChangesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
@@ -1196,7 +1248,7 @@ class Ui_Dialog(object):
         self.verticalLayout.setStretch(1, 1)
 
         self.retranslateUi(Dialog)
- 
+
         self.saveChangesButton.clicked.connect(Dialog.saveResolutions)
         self.cancelButton.clicked.connect(Dialog.reject)
         self.saveChangesButton.clicked.connect(Dialog.accept)
@@ -1244,7 +1296,7 @@ class Ui_LeftDialog(object):
 
 class leftDialog(QtWidgets.QDialog):
     def __init__(self):
-        super(leftDialog, self).__init__()       
+        super(leftDialog, self).__init__()
         self.ui = Ui_LeftDialog()
         self.ui.setupUi(self)
         self.exec_()
@@ -1284,7 +1336,7 @@ class Ui_RightDialog(object):
 
 class rightDialog(QtWidgets.QDialog):
     def __init__(self):
-        super(rightDialog, self).__init__()       
+        super(rightDialog, self).__init__()
         self.ui = Ui_RightDialog()
         self.ui.setupUi(self)
         self.exec_()
@@ -1324,7 +1376,7 @@ class Ui_DeselectDialog(object):
 
 class deselectDialog(QtWidgets.QDialog):
     def __init__(self):
-        super(deselectDialog, self).__init__()       
+        super(deselectDialog, self).__init__()
         self.ui = Ui_DeselectDialog()
         self.ui.setupUi(self)
         self.exec_()
@@ -1364,7 +1416,7 @@ class Ui_SelectDialog(object):
 
 class selectDialog(QtWidgets.QDialog):
     def __init__(self):
-        super(selectDialog, self).__init__()       
+        super(selectDialog, self).__init__()
         self.ui = Ui_SelectDialog()
         self.ui.setupUi(self)
         self.exec_()
