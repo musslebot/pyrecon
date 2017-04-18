@@ -628,7 +628,7 @@ class Ui_MainWindow(object):
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, data, fileList):
         super(MainWindow, self).__init__()
-
+        self.fileList = fileList
         self.data = data
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -861,7 +861,7 @@ class MainWindow(QtWidgets.QMainWindow):
             json.dump(outputDict, f)
 
         if (self.sender().objectName() == "completeButton"):
-            return (outputDict, fileList)
+            return (outputDict, self.fileList)
             self.close()
 
     def loadResolveLeft(self):
