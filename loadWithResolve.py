@@ -30,8 +30,9 @@ SESSION = sessionmaker(bind=ENGINE)()
 
 
 def start_database(series_path):
+    series_path = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
     if bool(os.getenv("CREATE_DB",  1)):
-        backend.create_database(engine)
+        backend.create_database(ENGINE)
 
     series_matches = {}
     series = process_series_directory(series_path)
@@ -48,7 +49,7 @@ def start_database(series_path):
 
     json_fp = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
     json_fp = json_fp + "/mergetool.json"
-    with open(json_fp, "w"):
+    with open(json_fp, "w") as f:
         json.dump(series_matches, f)
     return series_matches
 
@@ -1435,19 +1436,16 @@ def startLoadDialogs():
     if (initialWindow.restoreBool == False):
         loadSeries = loadDialog()
         fileList = loadSeries.fileList
-
-
-
-        #pass filelist to Michael
+        jsonData = start_database(fileList[0])
 
     elif (len(initialWindow.returnFileList()) > 0):
         jsonList =  (initialWindow.returnFileList())
         loadSeries = loadJsonSeriesDialog()
         fileList = loadSeries.fileList
         jsonData = json.load(open(str(jsonList[0])))
-        mainWindow = MainWindow(jsonData, fileList)
 
-        mainWindow.show()
+    mainWindow = MainWindow(jsonData, fileList)
+    mainWindow.show()
 
     app.exec_()
 
