@@ -47,6 +47,7 @@ def _create_db_contours_from_pyrecon_section(section):
     """ Returns db.Contour objects for contours in a pyrecon.Section.
     """
     db_contours = []
+    # TODO: multithread this
     for i, pyrecon_contour in enumerate(section.contours):
         db_contour = Contour(
             section=section.index,
@@ -113,6 +114,7 @@ def _create_db_contourmatches_from_db_contours_and_pyrecon_section(db_contours, 
     """ Returns db.ContourMatch objects for contours in a pyrecon.Section.
     """
     matches = []
+    # TODO: multithread this?
     for idx, db_contour_A in enumerate(db_contours):
         contA = section.contours[db_contour_A.index]
         for idy, db_contour_B in enumerate(db_contours):
@@ -250,6 +252,7 @@ def prepare_frontend_payload(session, section, grouped):
     }
 
     # TODO: clean and test this VVV
+    # TODO: multithread this
     for contour_A_id, match_dict in grouped.items():
         db_contour_A = session.query(Contour).get(contour_A_id)
         reconstruct_contour_a = section.contours[db_contour_A.index]
@@ -306,6 +309,7 @@ def _get_output_contours_from_section_dict(section_dict):
     kept_ids = set()
     to_keep = []
     types = ["exact", "potential", "potential_realigned", "unique"]
+    # TODO: multithread this
     for type_ in types:
         for type_set in section_dict[type_]:
             for contour_dict in type_set:
@@ -332,6 +336,7 @@ def create_output_series(session, to_keep, series):
     for section in series_copy.sections:
         section.contours = []
 
+    # TODO: multithread this?
     for keep_dict in to_keep:
         db_id = keep_dict["db_id"]
         db_contour = session.query(Contour).get(db_id)
