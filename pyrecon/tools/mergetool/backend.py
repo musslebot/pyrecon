@@ -326,7 +326,7 @@ def get_output_contours_from_series_dict(series_dict):
     return to_keep
 
 
-def create_output_series(to_keep, series):
+def create_output_series(session, to_keep, series):
     series_copy = deepcopy(series)
     # Wipe section contours
     for section in series_copy.sections:

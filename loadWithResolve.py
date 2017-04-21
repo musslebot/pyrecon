@@ -25,11 +25,11 @@ from pyrecon.tools.mergetool import backend
 #SQLITE_MAX_VARIABLE_NUMBER=10000000 SERIES_PATH=~/Documents/RECONSTRUCT/FHLTD/FHLTD_mito/FHLTD/ python3 start_mergetool.py
 
 DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite://")
+ENGINE = create_engine(DATABASE_URI, echo=False)
+SESSION = sessionmaker(bind=ENGINE)()
 
 
 def start_database(series_path):
-    engine = create_engine(DATABASE_URI, echo=False)
-    session = sessionmaker(bind=engine)()
     if bool(os.getenv("CREATE_DB",  1)):
         backend.create_database(engine)
 
@@ -37,13 +37,13 @@ def start_database(series_path):
     series = process_series_directory(series_path)
     for section in series.sections:
         # Load Section contours into database and determine matches
-        db_contours = backend.load_db_contours_from_pyrecon_section(sesion, section)
-        db_contourmatches = backend.load_db_contourmatches_from_db_contours_and_pyrecon_section(session, db_contours, section)
+        db_contours = backend.load_db_contours_from_pyrecon_section(SESSION, section)
+        db_contourmatches = backend.load_db_contourmatches_from_db_contours_and_pyrecon_section(SESSION, db_contours, section)
 
         # Group matches by match_type
-        grouped = backend.group_section_matches(session, section.index)
+        grouped = backend.group_section_matches(SESSION, section.index)
         # Prepare FE payload
-        section_matches = backend.prepare_frontend_payload(session, section, grouped)
+        section_matches = backend.prepare_frontend_payload(SESSION, section, grouped)
         series_matches[section.index] = section_matches
 
     json_fp = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
@@ -55,10 +55,11 @@ def start_database(series_path):
 
 def write_merged_series(series_path, series_dict):
     to_keep = backend.get_output_contours_from_series_dict(series_dict)
+    # Load series to get data not involved in merge tool
+    series_path = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
     series = process_series_directory(series_path)
-    merged_fp = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
-    merged_fp = json_fp + "/merged/"
-    new_series = create_output_series(to_keep, series)
+    merged_fp = series_path + "/merged/"
+    new_series = backend.create_output_series(SESSION, to_keep, series)
     write_series(series, merged_fp, sections=True, overwrite=False)
     return True
 
@@ -915,6 +916,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if (self.sender().objectName() == "completeButton"):
             self.close()
             print ("stuff still happening")
+            write_merged_series(
+                self.fileList[0],
+                self.data
+            )
             return (outputDict, self.fileList)
 
     def loadResolveLeft(self):
