@@ -48,6 +48,9 @@ def start_database(series_path):
         series_matches[section.index] = section_matches
 
     json_fp = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
+    json_fp = os.path.join(json_fp, "merged")
+    if not os.path.exists(json_fp):
+        os.makedirs(json_fp)
     json_fp = json_fp + "/mergetool.json"
     with open(json_fp, "w") as f:
         json.dump(series_matches, f)
@@ -352,7 +355,8 @@ class loadDialog(QtWidgets.QDialog):
         self.exec_()
 
     def loadSeries(self):
-        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Open Series", "/home/", "Series File (*.ser)")
+        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Open Series", "/home/",
+                                                         "Series File (*.ser)")
         if fileName != None:
             if (self.sender().objectName() == 'loadSeriesButton'):
                 self.ui.loadLineEdit.setText(str(fileName[0]))
@@ -361,7 +365,6 @@ class loadDialog(QtWidgets.QDialog):
                 getattr(self.ui, 'loadLineEdit_'+str(self.counter)).setText(str(fileName[0]))
 
         self.fileList.append(str(fileName[0]))
-        #self.output = str(fileName[0])
 
     def addSeries(self):
         self.counter += 1
@@ -381,7 +384,6 @@ class loadDialog(QtWidgets.QDialog):
         self.ui.verticalLayout_3.addLayout(getattr(self.ui, 'horizontalLayout_'+str(self.counter)))
 
 
-
     def startMainWindow(self):
         if (len(self.fileList) > 1):
             alignSelection = MultipleSeriesDialog(self.fileList)
@@ -389,10 +391,9 @@ class loadDialog(QtWidgets.QDialog):
             if (alignSelection.result() == 0):
                 pass
             elif (alignSelection.result() == 1):
-                newFileList = alignSelection.returnFileList()
-                self.fileList = newFileList
-
+                self.fileList = alignSelection.returnFileList()
         self.close()
+
 
 class Ui_MultipleSeriesDialog(object):
     def setupUi(self, MultipleSeriesDialog, fileList):
@@ -835,7 +836,13 @@ class MainWindow(QtWidgets.QMainWindow):
     def saveSeries(self):
         print ("save series")
         outputDict = {}
-        outputDict['0'] = {"potential_realigned":[], "unique":[], "potential":[], "exact":[], "section":0}
+        outputDict['0'] = {
+            "potential_realigned": [],
+            "unique": [],
+            "potential": [],
+            "exact": [],
+            "section": 0
+        }
 
 
         for idx in range (0, self.ui.unresolvedModel.rowCount()):
@@ -862,7 +869,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
 
             else:
-                outputDict[str(nextItemSection)] = {"potential_realigned":[], "unique":[], "potential":[], "exact":[], "section":nextItemSection}
+                outputDict[str(nextItemSection)] = {
+                    "potential_realigned": [],
+                    "unique": [],
+                    "potential": [],
+                    "exact": [],
+                    "section": nextItemSection
+                }
                 if (nextItem.background().color().name()) == "#ff0000":
                     outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
                 elif (nextItem.background().color().name()) == "#ffa500":
@@ -899,7 +912,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
 
             else:
-                outputDict[str(nextItemSection)] = {"potential_realigned":[], "unique":[], "potential":[], "exact":[], "section":nextItemSection}
+                outputDict[str(nextItemSection)] = {
+                    "potential_realigned": [],
+                    "unique": [],
+                    "potential": [],
+                    "exact": [],
+                    "section": nextItemSection
+                }
                 if (nextItem.background().color().name()) == "#ff0000":
                     outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
                 elif (nextItem.background().color().name()) == "#ffa500":
@@ -911,12 +930,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 elif (nextItem.background().color().name()) == "#ffff00":
                     outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
 
-        with open("savedstatus.json", "w") as f:
+        save_dir = os.path.join(self.fileList[0] if os.path.isdir(self.fileList[0]) \
+                   else os.path.dirname(self.fileList[0]), "merged")
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        with open(os.path.join(save_dir, "savedstatus.json"), "w") as f:
             json.dump(outputDict, f)
 
         if (self.sender().objectName() == "completeButton"):
             self.close()
-            print ("stuff still happening")
             write_merged_series(
                 self.fileList[0],
                 self.data
@@ -933,7 +956,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         rowNumbers = sorted(rowNumbers)
 
-        for i in range (len(rowNumbers)):
+        for i in range(len(rowNumbers)):
             indexObj = self.ui.unresolvedModel.index(rowNumbers[i] - oldIndex, 0)
             selectedItem = self.ui.unresolvedModel.itemFromIndex(indexObj)
             resolution = resolveDialog(selectedItem)
