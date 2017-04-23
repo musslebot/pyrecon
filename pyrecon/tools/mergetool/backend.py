@@ -16,34 +16,15 @@ def create_database(engine):
     Base.metadata.create_all(engine)
 
 
-def get_section_contours_from_database(section_number):
-    """ Returns the db.Contour objects in the provided section_number.
-    """
+def query_all_contours_in_section(session, section_number):
     return session.query(
         Contour
     ).filter(
         Contour.section == section_number
-    ).all()
-
-
-def get_matches(match_type=None):
-    """ Returns db.ContourMatch objects.
-
-        Can provide a match_type to return only those of a particular match_type.
-    """
-    query = session.query(
-        ContourMatch.id1,
-        ContourMatch.id2,
-        ContourMatch.match_type
     )
-    if match_type:
-        query = query.filter(
-            ContourMatch.match_type == match_type
-        )
-    return query.all()
 
 
-def _create_db_contours_from_pyrecon_section(section):
+def _create_db_contours_from_pyrecon_section(section, series_number):
     """ Returns db.Contour objects for contours in a pyrecon.Section.
     """
     db_contours = []
@@ -51,27 +32,41 @@ def _create_db_contours_from_pyrecon_section(section):
     for i, pyrecon_contour in enumerate(section.contours):
         db_contour = Contour(
             section=section.index,
-            index=i
+            index=i,
+            series=series_number
         )
         db_contours.append(db_contour)
     return db_contours
 
 
-def load_db_contours_from_pyrecon_section(session, section):
+def load_db_contours_from_pyrecon_section(session, section, series_number):
     """ From a pyrecon.Section object, inster db.Contour entities into the db.
     """
-    db_contours = _create_db_contours_from_pyrecon_section(section)
+    db_contours = _create_db_contours_from_pyrecon_section(section, series_number)
     session.add_all(db_contours)
     session.commit()
     return db_contours
 
 
-def _create_db_contourmatch_from_db_contours_and_pyrecon_section(db_contour_A, db_contour_B,
-                                                                 section):
+def _create_db_contourmatch_from_db_contours_and_pyrecon_series_list(db_contour_A,
+                                                                     db_contour_B,
+                                                                     series_list):
     """ Returns a db.ContourMatch from 2 db.Contours and a pyrecon.section, or None.
     """
-    pyrecon_contour_a = section.contours[db_contour_A.index]
-    pyrecon_contour_b = section.contours[db_contour_B.index]
+    pyrecon_contour_a = series_list[
+        db_contour_A.series
+    ].sections[
+        db_contour_A.section
+    ].contours[
+        db_contour_A.index
+    ]
+    pyrecon_contour_b = series_list[
+        db_contour_B.series
+    ].sections[
+        db_contour_B.section
+    ].contours[
+        db_contour_B.index
+    ]
     if pyrecon_contour_a.name != pyrecon_contour_b.name:
         return None
     elif pyrecon_contour_a.shape.type != pyrecon_contour_b.shape.type:
@@ -110,29 +105,28 @@ def _create_db_contourmatch_from_db_contours_and_pyrecon_section(db_contour_A, d
     return None
 
 
-def _create_db_contourmatches_from_db_contours_and_pyrecon_section(db_contours, section):
+def _create_db_contourmatches_from_db_contours_and_pyrecon_series_list(db_contours, series_list):
     """ Returns db.ContourMatch objects for contours in a pyrecon.Section.
     """
     matches = []
     # TODO: multithread this?
     for idx, db_contour_A in enumerate(db_contours):
-        contA = section.contours[db_contour_A.index]
         for idy, db_contour_B in enumerate(db_contours):
-            contB = section.contours[db_contour_B.index]
             if idx >= idy:
                 continue
-            match = _create_db_contourmatch_from_db_contours_and_pyrecon_section(
-                db_contour_A, db_contour_B, section)
+            match = _create_db_contourmatch_from_db_contours_and_pyrecon_series_list(
+                db_contour_A, db_contour_B, series_list)
             if match:
                 matches.append(match)
     return matches
 
 
-def load_db_contourmatches_from_db_contours_and_pyrecon_section(session, db_contours, section):
+def load_db_contourmatches_from_db_contours_and_pyrecon_series_list(session, db_contours,
+                                                                    series_list):
     """ From a pyrecon.Section object, insert db.ContourMatch entities into the db.
     """
-    db_contourmatches = _create_db_contourmatches_from_db_contours_and_pyrecon_section(
-        db_contours, section)
+    db_contourmatches = _create_db_contourmatches_from_db_contours_and_pyrecon_series_list(
+        db_contours, series_list)
     session.add_all(db_contourmatches)
     session.commit()
     return db_contourmatches
@@ -153,7 +147,12 @@ def _retrieve_matches_for_db_contour_id(session, db_contour_id):
 
 def group_section_matches(session, section_number):
     grouped = defaultdict(lambda: defaultdict(set))
-    for id_ in session.query(Contour.id).filter(Contour.section==section_number).all():
+    query = session.query(
+        Contour.id
+    ).filter(
+        Contour.section==section_number
+    )
+    for id_ in query:
         id_ = id_[0]
         matches = _retrieve_matches_for_db_contour_id(session, id_)
         grouped[id_] = defaultdict(set)
@@ -162,7 +161,7 @@ def group_section_matches(session, section_number):
     return grouped
 
 
-def prepare_contour_dict_for_frontend(contour, db_id, section, keep=True):
+def prepare_contour_dict_for_frontend(contour, db_id, section, series_name, keep=True):
     """ Converts a contour to a dict expected by the frontend.
     """
     #converting to pixels
@@ -202,6 +201,7 @@ def prepare_contour_dict_for_frontend(contour, db_id, section, keep=True):
         'points': contour.points,
         'image': section.images[0]._path + "/{}".format(section.images[0].src),
         'db_id': db_id,
+        'series': series_name,
         'nullpoints': nullPoints,
         'rect': rect,
         'croppedPoints': croppedPoints,
@@ -210,7 +210,7 @@ def prepare_contour_dict_for_frontend(contour, db_id, section, keep=True):
     }
 
 
-def prepare_unique_query(session, section):
+def prepare_unique_query(session, section_index):
     """ Return a query for unique db contour ids in a section.
     """
     id1_matches_query = session.query(
@@ -220,7 +220,7 @@ def prepare_unique_query(session, section):
             session.query(
                 Contour.id
             ).filter(
-                Contour.section == section.index
+                Contour.section == section_index
             )
         )
     )
@@ -231,20 +231,20 @@ def prepare_unique_query(session, section):
             session.query(
                 Contour.id
             ).filter(
-                Contour.section == section.index
+                Contour.section == section_index
             )
         )
     )
     matched_ids_union = id1_matches_query.union(id2_matches_query)
     return session.query(Contour.id).filter(
         Contour.id.notin_(matched_ids_union),
-        Contour.section == section.index
+        Contour.section == section_index
     )
 
 
-def prepare_frontend_payload(session, section, grouped):
+def prepare_frontend_payload(session, series_list, section_index, grouped):
     section_matches = {
-        "section": section.index,
+        "section": section_index,
         "exact": [],
         "potential": [],
         "potential_realigned": [],
@@ -255,27 +255,24 @@ def prepare_frontend_payload(session, section, grouped):
     # TODO: multithread this
     for contour_A_id, match_dict in grouped.items():
         db_contour_A = session.query(Contour).get(contour_A_id)
-        reconstruct_contour_a = section.contours[db_contour_A.index]
+        series_A = series_list[db_contour_A.series]
+        section_A = series_A.sections[section_index]
+        reconstruct_contour_a = section_A.contours[db_contour_A.index]
         main_contour_data = prepare_contour_dict_for_frontend(
             reconstruct_contour_a,
             contour_A_id,
-            section,
+            section_A,
+            series_A.name,
             keep=True
         )
 
         for match_type, matches in match_dict.items():
-            # matchNum = len(matches)
-            # if (match_type == 'potential') or (match_type == 'potential_realigned'):
-            #     matchCounter = [1]*(matchNum+1)
-            # elif (match_type == 'exact'):
-            #     matchCounter = [1]
-            #     matchCounter += [0]*(matchNum)
-
-    #        match_list = [list(matchCounter), main_contour_data]
             match_list = [main_contour_data]
             for match_id in matches:
                 db_contour_B = session.query(Contour).get(match_id)
-                reconstruct_contour_b = section.contours[db_contour_B.index]
+                series_B = series_list[db_contour_B.series]
+                section_B = series_B.sections[section_index]
+                reconstruct_contour_b = section_B.contours[db_contour_B.index]
                 if (match_type == 'potential') or (match_type == 'potential_realigned'):
                     keepBool = True
                 elif (match_type == 'exact'):
@@ -283,22 +280,26 @@ def prepare_frontend_payload(session, section, grouped):
                 match_dict = prepare_contour_dict_for_frontend(
                     reconstruct_contour_b,
                     match_id,
-                    section,
+                    section_B,
+                    series_B.name,
                     keep=keepBool
                 )
                 match_list.append(match_dict)
             section_matches[match_type].append(match_list)
 
     # Add uniques to payload
-    unique_ids_query = prepare_unique_query(session, section)
+    unique_ids_query = prepare_unique_query(session, section_index)
     for unique_id in unique_ids_query:
         unique_id = unique_id[0]
         db_contour_unique = session.query(Contour).get(unique_id)
-        unique_reconstruct_contour = section.contours[db_contour_unique.index]
+        series_C = series_list[db_contour_unique.series]
+        section_C = series_C.sections[db_contour_unique.section]
+        unique_reconstruct_contour = section_C.contours[db_contour_unique.index]
         unique_dict = prepare_contour_dict_for_frontend(
             unique_reconstruct_contour,
             unique_id,
-            section,
+            section_C,
+            series_C.name,
             keep=True
         )
         section_matches['unique'].append([unique_dict])
@@ -326,7 +327,11 @@ def _get_output_contours_from_section_dict(section_dict):
 def get_output_contours_from_series_dict(series_dict):
     to_keep = []
     for section_number, section_dict in series_dict.items():
-        to_keep.extend(_get_output_contours_from_section_dict(series_dict[section_number]))
+        to_keep.extend(
+            _get_output_contours_from_section_dict(
+                series_dict[section_number]
+            )
+        )
     return to_keep
 
 

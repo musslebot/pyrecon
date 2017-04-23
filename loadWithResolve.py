@@ -29,26 +29,42 @@ ENGINE = create_engine(DATABASE_URI, echo=False)
 SESSION = sessionmaker(bind=ENGINE)()
 
 
-def start_database(series_path):
-    series_path = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
+def start_database(series_path_list):
     if bool(os.getenv("CREATE_DB",  1)):
         backend.create_database(ENGINE)
 
+    # Load series from series_path_list
+    series_list = []
+    for series_path in series_path_list:
+        series_path = series_path if os.path.isdir(series_path) \
+                      else os.path.dirname(series_path)
+        series_list.append(process_series_directory(series_path))
+
+    # Assign "Main" Series (one with ideal alignment)
+    main_series_path = series_path_list[0] if os.path.isdir(series_path_list[0]) \
+                       else os.path.dirname(series_path_list[0])
+    main_series = series_list[0]
+
+    # Load each Series' contours into the database
+    for series_number, series in enumerate(series_list):
+        for section in series.sections:
+            # Load Section contours into database and determine matches
+            backend.load_db_contours_from_pyrecon_section(SESSION, section, series_number)
+
+    # Create match payload for frontend
     series_matches = {}
-    series = process_series_directory(series_path)
-    for section in series.sections:
-        # Load Section contours into database and determine matches
-        db_contours = backend.load_db_contours_from_pyrecon_section(SESSION, section)
-        db_contourmatches = backend.load_db_contourmatches_from_db_contours_and_pyrecon_section(SESSION, db_contours, section)
+    for section_index in range(len(series.sections)):
+        db_contours = backend.query_all_contours_in_section(SESSION, section_index).all()
+        db_contourmatches = backend.load_db_contourmatches_from_db_contours_and_pyrecon_series_list(SESSION, db_contours, series_list)
 
         # Group matches by match_type
-        grouped = backend.group_section_matches(SESSION, section.index)
+        grouped = backend.group_section_matches(SESSION, section_index)
         # Prepare FE payload
-        section_matches = backend.prepare_frontend_payload(SESSION, section, grouped)
-        series_matches[section.index] = section_matches
+        section_matches = backend.prepare_frontend_payload(SESSION, series_list,
+                                                           section_index, grouped)
+        series_matches[section_index] = section_matches
 
-    json_fp = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
-    json_fp = os.path.join(json_fp, "merged")
+    json_fp = os.path.join(main_series_path, "merged")
     if not os.path.exists(json_fp):
         os.makedirs(json_fp)
     json_fp = json_fp + "/mergetool.json"
@@ -1102,7 +1118,7 @@ class resolveDialog(QtWidgets.QDialog):
     def initializeData(self):
         for i in range (0, len(self.itemData)):
             getattr(self.ui, 'nameEdit'+str(i+1)).setText(self.itemData[i]["name"])
-            getattr(self.ui, 'seriesLabel'+str(i)).setText("Series: "+str("srs_name"))
+            getattr(self.ui, 'seriesLabel'+str(i)).setText("Series: "+self.itemData[i]["series"])
             getattr(self.ui, 'sectionLabel'+str(i)).setText("Section: "+str(self.itemData[i]["section"]))
 
 
@@ -1459,7 +1475,7 @@ def startLoadDialogs():
     if (initialWindow.restoreBool == False):
         loadSeries = loadDialog()
         fileList = loadSeries.fileList
-        jsonData = start_database(fileList[0])
+        jsonData = start_database(fileList)
 
     elif (len(initialWindow.returnFileList()) > 0):
         jsonList =  (initialWindow.returnFileList())

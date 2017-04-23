@@ -14,6 +14,7 @@ class Contour(Base):
     __tablename__ = "contours"
     id = Column(Integer, primary_key=True)
     section = Column(Integer, nullable=False)
+    series = Column(Integer, nullable=False)
     index = Column(Integer, nullable=False)
 
 
