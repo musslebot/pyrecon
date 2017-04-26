@@ -100,6 +100,8 @@ def _create_db_contourmatch_from_db_contours_and_pyrecon_series_list(db_contour_
                 match_type=match_type
             )
     except Exception as e:
+        # This is here because if an Exception is raised, we need to figure out
+        # wtf happened
         import pdb; pdb.set_trace()
         print("{}".format(e))
     return None
@@ -161,7 +163,7 @@ def group_section_matches(session, section_number):
     return grouped
 
 
-def prepare_contour_dict_for_frontend(contour, db_id, section, series_name, keep=True):
+def transform_contour_for_frontend(contour, db_id, section, series_name, keep=True):
     """ Converts a contour to a dict expected by the frontend.
     """
     #converting to pixels
@@ -258,7 +260,7 @@ def prepare_frontend_payload(session, series_list, section_index, grouped):
         series_A = series_list[db_contour_A.series]
         section_A = series_A.sections[section_index]
         reconstruct_contour_a = section_A.contours[db_contour_A.index]
-        main_contour_data = prepare_contour_dict_for_frontend(
+        main_contour_data = transform_contour_for_frontend(
             reconstruct_contour_a,
             contour_A_id,
             section_A,
@@ -277,7 +279,7 @@ def prepare_frontend_payload(session, series_list, section_index, grouped):
                     keepBool = True
                 elif (match_type == 'exact'):
                     keepBool = False
-                match_dict = prepare_contour_dict_for_frontend(
+                match_dict = transform_contour_for_frontend(
                     reconstruct_contour_b,
                     match_id,
                     section_B,
@@ -295,7 +297,7 @@ def prepare_frontend_payload(session, series_list, section_index, grouped):
         series_C = series_list[db_contour_unique.series]
         section_C = series_C.sections[db_contour_unique.section]
         unique_reconstruct_contour = section_C.contours[db_contour_unique.index]
-        unique_dict = prepare_contour_dict_for_frontend(
+        unique_dict = transform_contour_for_frontend(
             unique_reconstruct_contour,
             unique_id,
             section_C,
