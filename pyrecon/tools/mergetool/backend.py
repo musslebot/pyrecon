@@ -2,6 +2,7 @@
 """
 from collections import defaultdict
 from copy import deepcopy
+import itertools
 
 import numpy
 from PIL import Image
@@ -137,6 +138,36 @@ def load_db_contourmatches_from_db_contours_and_pyrecon_series_list(session, db_
 # =======================
 # TODO: cleanup below vvv
 # =======================
+def cleanup_redundant_matches(session):
+    """ Removes redundant ContourMatch objects that occur when:
+        1) There are potentials in one series, that also exist in other series.
+           This is exists because each of these contourmatches have unique ids,
+           masked by different exacts.
+    """
+    potential_query = session.query(
+        ContourMatch
+    ).filter(
+        (ContourMatch.match_type == "potential") |
+        (ContourMatch.match_type == "potential_realigned")
+    )
+    for match in potential_query:
+        id_ = match.id1
+        id_match = session.query(ContourMatch.id2).filter(
+            ((ContourMatch.id1 == id_) | (ContourMatch.id2 == id_)) &
+            (ContourMatch.match_type == "exact")
+        ).all()
+        for id_exact in id_match:
+            id_exact = id_exact[0]
+            if id_exact > id_:
+                for thing in session.query(ContourMatch).filter(
+                        (ContourMatch.id1 == id_exact) |
+                        (ContourMatch.id2 == id_exact) &
+                        (ContourMatch.match_type == "potential")
+                    ):
+                    session.delete(thing)
+    session.commit()
+
+
 def _retrieve_matches_for_db_contour_id(session, db_contour_id):
     """ Returns all ContourMatch objects that match the provided db_contour_id.
     """
@@ -252,6 +283,16 @@ def prepare_frontend_payload(session, series_list, section_index, grouped):
         "potential_realigned": [],
         "unique": []
     }
+    def _is_already_exact(id1, id2):
+        """ Returns True if there is an exact match between id1 and id2.
+        """
+        if session.query(ContourMatch).filter(
+                ((ContourMatch.id1==id1) & (ContourMatch.id2==id2)) |
+                ((ContourMatch.id1==id2) & (ContourMatch.id2==id1)) &
+                (ContourMatch.match_type == "exact")
+            ).count():
+            return True
+        return False
 
     # TODO: clean and test this VVV
     # TODO: multithread this
@@ -267,27 +308,49 @@ def prepare_frontend_payload(session, series_list, section_index, grouped):
             series_A.name,
             keep=True
         )
-
+        keep_types = ["potential", "potential_realigned"]
         for match_type, matches in match_dict.items():
             match_list = [main_contour_data]
+            keep = True if match_type in keep_types else False
+            # NOTE: we need to prevent matching potentials where there are already
+            #       exacts whithin the same group. Dot product all matches to check
+            #       for exacts.
+            # e.g.
+            # There exists:
+            #   A0-exact-B0
+            #   A1-exact`B1
+            #   A0-potential-A1
+            #   A0-potential-B1
+            #   A1-potential-B0
+            #   B0-potential-B1
+            #
+            # Returns:
+            #   exact(A0,B0),
+            #   exact(A1,B1),
+            #   potential(A0,A1,B1), <-- A1 & B1 are exact > only need potential(A0,A1)
+            #   potential(A1,BO), <-- B0 and A0 are exact > redundant with ^
+            #   potential(B0,B1) <-- redundant with potential(A0,B1)
+            if match_type in ["potential", "potential_realigned"]:
+                dot_matches = itertools.combinations(matches, 2)
+                for m1,m2 in dot_matches:
+                    if m2 in matches and _is_already_exact(m1,m2):
+                        # TODO: verify this
+                        matches.remove(m2)
             for match_id in matches:
                 db_contour_B = session.query(Contour).get(match_id)
                 series_B = series_list[db_contour_B.series]
                 section_B = series_B.sections[section_index]
                 reconstruct_contour_b = section_B.contours[db_contour_B.index]
-                if (match_type == 'potential') or (match_type == 'potential_realigned'):
-                    keepBool = True
-                elif (match_type == 'exact'):
-                    keepBool = False
                 match_dict = transform_contour_for_frontend(
                     reconstruct_contour_b,
                     match_id,
                     section_B,
                     series_B.name,
-                    keep=keepBool
+                    keep=keep
                 )
                 match_list.append(match_dict)
-            section_matches[match_type].append(match_list)
+            if len(match_list) > 1:
+                section_matches[match_type].append(match_list)
 
     # Add uniques to payload
     unique_ids_query = prepare_unique_query(session, section_index)

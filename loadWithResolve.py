@@ -51,18 +51,25 @@ def start_database(series_path_list):
             # Load Section contours into database and determine matches
             backend.load_db_contours_from_pyrecon_section(SESSION, section, series_number)
 
-    # Create match payload for frontend
-    series_matches = {}
+    # Find matches
     for section_index in range(len(series.sections)):
         db_contours = backend.query_all_contours_in_section(SESSION, section_index).all()
-        db_contourmatches = backend.load_db_contourmatches_from_db_contours_and_pyrecon_series_list(SESSION, db_contours, series_list)
+        backend.load_db_contourmatches_from_db_contours_and_pyrecon_series_list(
+            SESSION,
+            db_contours,
+            series_list
+        )
 
+    backend.cleanup_redundant_matches(SESSION)
+
+    # Generate payload for frontend
+    series_matches = {}
+    for section_index in range(len(series.sections)):
         # Group matches by match_type
         grouped = backend.group_section_matches(SESSION, section_index)
         # Prepare FE payload
-        section_matches = backend.prepare_frontend_payload(SESSION, series_list,
-                                                           section_index, grouped)
-        series_matches[section_index] = section_matches
+        series_matches[section_index] = backend.prepare_frontend_payload(
+            SESSION, series_list, section_index, grouped)
 
     json_fp = os.path.join(main_series_path, "merged")
     if not os.path.exists(json_fp):
