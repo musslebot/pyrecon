@@ -81,13 +81,13 @@ def start_database(series_path_list):
 
 
 def write_merged_series(series_path, series_dict):
-    to_keep = backend.get_output_contours_from_series_dict(series_dict)
+    to_keep = backend.get_output_contours_from_series_dict(SESSION, series_dict)
     # Load series to get data not involved in merge tool
     series_path = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
     series = process_series_directory(series_path)
     merged_fp = series_path + "/merged/"
     new_series = backend.create_output_series(SESSION, to_keep, series)
-    write_series(series, merged_fp, sections=True, overwrite=False)
+    write_series(new_series, merged_fp, sections=True, overwrite=False)
     return True
 
 
@@ -965,7 +965,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.close()
             write_merged_series(
                 self.fileList[0],
-                self.data
+                outputDict
             )
             return (outputDict, self.fileList)
 

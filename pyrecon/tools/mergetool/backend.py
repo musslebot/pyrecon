@@ -135,6 +135,21 @@ def load_db_contourmatches_from_db_contours_and_pyrecon_series_list(session, db_
     return db_contourmatches
 
 
+def get_exact_matches_for_db_id(session, db_id):
+    query = session.query(
+        ContourMatch.id1,
+        ContourMatch.id2
+    ).filter(
+        ((ContourMatch.id1 == db_id) | (ContourMatch.id2 == db_id)) &
+        (ContourMatch.match_type == "exact")
+    )
+    matches = []
+    for m in query:
+        match_id = m[0] if m[0] != db_id else m[1]
+        matches.append(match_id)
+    return matches
+
+
 # =======================
 # TODO: cleanup below vvv
 # =======================
@@ -152,12 +167,8 @@ def cleanup_redundant_matches(session):
     )
     for match in potential_query:
         id_ = match.id1
-        id_match = session.query(ContourMatch.id2).filter(
-            ((ContourMatch.id1 == id_) | (ContourMatch.id2 == id_)) &
-            (ContourMatch.match_type == "exact")
-        ).all()
-        for id_exact in id_match:
-            id_exact = id_exact[0]
+        id_matches = get_exact_matches_for_db_id(session, id_)
+        for id_exact in id_matches:
             if id_exact > id_:
                 for thing in session.query(ContourMatch).filter(
                         (ContourMatch.id1 == id_exact) |
@@ -371,29 +382,59 @@ def prepare_frontend_payload(session, series_list, section_index, grouped):
     return section_matches
 
 
-def _get_output_contours_from_section_dict(section_dict):
-    kept_ids = set()
-    to_keep = []
-    types = ["exact", "potential", "potential_realigned", "unique"]
+def _get_output_contours_from_section_dict(session, section_dict):
+    pop_ids = set()
+    to_keep = {}
+    types = [
+        "exact",
+        "unique"
+    ]
     # TODO: multithread this
     for type_ in types:
         for type_set in section_dict[type_]:
             for contour_dict in type_set:
-                if contour_dict.get('keepBool', False):
+                if contour_dict.get("keepBool", False):
                     db_id = contour_dict["db_id"]
-                    if db_id not in kept_ids:
-                        to_keep.append({
-                            "db_id": db_id,
-                            "name": contour_dict["name"]
-                        })
-    return to_keep
+                    name = contour_dict["name"]
+                    to_keep[db_id] = {
+                        "db_id": db_id,
+                        "name": name
+                    }
+
+    override_types = [
+        "potential",
+        "potential_realigned",
+    ]
+    # TODO: multithread this
+    for type_ in override_types:
+        for type_set in section_dict[type_]:
+            for contour_dict in type_set:
+                keep_bool = contour_dict.get("keepBool", False)
+                db_id = contour_dict["db_id"]
+                name = contour_dict["name"]
+                if not keep_bool:
+                    pop_ids.add(db_id)
+                else:
+                    to_keep[db_id] = {
+                        "db_id": db_id,
+                        "name": name
+                    }
+
+    for id_ in pop_ids:
+        to_keep.pop(id_, None)
+        exact_ids = get_exact_matches_for_db_id(session, id_)
+        for exact_id in exact_ids:
+            to_keep.pop(exact_id, None)
+
+    return to_keep.values()
 
 
-def get_output_contours_from_series_dict(series_dict):
+def get_output_contours_from_series_dict(session, series_dict):
     to_keep = []
     for section_number, section_dict in series_dict.items():
         to_keep.extend(
             _get_output_contours_from_section_dict(
+                session,
                 series_dict[section_number]
             )
         )
