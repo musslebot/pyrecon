@@ -29,21 +29,47 @@ ENGINE = create_engine(DATABASE_URI, echo=False)
 SESSION = sessionmaker(bind=ENGINE)()
 
 
-def start_database(series_path_list):
+def start_database(series_path_list, app):
+
+    splash_pix = QtGui.QPixmap('loading2.gif')
+    splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
+    progressBar = QtWidgets.QProgressBar(splash)
+    progressBar.setMinimum(0)
+    splash.setMask(splash_pix.mask())
+    splash.show()
+
+    i = 0
+    progressBar.setValue(i)
+
     if bool(os.getenv("CREATE_DB",  1)):
         backend.create_database(ENGINE)
 
+    # i = 1
+    # progressBar.setValue(i)
+    # app.processEvents()
+
     # Load series from series_path_list
+    print (series_path_list)
     series_list = []
     for series_path in series_path_list:
         series_path = series_path if os.path.isdir(series_path) \
                       else os.path.dirname(series_path)
         series_list.append(process_series_directory(series_path))
 
+
+    # i = 2
+    # progressBar.setValue(i)
+    # app.processEvents()
+
     # Assign "Main" Series (one with ideal alignment)
     main_series_path = series_path_list[0] if os.path.isdir(series_path_list[0]) \
                        else os.path.dirname(series_path_list[0])
     main_series = series_list[0]
+
+    progressBar.setMaximum(len((series_list[0]).sections) + 6)
+    i = 1
+    progressBar.setValue(i)
+    app.processEvents()
 
     # Load each Series' contours into the database
     for series_number, series in enumerate(series_list):
@@ -51,9 +77,18 @@ def start_database(series_path_list):
             # Load Section contours into database and determine matches
             backend.load_db_contours_from_pyrecon_section(SESSION, section, series_number)
 
+    i = 2
+    progressBar.setValue(i)
+    app.processEvents()
+
     # Find matches
     max_num_sections = max([len(ser.sections) for ser in series_list])
     for section_index in range(max_num_sections):
+
+        i = 2 + (section_index)
+        progressBar.setValue(i)
+        app.processEvents()
+
         db_contours = backend.query_all_contours_in_section(SESSION, section_index).all()
         backend.load_db_contourmatches_from_db_contours_and_pyrecon_series_list(
             SESSION,
@@ -61,10 +96,22 @@ def start_database(series_path_list):
             series_list
         )
 
+    i += 1
+    progressBar.setValue(i)
+    app.processEvents()
+
     backend.cleanup_redundant_matches(SESSION)
+
+    i += 1
+    progressBar.setValue(i)
+    app.processEvents()
 
     # Generate payload for frontend
     series_matches = backend.prepare_frontend_payload(SESSION, series_list)
+
+    i += 1
+    progressBar.setValue(i)
+    app.processEvents()
 
     json_fp = os.path.join(main_series_path, "merged")
     if not os.path.exists(json_fp):
@@ -72,6 +119,12 @@ def start_database(series_path_list):
     json_fp = json_fp + "/mergetool.json"
     with open(json_fp, "w") as f:
         json.dump(series_matches, f)
+
+    i += 1
+    progressBar.setValue(i)
+    app.processEvents()
+
+    splash.close()
     return series_matches
 
 
@@ -144,6 +197,7 @@ class RestoreDialog(QtWidgets.QDialog):
         self.ui.horizontalLayout.setObjectName("horizontalLayout")
         self.ui.lineEdit = QtWidgets.QLineEdit(self.ui.verticalLayoutWidget)
         self.ui.lineEdit.setObjectName("lineEdit")
+        self.ui.lineEdit.setReadOnly(True)
         self.ui.horizontalLayout.addWidget(self.ui.lineEdit)
         self.ui.browseButton = QtWidgets.QPushButton(self.ui.verticalLayoutWidget)
         self.ui.browseButton.setObjectName("browseButton")
@@ -208,6 +262,7 @@ class Ui_loadDialog(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.loadLineEdit = QtWidgets.QLineEdit(self.verticalLayoutWidget)
         self.loadLineEdit.setObjectName("loadLineEdit")
+        self.loadLineEdit.setReadOnly(True)
         self.horizontalLayout_3.addWidget(self.loadLineEdit)
         self.loadSeriesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.loadSeriesButton.setObjectName("loadSeriesButton")
@@ -273,6 +328,7 @@ class loadJsonSeriesDialog(QtWidgets.QDialog):
 
         setattr(self.ui, 'horizontalLayout_'+str(self.counter), QtWidgets.QHBoxLayout())
         setattr(self.ui, 'loadLineEdit_'+str(self.counter), QtWidgets.QLineEdit(self.ui.verticalLayoutWidget))
+        getattr(self.ui, 'loadLineEdit_'+str(self.counter)).setReadOnly(True)
         getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadLineEdit_'+str(self.counter)))
         setattr(self.ui, 'loadSeriesButton'+str(self.counter),QtWidgets.QPushButton(self.ui.verticalLayoutWidget))
         getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadSeriesButton'+str(self.counter)))
@@ -325,6 +381,7 @@ class Ui_loadJsonSeriesDialog(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.loadLineEdit = QtWidgets.QLineEdit(self.verticalLayoutWidget)
         self.loadLineEdit.setObjectName("loadLineEdit")
+        self.loadLineEdit.setReadOnly(True)        
         self.horizontalLayout_3.addWidget(self.loadLineEdit)
         self.loadSeriesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.loadSeriesButton.setObjectName("loadSeriesButton")
@@ -357,7 +414,7 @@ class Ui_loadJsonSeriesDialog(object):
     def retranslateUi(self, loadJsonSeriesDialog):
         _translate = QtCore.QCoreApplication.translate
         loadJsonSeriesDialog.setWindowTitle(_translate("loadJsonSeriesDialog", "Dialog"))
-        self.welcomeLabel.setText(_translate("loadJsonSeriesDialog", "Please select the series used in this .json file."))
+        self.welcomeLabel.setText(_translate("loadJsonSeriesDialog", "Please select the series used in this .json file. Import the series in the same order used originally."))
         self.addSeriesButton.setText(_translate("loadJsonSeriesDialog", "Add Series..."))
         self.loadSeriesButton.setText(_translate("loadJsonSeriesDialog", "Load Series..."))
         self.cancelButton.setText(_translate("loadJsonSeriesDialog", "Cancel"))
@@ -390,6 +447,7 @@ class loadDialog(QtWidgets.QDialog):
 
         setattr(self.ui, 'horizontalLayout_'+str(self.counter), QtWidgets.QHBoxLayout())
         setattr(self.ui, 'loadLineEdit_'+str(self.counter), QtWidgets.QLineEdit(self.ui.verticalLayoutWidget))
+        getattr(self.ui, 'loadLineEdit_'+str(self.counter)).setReadOnly(True) 
         getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadLineEdit_'+str(self.counter)))
         setattr(self.ui, 'loadSeriesButton'+str(self.counter),QtWidgets.QPushButton(self.ui.verticalLayoutWidget))
         getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadSeriesButton'+str(self.counter)))
@@ -1481,19 +1539,31 @@ def startLoadDialogs():
     if (initialWindow.restoreBool == False):
         loadSeries = loadDialog()
         fileList = loadSeries.fileList
-        jsonData = start_database(fileList)
+        if len(fileList) == 0:
+            app.quit()
+        else:
+            for i in range (0, len(fileList)):
+                if len (fileList[i]) == 0:
+                    fileList.pop(i)
+            jsonData = start_database(fileList, app)
 
     elif (len(initialWindow.returnFileList()) > 0):
         jsonList =  (initialWindow.returnFileList())
         loadSeries = loadJsonSeriesDialog()
         fileList = loadSeries.fileList
+        for i in range (0, len(fileList)):
+            if len (fileList[i]) == 0:
+                fileList.pop(i)
         jsonData = json.load(open(str(jsonList[0])))
 
-    mainWindow = MainWindow(jsonData, fileList)
-    mainWindow.show()
+    if 'jsonData' in locals():
+        mainWindow = MainWindow(jsonData, fileList)
+        mainWindow.show()
 
-    app.exec_()
+        app.exec_()
 
+    else: 
+        app.quit()
 
 def main():
 
