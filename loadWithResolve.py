@@ -52,7 +52,8 @@ def start_database(series_path_list):
             backend.load_db_contours_from_pyrecon_section(SESSION, section, series_number)
 
     # Find matches
-    for section_index in range(len(series.sections)):
+    max_num_sections = max([len(ser.sections) for ser in series_list])
+    for section_index in range(max_num_sections):
         db_contours = backend.query_all_contours_in_section(SESSION, section_index).all()
         backend.load_db_contourmatches_from_db_contours_and_pyrecon_series_list(
             SESSION,
@@ -64,7 +65,7 @@ def start_database(series_path_list):
 
     # Generate payload for frontend
     series_matches = {}
-    for section_index in range(len(series.sections)):
+    for section_index in range(max_num_sections):
         # Group matches by match_type
         grouped = backend.group_section_matches(SESSION, section_index)
         # Prepare FE payload
