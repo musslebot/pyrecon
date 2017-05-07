@@ -286,7 +286,21 @@ def prepare_unique_query(session, section_index):
     )
 
 
-def prepare_frontend_payload(session, series_list, section_index, grouped):
+def prepare_frontend_payload(session, series_list):
+    series_matches = {
+        "series": [s.path for s in series_list],
+        "sections": {}
+    }
+    max_number_of_sections = max([len(ser.sections) for ser in series_list])
+    for section_index in range(max_number_of_sections):
+        grouped = group_section_matches(session, section_index)
+        series_matches["sections"][section_index] = _prepare_frontend_payload_for_section(
+            session, series_list, section_index, grouped)
+    return series_matches
+
+
+
+def _prepare_frontend_payload_for_section(session, series_list, section_index, grouped):
     section_matches = {
         "section": section_index,
         "exact": [],

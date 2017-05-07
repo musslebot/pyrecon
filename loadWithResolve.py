@@ -64,13 +64,7 @@ def start_database(series_path_list):
     backend.cleanup_redundant_matches(SESSION)
 
     # Generate payload for frontend
-    series_matches = {}
-    for section_index in range(max_num_sections):
-        # Group matches by match_type
-        grouped = backend.group_section_matches(SESSION, section_index)
-        # Prepare FE payload
-        series_matches[section_index] = backend.prepare_frontend_payload(
-            SESSION, series_list, section_index, grouped)
+    series_matches = backend.prepare_frontend_payload(SESSION, series_list)
 
     json_fp = os.path.join(main_series_path, "merged")
     if not os.path.exists(json_fp):
@@ -81,8 +75,9 @@ def start_database(series_path_list):
     return series_matches
 
 
-def write_merged_series(series_path, series_dict):
-    to_keep = backend.get_output_contours_from_series_dict(SESSION, series_dict)
+def write_merged_series(series_dict):
+    series_path = series_dict["series"][0]
+    to_keep = backend.get_output_contours_from_series_dict(SESSION, series_dict["sections"])
     # Load series to get data not involved in merge tool
     series_path = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
     series = process_series_directory(series_path)
@@ -669,7 +664,6 @@ class Ui_MainWindow(object):
         self.transferRightButton.clicked.connect(MainWindow.transferFromRight)
         self.viewAllButton.clicked.connect(MainWindow.viewAll)
 
-
         #TODO: fix this for complete output
         self.completeButton.clicked.connect(MainWindow.saveSeries)
         self.actionSave_Resolutions.triggered.connect(MainWindow.saveSeries)
@@ -678,7 +672,6 @@ class Ui_MainWindow(object):
         self.actionTransfer_all.triggered.connect(MainWindow.transferAllRight)
         self.actionView_All.triggered.connect(MainWindow.viewAll)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -708,78 +701,83 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, data, fileList):
         super(MainWindow, self).__init__()
         self.fileList = fileList
-        self.data = data
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.initializeDataset()
+        self.initializeDataset(data)
 
-    def initializeDataset(self):
-        self.data = {int(k): v for k,v in self.data.items()}
-        for i in (self.data):
-            if len(self.data[i]["potential"]) > 0:
-                for j in range (0, len(self.data[i]["potential"])):
-                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential"][j][0]["name"])
-                    data = self.data[i]["potential"][j]
-                    unresolvedItem.setData(data)
-                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(data[0]["name"]))
+    def initializeDataset(self, data):
+        # Convert string keys to ints
+        data = {int(k): v for k,v in data["sections"].items()}
+        for section_index, matches in data.items():
 
-                    if data[0].get("side"):
-                        if data[0]["side"] == ("L"):
+            # Potential duplicates
+            potential_matches = matches["potential"]
+            if len(potential_matches) > 0:
+                for j in range (0, len(potential_matches)):
+                    potential_data = potential_matches[j]
+                    unresolvedItem = QtGui.QStandardItem(potential_matches[j][0]["name"])
+                    unresolvedItem.setData(potential_data)
+                    unresolvedItem.setText(
+                        str(section_index)+"."+str(potential_data[0]["name"]))
+                    if potential_data[0].get("side"):
+                        if potential_data[0]["side"] == ("L"):
                             self.ui.unresolvedModel.appendRow(unresolvedItem)
-                        elif data[0]["side"] == ("R"):
+                        elif potential_data[0]["side"] == ("R"):
                             self.ui.resolvedModel.appendRow(unresolvedItem)
-
                     else:
                         self.ui.unresolvedModel.appendRow(unresolvedItem)
                     unresolvedItem.setBackground(QtGui.QColor('red'))
 
-            if len(self.data[i]["potential_realigned"]) > 0:
-                for j in range (0, len(self.data[i]["potential_realigned"])):
-                    unresolvedItem = QtGui.QStandardItem(self.data[i]["potential_realigned"][j][0]["name"])
-                    data = self.data[i]["potential_realigned"][j]
-                    unresolvedItem.setData(data)
-                    unresolvedItem.setText(str(self.data[i]["section"])+"."+str(data[0]["name"]))
-                    if data[0].get("side"):
-                        if data[0]["side"] == ("L"):
+            # Potential realigned duplicates
+            pot_realigned_matches = matches["potential_realigned"]
+            if len(pot_realigned_matches) > 0:
+                for j in range (0, len(pot_realigned_matches)):
+                    unresolvedItem = QtGui.QStandardItem(pot_realigned_matches[j][0]["name"])
+                    pot_realigned_data = pot_realigned_matches[j]
+                    unresolvedItem.setData(pot_realigned_data)
+                    unresolvedItem.setText(
+                        str(section_index)+"."+str(pot_realigned_data[0]["name"]))
+                    if pot_realigned_data[0].get("side"):
+                        if pot_realigned_data[0]["side"] == ("L"):
                             self.ui.unresolvedModel.appendRow(unresolvedItem)
-                        elif data[0]["side"] == ("R"):
+                        elif pot_realigned_data[0]["side"] == ("R"):
                             self.ui.resolvedModel.appendRow(unresolvedItem)
 
                     else:
                         self.ui.unresolvedModel.appendRow(unresolvedItem)
-
                     unresolvedItem.setBackground(QtGui.QColor('orange'))
 
-
-            if len(self.data[i]["exact"]) > 0:
-                for j in range (0, len(self.data[i]["exact"])):
-                    resolvedItem = QtGui.QStandardItem(self.data[i]["exact"][j][0]["name"])
-                    data = self.data[i]["exact"][j]
-                    resolvedItem.setData(data)
-                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(data[0]["name"]))
-                    if data[0].get("side"):
-                        if data[0]["side"] == ("L"):
+            # Exact duplicates
+            exact_matches = matches["exact"]
+            if len(exact_matches) > 0:
+                for j in range(0, len(exact_matches)):
+                    resolvedItem = QtGui.QStandardItem(exact_matches[j][0]["name"])
+                    exact_data = exact_matches[j]
+                    resolvedItem.setData(exact_data)
+                    resolvedItem.setText(str(section_index)+"."+str(exact_data[0]["name"]))
+                    if exact_data[0].get("side"):
+                        if exact_data[0]["side"] == ("L"):
                             self.ui.unresolvedModel.appendRow(resolvedItem)
-                        elif data[0]["side"] == ("R"):
+                        elif exact_data[0]["side"] == ("R"):
                             self.ui.resolvedModel.appendRow(resolvedItem)
-
                     else:
                         self.ui.resolvedModel.appendRow(resolvedItem)
-
                     resolvedItem.setBackground(QtGui.QColor('yellow'))
 
-            if len(self.data[i]["unique"]) > 0:
-                for j in range (0, len(self.data[i]["unique"])):
-                    resolvedItem = QtGui.QStandardItem(self.data[i]["unique"][j][0]["name"])
-                    data = self.data[i]["unique"][j]
-                    resolvedItem.setData(data)
-                    resolvedItem.setText(str(self.data[i]["section"])+"."+str(data[0]["name"]))
-                    if data[0].get("side"):
-                        if data[0]["side"] == ("L"):
+            # Unique contours
+            unique_matches = matches["unique"]
+            if len(unique_matches) > 0:
+                for j in range (0, len(unique_matches)):
+                    resolvedItem = QtGui.QStandardItem(unique_matches[j][0]["name"])
+                    unique_data = unique_matches[j]
+                    resolvedItem.setData(unique_data)
+                    resolvedItem.setText(
+                        str(section_index)+"."+str(unique_data[0]["name"]))
+                    if unique_data[0].get("side"):
+                        if unique_data[0]["side"] == ("L"):
                             self.ui.unresolvedModel.appendRow(resolvedItem)
-                        elif data[0]["side"] == ("R"):
+                        elif unique_data[0]["side"] == ("R"):
                             self.ui.resolvedModel.appendRow(resolvedItem)
-
                     else:
                         self.ui.resolvedModel.appendRow(resolvedItem)
                     resolvedItem.setBackground(QtGui.QColor('green'))
@@ -801,7 +799,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.resolvedView.update()
         self.ui.unresolvedView.update()
 
-
     def transferFromLeft(self):
         selected = self.ui.unresolvedView.selectedIndexes()
         rowNumbers = []
@@ -822,7 +819,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.resolvedView.update()
         self.ui.unresolvedView.update()
 
-
     def transferFromRight(self):
         selected = self.ui.resolvedView.selectedIndexes()
         rowNumbers = []
@@ -842,7 +838,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.resolvedView.update()
         self.ui.unresolvedView.update()
 
-
     def viewAll(self):
         for idx in range (0, self.ui.unresolvedModel.rowCount()):
             nextItemIndex = self.ui.unresolvedModel.index(0, 0)
@@ -859,15 +854,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def saveSeries(self):
         print ("save series")
-        outputDict = {}
-        outputDict['0'] = {
+        outputDict = {
+            "series": self.fileList,
+            "sections": {}
+        }
+        outputDict["sections"]["0"] = {
             "potential_realigned": [],
             "unique": [],
             "potential": [],
             "exact": [],
             "section": 0
         }
-
 
         for idx in range (0, self.ui.unresolvedModel.rowCount()):
             nextItemIndex = self.ui.unresolvedModel.index(idx, 0)
@@ -877,23 +874,23 @@ class MainWindow(QtWidgets.QMainWindow):
             nextItemData[0]["side"] = "L"
             nextItem.setData(nextItemData)
 
-            if outputDict.get(str(nextItemSection)):
+            next_section = str(nextItemSection)
+            if outputDict.get(next_section):
                 if (nextItem.background().color().name()) == "#ff0000":
-                    outputDict[str(nextItemSection)]['potential'].append(nextItem.data())
-
-
-                #     print ("POTENTIAL")
+                    outputDict["sections"][next_section]["potential"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#ffa500":
-                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
-
+                    outputDict["sections"][next_section]["potential_realigned"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#008000":
-                    outputDict[str(nextItemSection)]['unique'].append(nextItem.data())
-
+                    outputDict["sections"][next_section]["unique"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#ffff00":
-                    outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
+                    outputDict["sections"][next_section]["exact"].append(
+                        nextItem.data())
 
             else:
-                outputDict[str(nextItemSection)] = {
+                outputDict["sections"][next_section] = {
                     "potential_realigned": [],
                     "unique": [],
                     "potential": [],
@@ -901,15 +898,17 @@ class MainWindow(QtWidgets.QMainWindow):
                     "section": nextItemSection
                 }
                 if (nextItem.background().color().name()) == "#ff0000":
-                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
+                    outputDict["sections"][next_section]["potential_realigned"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#ffa500":
-                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
-
+                    outputDict["sections"][next_section]["potential_realigned"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#008000":
-                    outputDict[str(nextItemSection)]['unique'].append(nextItem.data())
-
+                    outputDict["sections"][next_section]["unique"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#ffff00":
-                    outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
+                    outputDict["sections"][next_section]["exact"].append(
+                        nextItem.data())
 
 
         for idx in range (0, self.ui.resolvedModel.rowCount()):
@@ -919,24 +918,24 @@ class MainWindow(QtWidgets.QMainWindow):
             nextItemData = nextItem.data()
             nextItemData[0]["side"] = "R"
             nextItem.setData(nextItemData)
+            next_section = str(nextItemSection)
 
-            if outputDict.get(str(nextItemSection)):
+            if outputDict.get(next_section):
                 if (nextItem.background().color().name()) == "#ff0000":
-                    outputDict[str(nextItemSection)]['potential'].append(nextItem.data())
-
-
-                #     print ("POTENTIAL")
+                    outputDict["sections"][next_section]["potential"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#ffa500":
-                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
-
+                    outputDict["sections"][next_section]["potential_realigned"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#008000":
-                    outputDict[str(nextItemSection)]['unique'].append(nextItem.data())
-
+                    outputDict["sections"][next_section]["unique"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#ffff00":
-                    outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
+                    outputDict["sections"][next_section]["exact"].append(
+                        nextItem.data())
 
             else:
-                outputDict[str(nextItemSection)] = {
+                outputDict["sections"][next_section] = {
                     "potential_realigned": [],
                     "unique": [],
                     "potential": [],
@@ -944,15 +943,17 @@ class MainWindow(QtWidgets.QMainWindow):
                     "section": nextItemSection
                 }
                 if (nextItem.background().color().name()) == "#ff0000":
-                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
+                    outputDict["sections"][next_section]["potential_realigned"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#ffa500":
-                    outputDict[str(nextItemSection)]['potential_realigned'].append(nextItem.data())
-
+                    outputDict["sections"][next_section]["potential_realigned"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#008000":
-                    outputDict[str(nextItemSection)]['unique'].append(nextItem.data())
-
+                    outputDict["sections"][next_section]["unique"].append(
+                        nextItem.data())
                 elif (nextItem.background().color().name()) == "#ffff00":
-                    outputDict[str(nextItemSection)]['exact'].append(nextItem.data())
+                    outputDict["sections"][next_section]["exact"].append(
+                        nextItem.data())
 
         save_dir = os.path.join(self.fileList[0] if os.path.isdir(self.fileList[0]) \
                    else os.path.dirname(self.fileList[0]), "merged")
@@ -964,10 +965,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if (self.sender().objectName() == "completeButton"):
             self.close()
-            write_merged_series(
-                self.fileList[0],
-                outputDict
-            )
+            write_merged_series(outputDict)
             return (outputDict, self.fileList)
 
     def loadResolveLeft(self):
