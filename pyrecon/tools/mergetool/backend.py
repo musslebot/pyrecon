@@ -30,6 +30,8 @@ def _create_db_contours_from_pyrecon_section(section, series_number):
     """
     db_contours = []
     # TODO: multithread this
+    if (section.index == 61):
+        print (len (section.contours))
     for i, pyrecon_contour in enumerate(section.contours):
         db_contour = Contour(
             section=section.index,
@@ -61,6 +63,11 @@ def _create_db_contourmatch_from_db_contours_and_pyrecon_series_list(db_contour_
     ].contours[
         db_contour_A.index
     ]
+
+    print ("series:", db_contour_B.series)
+    print ("section:", db_contour_B.section)
+    print ("index:", db_contour_B.index)
+
     pyrecon_contour_b = series_list[
         db_contour_B.series
     ].sections[
