@@ -1569,14 +1569,6 @@ def main():
 
 
     startLoadDialogs()
-    #mockData = json.load(open('savedstatus.json'))
-    #initialWindow = loadDialog()
-    fileList = ['mash', 'mash', 'meesh']
 
-    # test = MultipleSeriesDialog(fileList)
-    # test = test.exec_()
-
-    #mainWindow = MainWindow(mockData)
-    #mainWindow.show()
 
 main()
