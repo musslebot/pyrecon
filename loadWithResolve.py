@@ -381,7 +381,7 @@ class Ui_loadJsonSeriesDialog(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.loadLineEdit = QtWidgets.QLineEdit(self.verticalLayoutWidget)
         self.loadLineEdit.setObjectName("loadLineEdit")
-        self.loadLineEdit.setReadOnly(True)        
+        self.loadLineEdit.setReadOnly(True)
         self.horizontalLayout_3.addWidget(self.loadLineEdit)
         self.loadSeriesButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.loadSeriesButton.setObjectName("loadSeriesButton")
@@ -447,7 +447,7 @@ class loadDialog(QtWidgets.QDialog):
 
         setattr(self.ui, 'horizontalLayout_'+str(self.counter), QtWidgets.QHBoxLayout())
         setattr(self.ui, 'loadLineEdit_'+str(self.counter), QtWidgets.QLineEdit(self.ui.verticalLayoutWidget))
-        getattr(self.ui, 'loadLineEdit_'+str(self.counter)).setReadOnly(True) 
+        getattr(self.ui, 'loadLineEdit_'+str(self.counter)).setReadOnly(True)
         getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadLineEdit_'+str(self.counter)))
         setattr(self.ui, 'loadSeriesButton'+str(self.counter),QtWidgets.QPushButton(self.ui.verticalLayoutWidget))
         getattr(self.ui, 'horizontalLayout_'+str(self.counter)).addWidget(getattr(self.ui, 'loadSeriesButton'+str(self.counter)))
@@ -933,7 +933,7 @@ class MainWindow(QtWidgets.QMainWindow):
             nextItem.setData(nextItemData)
 
             next_section = str(nextItemSection)
-            if outputDict.get(next_section):
+            if outputDict["sections"].get(next_section):
                 if (nextItem.background().color().name()) == "#ff0000":
                     outputDict["sections"][next_section]["potential"].append(
                         nextItem.data())
@@ -978,7 +978,7 @@ class MainWindow(QtWidgets.QMainWindow):
             nextItem.setData(nextItemData)
             next_section = str(nextItemSection)
 
-            if outputDict.get(next_section):
+            if outputDict["sections"].get(next_section):
                 if (nextItem.background().color().name()) == "#ff0000":
                     outputDict["sections"][next_section]["potential"].append(
                         nextItem.data())
@@ -1562,7 +1562,7 @@ def startLoadDialogs():
 
         app.exec_()
 
-    else: 
+    else:
         app.quit()
 
 def main():
