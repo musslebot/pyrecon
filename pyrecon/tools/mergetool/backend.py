@@ -291,13 +291,14 @@ def prepare_frontend_payload(session, series_list):
         "series": [s.path for s in series_list],
         "sections": {}
     }
-    max_number_of_sections = max([len(ser.sections) for ser in series_list])
-    for section_index in range(max_number_of_sections):
+    section_indices = set()
+    for series in series_list:
+        section_indices.update(series.sections.keys())
+    for section_index in section_indices:
         grouped = group_section_matches(session, section_index)
         series_matches["sections"][section_index] = _prepare_frontend_payload_for_section(
             session, series_list, section_index, grouped)
     return series_matches
-
 
 
 def _prepare_frontend_payload_for_section(session, series_list, section_index, grouped):
@@ -458,7 +459,7 @@ def get_output_contours_from_series_dict(session, series_dict):
 def create_output_series(session, to_keep, series):
     series_copy = deepcopy(series)
     # Wipe section contours
-    for section in series_copy.sections:
+    for section_index, section in series_copy.sections.items():
         section.contours = []
 
     # TODO: multithread this?

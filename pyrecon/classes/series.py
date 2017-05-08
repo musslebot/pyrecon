@@ -97,7 +97,7 @@ class Series(object):
         self.path = kwargs.get("path")
         self.contours = kwargs.get("contours", [])
         self.zcontours = kwargs.get("zcontours", [])
-        self.sections = kwargs.get("sectons", [])
+        self.sections = kwargs.get("sectons", {})
 
     def attributes(self):
         """Return a dict of this Series" attributes."""

@@ -28,14 +28,11 @@ def process_series_directory(path):
 
     # Gather Sections from provided path
     section_regex = re.compile(r"{}.[0-9]+$".format(series.name))
-    sections = []
     for filename in os.listdir(path):
         if re.match(section_regex, filename):
             section_path = os.path.join(path, filename)
             section = process_section_file(section_path)
-            sections.append(section)
-    series.sections = sorted(sections, key=lambda Section: Section.index)
-
+            series.sections[section.index] = section
     return series
 
 

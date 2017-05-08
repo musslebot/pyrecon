@@ -280,5 +280,5 @@ def write_series(series, directory, outpath=None, sections=False, overwrite=Fals
     elemtree.write(outpath, pretty_print=True, xml_declaration=True, encoding="UTF-8")
     # Write all sections if <sections> == True
     if sections:
-        for section in series.sections:
+        for section_index, section in series.sections.items():
             write_section(section, directory, overwrite=overwrite)

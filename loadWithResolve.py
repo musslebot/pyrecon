@@ -72,18 +72,24 @@ def start_database(series_path_list, app):
     app.processEvents()
 
     # Load each Series' contours into the database
+    section_indices = set()
+    for series in series_list:
+        section_indices.update(series.sections.keys())
+
     for series_number, series in enumerate(series_list):
-        for section in series.sections:
-            # Load Section contours into database and determine matches
-            backend.load_db_contours_from_pyrecon_section(SESSION, section, series_number)
+        for section_index in section_indices:
+            section = series.sections.get(section_index)
+            if section:
+                # Load Section contours into database and determine matches
+                backend.load_db_contours_from_pyrecon_section(SESSION, section, series_number)
 
     i = 2
     progressBar.setValue(i)
     app.processEvents()
 
     # Find matches
-    max_num_sections = max([len(ser.sections) for ser in series_list])
-    for section_index in range(max_num_sections):
+
+    for section_index in section_indices:
 
         i = 2 + (section_index)
         progressBar.setValue(i)
