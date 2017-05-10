@@ -179,9 +179,10 @@ def cleanup_redundant_matches(session):
         for id_exact in id_matches:
             if id_exact > id_:
                 for thing in session.query(ContourMatch).filter(
-                        (ContourMatch.id1 == id_exact) |
-                        (ContourMatch.id2 == id_exact) &
-                        (ContourMatch.match_type == "potential")
+                        ((ContourMatch.id1 == id_exact) |
+                        (ContourMatch.id2 == id_exact)) &
+                        ((ContourMatch.match_type == "potential") |
+                        (ContourMatch.match_type == "potential_realigned"))
                     ):
                     session.delete(thing)
     session.commit()
