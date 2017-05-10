@@ -76,23 +76,31 @@ def _create_db_contourmatch_from_db_contours_and_pyrecon_series_list(db_contour_
     shape_a = pyrecon_contour_a.shape
     shape_b = pyrecon_contour_b.shape
     try:
-        if is_exact_duplicate(shape_a, shape_b):
+        if (pyrecon_contour_a.points == pyrecon_contour_b.points) and \
+           (pyrecon_contour_a.transform != pyrecon_contour_b.transform):
+            if is_exact_duplicate(shape_a, shape_b):
+                match_type = "exact"
+                return ContourMatch(
+                    id1=db_contour_A.id,
+                    id2=db_contour_B.id,
+                    match_type=match_type
+                )
+            else:
+                match_type = "potential_realigned"
+                return ContourMatch(
+                    id1=db_contour_A.id,
+                    id2=db_contour_B.id,
+                    match_type=match_type
+                )
+        elif not is_contacting(shape_a, shape_b):
+            return None
+        elif is_exact_duplicate(shape_a, shape_b):
             match_type = "exact"
             return ContourMatch(
                 id1=db_contour_A.id,
                 id2=db_contour_B.id,
                 match_type=match_type
             )
-        elif (pyrecon_contour_a.points == pyrecon_contour_b.points) and \
-           (pyrecon_contour_a.transform != pyrecon_contour_b.transform):
-            match_type = "potential_realigned"
-            return ContourMatch(
-                id1=db_contour_A.id,
-                id2=db_contour_B.id,
-                match_type=match_type
-            )
-        elif not is_contacting(shape_a, shape_b):
-            return None
         elif is_potential_duplicate(shape_a, shape_b):
             match_type = "potential"
             return ContourMatch(
