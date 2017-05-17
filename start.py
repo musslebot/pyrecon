@@ -6,7 +6,6 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-import csv
 import json
 import numpy
 import os
@@ -14,15 +13,12 @@ import sys
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from skimage import transform as tf
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from pyrecon.tools.reconstruct_reader import process_series_directory
 from pyrecon.tools.reconstruct_writer import write_series
 from pyrecon.tools.mergetool import backend
 
-#pyuic5 design.ui > design.py
-#SQLITE_MAX_VARIABLE_NUMBER=10000000 SERIES_PATH=~/Documents/RECONSTRUCT/FHLTD/FHLTD_mito/FHLTD/ python3 start_mergetool.py
 
 DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite://")
 ENGINE = create_engine(DATABASE_URI, echo=False)
@@ -44,10 +40,6 @@ def start_database(series_path_list, app):
     if bool(os.getenv("CREATE_DB",  1)):
         backend.create_database(ENGINE)
 
-    # i = 1
-    # progressBar.setValue(i)
-    # app.processEvents()
-
     # Load series from series_path_list
     print (series_path_list)
     series_list = []
@@ -56,15 +48,9 @@ def start_database(series_path_list, app):
                       else os.path.dirname(series_path)
         series_list.append(process_series_directory(series_path))
 
-
-    # i = 2
-    # progressBar.setValue(i)
-    # app.processEvents()
-
     # Assign "Main" Series (one with ideal alignment)
     main_series_path = series_path_list[0] if os.path.isdir(series_path_list[0]) \
                        else os.path.dirname(series_path_list[0])
-    main_series = series_list[0]
 
     progressBar.setMaximum(len((series_list[0]).sections) + 6)
     i = 1

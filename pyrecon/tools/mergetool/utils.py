@@ -1,9 +1,6 @@
 """Merge two RECONSTRUCT datasets."""
 from shapely.geometry import box, LinearRing, LineString, Point, Polygon
 
-from pyrecon.classes import Series, Section
-from pyrecon.tools import reconstruct_writer
-
 TOLERANCE = 1 + 2**-17
 LIMIT = 10.0
 
