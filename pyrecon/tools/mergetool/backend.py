@@ -9,6 +9,7 @@ from PIL import Image
 
 from .models import Base, Contour, ContourMatch
 from .utils import is_contacting, is_exact_duplicate, is_potential_duplicate
+from pyrecon.tools.reconstruct_reader import process_series_directory
 
 
 def create_database(engine):
@@ -465,19 +466,37 @@ def get_output_contours_from_series_dict(session, series_dict):
     return to_keep
 
 
-def create_output_series(session, to_keep, series):
-    series_copy = deepcopy(series)
-    # Wipe section contours
-    for section_index, section in series_copy.sections.items():
+def create_output_series(session, to_keep, series_path_list):
+    series_list = []
+    for path in series_path_list:
+        series = process_series_directory(path)
+        series_list.append(series)
+
+    main_series = series_list[0]
+    output_series = deepcopy(main_series)
+    output_series.name = "merged"
+
+    # Make sure we grab all sections, since series may contain different sections
+    for series in series_list[1:]:
+        series = deepcopy(series)
+        output_series.sections.update(series.sections)
+
+    # Delete section contours so that we only keep the ones selected in mergetool
+    for section in output_series.sections.values():
+        section.name = "merged.{}".format(section.index)
         section.contours = []
 
     # TODO: multithread this?
     for keep_dict in to_keep:
         db_id = keep_dict["db_id"]
         db_contour = session.query(Contour).get(db_id)
-        section_index = db_contour.section
-        contour_index = db_contour.index
-        reconstruct_contour = series.sections[section_index].contours[contour_index]
+        reconstruct_contour = series_list[
+            db_contour.series
+        ].sections[
+            db_contour.section
+        ].contours[
+            db_contour.index
+        ]
         reconstruct_contour.name = keep_dict["name"]
-        series_copy.sections[section_index].contours.append(reconstruct_contour)
-    return series_copy
+        output_series.sections[db_contour.section].contours.append(reconstruct_contour)
+    return output_series

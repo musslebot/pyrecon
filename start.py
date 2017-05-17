@@ -121,13 +121,15 @@ def start_database(series_path_list, app):
 
 
 def write_merged_series(series_dict):
-    series_path = series_dict["series"][0]
     to_keep = backend.get_output_contours_from_series_dict(SESSION, series_dict["sections"])
-    # Load series to get data not involved in merge tool
-    series_path = series_path if os.path.isdir(series_path) else os.path.dirname(series_path)
-    series = process_series_directory(series_path)
-    merged_fp = series_path + "/merged/"
-    new_series = backend.create_output_series(SESSION, to_keep, series)
+
+    series_path_list = []
+    for path in series_dict["series"]:
+        path = path if os.path.isdir(path) else os.path.dirname(path)
+        series_path_list.append(path)
+
+    new_series = backend.create_output_series(SESSION, to_keep, series_path_list)
+    merged_fp = series_path_list[0] + "/merged/"
     write_series(new_series, merged_fp, sections=True, overwrite=False)
     return True
 
