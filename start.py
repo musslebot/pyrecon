@@ -134,6 +134,26 @@ def write_merged_series(series_dict):
     return True
 
 
+def write_realigned_log(series_dict):
+    potential_realigned = []
+    for _, section in series_dict["sections"].items():
+        for group in section["potential_realigned"]:
+            for contour in group:
+                if contour["keepBool"]:
+                    realigned_kept = "{}.{}".format(
+                        contour["section"],
+                        contour["name"]
+                    )
+                    potential_realigned.append(realigned_kept)
+
+    if potential_realigned:
+        path = series_dict["series"][0]
+        path = path if os.path.isdir(path) else os.path.dirname(path)
+        realigned_log = path + "/merged/realigned.log"
+        with open(realigned_log, "w") as f:
+            f.write("\n".join(realigned_log))
+
+
 class Ui_RestoreDialog(object):
     def setupUi(self, RestoreDialog):
         RestoreDialog.setObjectName("RestoreDialog")
@@ -1018,6 +1038,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if (self.sender().objectName() == "completeButton"):
             self.close()
             write_merged_series(outputDict)
+            write_realigned_log(outputDict)
             return (outputDict, self.fileList)
 
     def loadResolveLeft(self):
