@@ -1170,7 +1170,7 @@ class resolveDialog(QtWidgets.QDialog):
         self.exec_()
         self.show()
 
-        if self.updatedState == True:
+        if self.updatedState == True or self.nameState == True:
             item.setData(self.itemData)
 
     def initializeData(self):
@@ -1224,24 +1224,25 @@ class resolveDialog(QtWidgets.QDialog):
             getattr(self.ui, 'pix'+str(i+1)).setPixmap(pixmap)
 
     def changeName(self):
-        self.nameState == True
+        self.nameState = True
+
+    def updateContour(self, item):
+        self.updatedState = True
 
     def saveResolutions(self,item):
         self.setResult(1)
         if self.nameState == True:
             for i in range (0, len(self.itemData)):
-                self.itemData[i+1]['name'] = getattr(self.ui, 'nameEdit'+str(i+1)).text()
+                new_name = getattr(self.ui, 'nameEdit'+str(i+1)).text()
+                self.itemData[i]['name'] = new_name
 
         if self.updatedState == True:
             for i in range (0, len(self.itemData)):
-                if getattr(self.ui, 'checkBox'+str(i+1)).isChecked():
+                is_checked = getattr(self.ui, 'checkBox'+str(i+1)).isChecked()
+                if is_checked:
                     self.itemData[i]['keepBool'] = True
                 else:
                     self.itemData[i]['keepBool'] = False
-
-    def updateContour(self, item):
-        print ("update contour")
-        self.updatedState = True
 
 
 class Ui_Dialog(object):
