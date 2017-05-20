@@ -199,11 +199,13 @@ class RestoreDialog(QtWidgets.QDialog):
         self.reload = False
         self.restoreBool = True
         self.fileList = []
+        self.jsonFile = None
         self.exec_()
 
     def yesClicked(self):
         """ Restoring from a previous session.
         """
+        print("yesClicked")
         self.ui.selectSessionLabel = QtWidgets.QLabel(self.ui.verticalLayoutWidget)
         self.ui.selectSessionLabel.setObjectName("selectSessionLabel")
         self.ui.verticalLayout.addWidget(self.ui.selectSessionLabel)
@@ -231,7 +233,8 @@ class RestoreDialog(QtWidgets.QDialog):
         #cancel the .json load: just reload restore dialog
         self.ui.buttonBox_2.rejected.connect(self.cancelClicked)
         self.ui.buttonBox_2.rejected.connect(self.close)
-        self.ui.selectSessionLabel.setText("Please select the session file you would like to import.")
+        self.ui.selectSessionLabel.setText(
+            "Please select the session file you would like to import.")
         self.ui.browseButton.setText("Browse...")
         #clicking yes starts the Main Window with the given dictionary
 
@@ -242,15 +245,20 @@ class RestoreDialog(QtWidgets.QDialog):
         self.close()
 
     def loadJson(self):
-        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Open Series", "/home/", "Json File (*.json)")
+        fileName = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Open Series", "/home/", "Json File (*.json)")
         self.ui.lineEdit.setText(str(fileName[0]))
+        self.jsonFile = fileName[0]
         self.fileList = [fileName[0]]
+        print("self.jsonFile: {}".format(self.jsonFile))
 
     def returnFileList(self):
         return self.fileList
 
     def cancelClicked(self):
         self.close()
+
+
 class Ui_loadDialog(object):
 
     def setupUi(self, loadDialog):
@@ -309,24 +317,38 @@ class Ui_loadDialog(object):
     def retranslateUi(self, loadDialog):
         _translate = QtCore.QCoreApplication.translate
         loadDialog.setWindowTitle(_translate("loadDialog", "Dialog"))
-        self.welcomeLabel.setText(_translate("loadDialog", "Welcome to pyRECONSTRUCT! Please select a series."))
+        self.welcomeLabel.setText(_translate(
+            "loadDialog", "Welcome to pyRECONSTRUCT! Please select a series."))
         self.addSeriesButton.setText(_translate("loadDialog", "Add Series..."))
         self.loadSeriesButton.setText(_translate("loadDialog", "Load Series..."))
         self.cancelButton.setText(_translate("loadDialog", "Cancel"))
         self.selectButton.setText(_translate("loadDialog", "Import Series"))
 
+
 class loadJsonSeriesDialog(QtWidgets.QDialog):
-    def __init__(self):
+    def __init__(self, jsonFile):
         super(loadJsonSeriesDialog, self).__init__()
 
+        self.jsonFile = jsonFile
         self.ui = Ui_loadJsonSeriesDialog()
         self.ui.setupUi(self)
         self.counter = 5
         self.fileList = []
+        json_data = json.load(open(self.jsonFile))
+        for i, path in enumerate(json_data["series"]):
+            if i == 0:
+                path_input = getattr(self.ui, 'loadLineEdit')
+            else:
+                self.addSeries()
+                path_input = getattr(self.ui, 'loadLineEdit_{}'.format(self.counter))
+            path_input.setText(path)
         self.exec_()
 
     def loadSeries(self):
-        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Open Series", "/home/", "Series File (*.ser)")
+        # NOTE: for some reason this is never being called
+        print("loadSeries: {}".format(self))
+        fileName = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Open Series", "/home/", "Series File (*.ser)")
         if fileName != None:
             if (self.sender().objectName() == 'loadSeriesButton'):
                 self.ui.loadLineEdit.setText(str(fileName[0]))
@@ -335,7 +357,6 @@ class loadJsonSeriesDialog(QtWidgets.QDialog):
                 getattr(self.ui, 'loadLineEdit_'+str(self.counter)).setText(str(fileName[0]))
 
         self.fileList.append(str(fileName[0]))
-        #self.output = str(fileName[0])
 
     def addSeries(self):
         self.counter += 1
@@ -355,8 +376,6 @@ class loadJsonSeriesDialog(QtWidgets.QDialog):
 
         self.ui.verticalLayout_3.addLayout(getattr(self.ui, 'horizontalLayout_'+str(self.counter)))
 
-
-
     def startMainWindow(self):
         if (len(self.fileList) > 1):
             alignSelection = MultipleSeriesDialog(self.fileList)
@@ -366,7 +385,6 @@ class loadJsonSeriesDialog(QtWidgets.QDialog):
             elif (alignSelection.result() == 1):
                 newFileList = alignSelection.returnFileList()
                 self.fileList = newFileList
-
         self.close()
 
 
@@ -424,15 +442,19 @@ class Ui_loadJsonSeriesDialog(object):
         self.addSeriesButton.clicked.connect(loadJsonSeriesDialog.addSeries)
         QtCore.QMetaObject.connectSlotsByName(loadJsonSeriesDialog)
 
-
     def retranslateUi(self, loadJsonSeriesDialog):
         _translate = QtCore.QCoreApplication.translate
         loadJsonSeriesDialog.setWindowTitle(_translate("loadJsonSeriesDialog", "Dialog"))
-        self.welcomeLabel.setText(_translate("loadJsonSeriesDialog", "Please select the series used in this .json file. Import the series in the same order used originally."))
+        self.welcomeLabel.setText(_translate(
+            "loadJsonSeriesDialog",
+            ("Please locate the series used in this .json file. "
+            "Import the series in the same order used originally.")
+        ))
         self.addSeriesButton.setText(_translate("loadJsonSeriesDialog", "Add Series..."))
         self.loadSeriesButton.setText(_translate("loadJsonSeriesDialog", "Load Series..."))
         self.cancelButton.setText(_translate("loadJsonSeriesDialog", "Cancel"))
         self.selectButton.setText(_translate("loadJsonSeriesDialog", "Import Series"))
+
 
 class loadDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -473,7 +495,6 @@ class loadDialog(QtWidgets.QDialog):
         self.resize(400, 300 + (30*(self.counter - 5)))
 
         self.ui.verticalLayout_3.addLayout(getattr(self.ui, 'horizontalLayout_'+str(self.counter)))
-
 
     def startMainWindow(self):
         if (len(self.fileList) > 1):
@@ -543,8 +564,7 @@ class MultipleSeriesDialog(QtWidgets.QDialog):
         #self.setResult(0)
         self.ui = Ui_MultipleSeriesDialog()
         self.ui.setupUi(self, fileList)
-        savedFileList = fileList
-        self.fileList = savedFileList
+        self.fileList = fileList
         self.exec_()
 
     def yesClicked(self):
@@ -591,7 +611,6 @@ class MultipleSeriesDialog(QtWidgets.QDialog):
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         self.ui.buttonBox_2.setSizePolicy(sizePolicy)
         self.ui.verticalLayout.addWidget(self.ui.buttonBox_2)
-
 
     def seriesSelected(self):
         for i in range (len(self.fileList)):
@@ -858,7 +877,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.resolvedView.doubleClicked.connect(self.loadResolveRight)
 
     def loadSeries(self):
-        print("load series")
+        print("load series: {}".format(self))
 
     def transferAllRight(self):
         rowCount = self.ui.unresolvedModel.rowCount()
@@ -982,7 +1001,6 @@ class MainWindow(QtWidgets.QMainWindow):
                     outputDict["sections"][next_section]["exact"].append(
                         nextItem.data())
 
-
         for idx in range (0, self.ui.resolvedModel.rowCount()):
             nextItemIndex = self.ui.resolvedModel.index(idx, 0)
             nextItem = self.ui.resolvedModel.itemFromIndex(nextItemIndex)
@@ -1005,7 +1023,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 elif (nextItem.background().color().name()) == "#ffff00":
                     outputDict["sections"][next_section]["exact"].append(
                         nextItem.data())
-
             else:
                 outputDict["sections"][next_section] = {
                     "potential_realigned": [],
@@ -1048,9 +1065,7 @@ class MainWindow(QtWidgets.QMainWindow):
             rowNumbers.append(idx.row())
 
         oldIndex = 0
-
         rowNumbers = sorted(rowNumbers)
-
         for i in range(len(rowNumbers)):
             indexObj = self.ui.unresolvedModel.index(rowNumbers[i] - oldIndex, 0)
             selectedItem = self.ui.unresolvedModel.itemFromIndex(indexObj)
@@ -1063,9 +1078,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 self.ui.resolvedView.update()
                 self.ui.unresolvedView.update()
-
             oldIndex +=1
-
 
     def loadResolveRight(self):
         selected = self.ui.resolvedView.selectedIndexes()
@@ -1080,13 +1093,11 @@ class MainWindow(QtWidgets.QMainWindow):
         for idx in selected:
             selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)
             selectedData = selectedItem.data()
-
             for i in range (0, len(selectedData)):
                 if i == 0:
                     selectedData[i]['keepBool'] = True
                 else:
                     selectedData[i]['keepBool'] = False
-
             selectedItem.setData(selectedData)
 
     def selectAllRight(self):
@@ -1094,17 +1105,14 @@ class MainWindow(QtWidgets.QMainWindow):
         for idx in selected:
             selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)
             selectedData = selectedItem.data()
-
             if len(selectedData) == 1:
                 selectedData[i]['keepBool'] = True
-
             else:
                 for i in range (0, len(selectedData)):
                     if i == 1:
                         selectedData[i]['keepBool'] = True
                     else:
                         selectedData[i]['keepBool'] = False
-
             selectedItem.setData(selectedData)
 
     def deselectAllTraces(self):
@@ -1112,10 +1120,8 @@ class MainWindow(QtWidgets.QMainWindow):
         for idx in selected:
             selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)
             selectedData = selectedItem.data()
-
             for i in range (0, len(selectedData)):
                     selectedData[i]['keepBool'] = False
-
             selectedItem.setData(selectedData)
 
     def selectAllTraces(self):
@@ -1123,10 +1129,8 @@ class MainWindow(QtWidgets.QMainWindow):
         for idx in selected:
             selectedItem = self.ui.unresolvedModel.itemFromIndex(idx)
             selectedData = selectedItem.data()
-
             for i in range (0, len(selectedData)):
                     selectedData[i]['keepBool'] = True
-
             selectedItem.setData(selectedData)
 
     def unresolvedMenu(self, position):
@@ -1139,44 +1143,27 @@ class MainWindow(QtWidgets.QMainWindow):
         deselectAllTracesAction = menu.addAction("Deselect All Traces")
         selectAllTracesAction = menu.addAction("Select All Traces")
 
-
         action = menu.exec_(self.ui.unresolvedView.mapToGlobal(position))
-
         if action == resolveAction:
             self.loadResolveLeft()
-
         elif action == transferAction:
             self.transferFromLeft()
-
         elif action == selectAllLeftAction:
             response = leftDialog()
             if response.result() == 1:
                 self.selectAllLeft()
-            else:
-                pass
-
         elif action == selectAllRightAction:
             response = rightDialog()
             if response.result() == 1:
                 self.selectAllRight()
-            else:
-                pass
-
         elif action == deselectAllTracesAction:
             response = deselectDialog()
             if response.result() == 1:
                 self.deselectAllTraces()
-            else:
-                pass
-
         elif action == selectAllTracesAction:
             response = selectDialog()
             if response.result() == 1:
                 self.selectAllTraces()
-            else:
-                pass
-
-
 
 
 class resolveDialog(QtWidgets.QDialog):
@@ -1190,7 +1177,6 @@ class resolveDialog(QtWidgets.QDialog):
         self.initializeData()
         self.exec_()
         self.show()
-
         if self.updatedState == True or self.nameState == True:
             item.setData(self.itemData)
 
@@ -1200,14 +1186,11 @@ class resolveDialog(QtWidgets.QDialog):
             getattr(self.ui, 'seriesLabel'+str(i)).setText("Series: "+self.itemData[i]["series"])
             getattr(self.ui, 'sectionLabel'+str(i)).setText("Section: "+str(self.itemData[i]["section"]))
 
-
-            myBool = QtCore.QFileInfo(self.itemData[0]["image"]).exists()
-
-            if not myBool:
+            image_exists = QtCore.QFileInfo(self.itemData[0]["image"]).exists()
+            if not image_exists:
                 minx, miny, maxx, maxy = self.itemData[i]['nullpoints']
                 pixmap = QtGui.QPixMap(maxx-minx+100, maxy-miny+100)
                 pixmap.fill(fillColor=Qt.black)
-
             else:
                 pixmap = (QtGui.QPixmap(self.itemData[i]["image"]))
 
@@ -1253,11 +1236,12 @@ class resolveDialog(QtWidgets.QDialog):
     def saveResolutions(self,item):
         self.setResult(1)
         if self.nameState == True:
+            # Contour was changed
             for i in range (0, len(self.itemData)):
                 new_name = getattr(self.ui, 'nameEdit'+str(i+1)).text()
                 self.itemData[i]['name'] = new_name
-
         if self.updatedState == True:
+            # Keep checkbox triggered
             for i in range (0, len(self.itemData)):
                 is_checked = getattr(self.ui, 'checkBox'+str(i+1)).isChecked()
                 if is_checked:
@@ -1302,37 +1286,26 @@ class Ui_Dialog(object):
         self.horizontalLayout_1.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.horizontalLayout_1.setObjectName("horizontalLayout_1")
 
-
-
-
-
         #generate name label and name edit
         for i in range(0, len(self.itemData)):
             setattr(self, 'verticalLayout_'+str(i+2), QtWidgets.QVBoxLayout())
             getattr(self, 'verticalLayout_'+str(i+2)).setObjectName("verticalLayout_"+str(i+2))
-
             setattr(self, 'seriesLabel'+str(i), QtWidgets.QLabel(self.verticalLayoutWidget))
             getattr(self, 'seriesLabel'+str(i)).setObjectName("seriesLabel"+str(i))
             getattr(self, 'seriesLabel'+str(i)).setText("Series:")
-
             getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'seriesLabel'+str(i)))
             setattr(self, 'sectionLabel'+str(i), QtWidgets.QLabel(self.verticalLayoutWidget))
             getattr(self, 'sectionLabel'+str(i)).setObjectName("sectionLabel"+str(i))
             getattr(self, 'sectionLabel'+str(i)).setText("Section:")
             getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'sectionLabel'+str(i)))
-
-
             setattr(self, 'horizontalLayout_'+str(i+2), QtWidgets.QHBoxLayout())
             getattr(self, 'horizontalLayout_'+str(i+2)).setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
             getattr(self, 'horizontalLayout_'+str(i+2)).setObjectName("horizontalLayout_"+str(i+2))
-
             setattr(self, 'nameLabel'+str(i+1), QtWidgets.QLabel(self.verticalLayoutWidget))
             getattr(self, 'nameLabel'+str(i+1)).setMaximumSize(QtCore.QSize(50, 16777215))
-
             getattr(self, 'nameLabel'+str(i+1)).setObjectName("nameLabel"+str(i+1))
             getattr(self, 'nameLabel'+str(i+1)).setText("Name:")
             getattr(self, 'horizontalLayout_'+str(i+2)).addWidget(getattr(self, 'nameLabel'+str(i+1)))
-
             setattr(self, 'nameEdit'+str(i+1), QtWidgets.QLineEdit(self.verticalLayoutWidget))
             sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
             sizePolicy.setHorizontalStretch(0)
@@ -1345,7 +1318,6 @@ class Ui_Dialog(object):
             getattr(self, 'verticalLayout_'+str(i+2)).addLayout(getattr(self, 'horizontalLayout_'+str(i+2)))
             getattr(self, 'nameEdit'+str(i+1)).textEdited['QString'].connect(Dialog.changeName)
 
-
             #generate checkboxes
             setattr(self, 'checkBox'+str(i+1), QtWidgets.QCheckBox(self.verticalLayoutWidget))
             getattr(self, 'checkBox'+str(i+1)).setMaximumSize(QtCore.QSize(16777215, 20))
@@ -1356,7 +1328,6 @@ class Ui_Dialog(object):
             getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'checkBox'+str(i+1)))
 
             self.horizontalLayout_1.addLayout(getattr(self, 'verticalLayout_'+str(i+2)))
-
 
         self.verticalLayout_1 = QtWidgets.QVBoxLayout()
         self.verticalLayout_1.setObjectName("verticalLayout_1")
@@ -1385,6 +1356,7 @@ class Ui_Dialog(object):
         self.resolveLabel.setText(_translate("Dialog", "Resolve Duplicate Contours"))
         self.saveChangesButton.setText(_translate("Dialog", "Save"))
         self.cancelButton.setText(_translate("Dialog", "Cancel"))
+
 
 class Ui_LeftDialog(object):
     def setupUi(self, Dialog):
@@ -1419,12 +1391,14 @@ class Ui_LeftDialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Select All Left"))
         self.label.setText(_translate("Dialog", "Are you sure you want to select all traces on the left?"))
 
+
 class leftDialog(QtWidgets.QDialog):
     def __init__(self):
         super(leftDialog, self).__init__()
         self.ui = Ui_LeftDialog()
         self.ui.setupUi(self)
         self.exec_()
+
 
 class Ui_RightDialog(object):
     def setupUi(self, Dialog):
@@ -1457,7 +1431,9 @@ class Ui_RightDialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Select All Right"))
-        self.label.setText(_translate("Dialog", "Are you sure you want to select all traces on the right?"))
+        self.label.setText(_translate(
+            "Dialog", "Are you sure you want to select all traces on the right?"))
+
 
 class rightDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -1465,6 +1441,7 @@ class rightDialog(QtWidgets.QDialog):
         self.ui = Ui_RightDialog()
         self.ui.setupUi(self)
         self.exec_()
+
 
 class Ui_DeselectDialog(object):
     def setupUi(self, Dialog):
@@ -1497,7 +1474,9 @@ class Ui_DeselectDialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Select All Right"))
-        self.label.setText(_translate("Dialog", "Are you sure you want to deselect all traces?"))
+        self.label.setText(_translate(
+            "Dialog", "Are you sure you want to deselect all traces?"))
+
 
 class deselectDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -1505,6 +1484,7 @@ class deselectDialog(QtWidgets.QDialog):
         self.ui = Ui_DeselectDialog()
         self.ui.setupUi(self)
         self.exec_()
+
 
 class Ui_SelectDialog(object):
     def setupUi(self, Dialog):
@@ -1537,7 +1517,9 @@ class Ui_SelectDialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Select All Right"))
-        self.label.setText(_translate("Dialog", "Are you sure you want to select all traces?"))
+        self.label.setText(_translate(
+            "Dialog", "Are you sure you want to select all traces?"))
+
 
 class selectDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -1546,44 +1528,38 @@ class selectDialog(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.exec_()
 
+
 def startLoadDialogs():
-
     app = QtWidgets.QApplication(sys.argv)
-
     initialWindow = RestoreDialog()
-
     if (initialWindow.restoreBool == False):
         loadSeries = loadDialog()
         fileList = loadSeries.fileList
         if len(fileList) == 0:
             app.quit()
         else:
-            for i in range (0, len(fileList)):
-                if len (fileList[i]) == 0:
-                    fileList.pop(i)
             jsonData = start_database(fileList, app)
-
     elif (len(initialWindow.returnFileList()) > 0):
-        jsonList =  (initialWindow.returnFileList())
-        loadSeries = loadJsonSeriesDialog()
-        fileList = loadSeries.fileList
-        for i in range (0, len(fileList)):
-            if len (fileList[i]) == 0:
-                fileList.pop(i)
-        jsonData = json.load(open(str(jsonList[0])))
+        jsonFile = initialWindow.jsonFile
+        # loadSeries = loadJsonSeriesDialog(jsonFile)
+        jsonData = json.load(open(jsonFile))
+        # fileList = loadSeries.fileList
+        # NOTE: for some reason, not able to retrieve fileList from loadJsonSeriesDialog.
+        # Maybe the button is misnamed or something. But for now, we will go directly from
+        # the JSON file.
+        fileList = jsonData["series"]
+        # NOTE: this will need to change if we multiprocess the db loading
+        start_database(fileList, app)
 
     if 'jsonData' in locals():
         mainWindow = MainWindow(jsonData, fileList)
         mainWindow.show()
-
         app.exec_()
-
     else:
         app.quit()
 
+
 def main():
-
-
     startLoadDialogs()
 
 
