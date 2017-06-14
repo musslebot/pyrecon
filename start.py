@@ -24,6 +24,8 @@ DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite://")
 ENGINE = create_engine(DATABASE_URI, echo=False)
 SESSION = sessionmaker(bind=ENGINE)()
 
+MERGETOOL_DIR = "mergetool"
+
 
 def start_database(series_path_list, app):
     splash_pix = QtGui.QPixmap('loading2.gif')
@@ -104,7 +106,7 @@ def start_database(series_path_list, app):
     progressBar.setValue(i)
     app.processEvents()
 
-    json_fp = os.path.join(main_series_path, "merged")
+    json_fp = os.path.join(main_series_path, MERGETOOL_DIR)
     if not os.path.exists(json_fp):
         os.makedirs(json_fp)
     json_fp = json_fp + "/mergetool.json"
@@ -128,7 +130,7 @@ def write_merged_series(series_dict):
         series_path_list.append(path)
 
     new_series = backend.create_output_series(SESSION, to_keep, series_path_list)
-    merged_fp = series_path_list[0] + "/merged/"
+    merged_fp = series_path_list[0] + "/{}/".format(MERGETOOL_DIR)
     write_series(new_series, merged_fp, sections=True, overwrite=False)
     return True
 
@@ -148,7 +150,7 @@ def write_realigned_log(series_dict):
     if potential_realigned:
         path = series_dict["series"][0]
         path = path if os.path.isdir(path) else os.path.dirname(path)
-        realigned_log = path + "/merged/realigned.log"
+        realigned_log = path + "/{}/realigned.log".format(MERGETOOL_DIR)
         with open(realigned_log, "w") as f:
             f.write("\n".join(realigned_log))
 
@@ -1030,7 +1032,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         nextItem.data())
 
         save_dir = os.path.join(self.fileList[0] if os.path.isdir(self.fileList[0]) \
-                   else os.path.dirname(self.fileList[0]), "merged")
+                   else os.path.dirname(self.fileList[0]), MERGETOOL_DIR)
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
