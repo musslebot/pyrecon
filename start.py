@@ -26,7 +26,6 @@ SESSION = sessionmaker(bind=ENGINE)()
 
 
 def start_database(series_path_list, app):
-
     splash_pix = QtGui.QPixmap('loading2.gif')
     splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
     progressBar = QtWidgets.QProgressBar(splash)
@@ -1539,6 +1538,7 @@ def startLoadDialogs():
             app.quit()
         else:
             jsonData = start_database(fileList, app)
+
     elif (len(initialWindow.returnFileList()) > 0):
         jsonFile = initialWindow.jsonFile
         # loadSeries = loadJsonSeriesDialog(jsonFile)
@@ -1548,8 +1548,10 @@ def startLoadDialogs():
         # Maybe the button is misnamed or something. But for now, we will go directly from
         # the JSON file.
         fileList = jsonData["series"]
-        # NOTE: this will need to change if we multiprocess the db loading
-        start_database(fileList, app)
+        if DATABASE_URI == "sqlite://":
+            # Only start_database if it is in memory
+            # NOTE: this will need to change if we multiprocess the db loading
+            start_database(fileList, app)
 
     if 'jsonData' in locals():
         mainWindow = MainWindow(jsonData, fileList)
