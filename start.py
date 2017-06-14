@@ -204,7 +204,6 @@ class RestoreDialog(QtWidgets.QDialog):
     def yesClicked(self):
         """ Restoring from a previous session.
         """
-        print("yesClicked")
         self.ui.selectSessionLabel = QtWidgets.QLabel(self.ui.verticalLayoutWidget)
         self.ui.selectSessionLabel.setObjectName("selectSessionLabel")
         self.ui.verticalLayout.addWidget(self.ui.selectSessionLabel)
@@ -249,7 +248,6 @@ class RestoreDialog(QtWidgets.QDialog):
         self.ui.lineEdit.setText(str(fileName[0]))
         self.jsonFile = fileName[0]
         self.fileList = [fileName[0]]
-        print("self.jsonFile: {}".format(self.jsonFile))
 
     def returnFileList(self):
         return self.fileList
@@ -345,7 +343,6 @@ class loadJsonSeriesDialog(QtWidgets.QDialog):
 
     def loadSeries(self):
         # NOTE: for some reason this is never being called
-        print("loadSeries: {}".format(self))
         fileName = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open Series", "/home/", "Series File (*.ser)")
         if fileName != None:
@@ -866,7 +863,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.resolvedView.doubleClicked.connect(self.loadResolveRight)
 
     def loadSeries(self):
-        print("load series: {}".format(self))
+        pass
 
     def transferAllRight(self):
         rowCount = self.ui.unresolvedModel.rowCount()
@@ -933,7 +930,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.unresolvedView.update()
 
     def saveSeries(self):
-        print ("save series")
         outputDict = {
             "series": self.fileList,
             "sections": {}
@@ -1184,7 +1180,6 @@ class resolveDialog(QtWidgets.QDialog):
                 pixmap = (QtGui.QPixmap(self.itemData[i]["image"]))
 
             pixmap = pixmap.copy(*(self.itemData[i]['rect']))
-            print(self.itemData[i]['rect'])
 
             preCropSize = pixmap.size()
 
