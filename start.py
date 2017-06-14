@@ -12,6 +12,7 @@ import os
 import sys
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -20,14 +21,57 @@ from pyrecon.tools.reconstruct_writer import write_series
 from pyrecon.tools.mergetool import backend
 
 
-DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite://")
-ENGINE = create_engine(DATABASE_URI, echo=False)
-SESSION = sessionmaker(bind=ENGINE)()
-
 MERGETOOL_DIR = "mergetool"
+DB_FILENAME = "{project_name}.db"
+JSON_FILENAME = "{project_name}.json"
+
+
+def get_db_session():
+    database_uri = os.environ["SQLALCHEMY_DATABASE_URI"]
+    engine = create_engine(database_uri, echo=False)
+    session = sessionmaker(bind=engine)()
+    return session
+
+
+def init_mergetool_project(series_path_list):
+    """ Initializes the mergetool project environment.
+
+        * Creates relevant files/directories if needed
+        * Sets SQLALCHEMY_DATABASE_URI to the db file
+    """
+    main_series_path = series_path_list[0] if os.path.isdir(series_path_list[0]) \
+                       else os.path.dirname(series_path_list[0])
+    mergetool_dir = os.path.join(main_series_path, MERGETOOL_DIR)
+    if not os.path.exists(mergetool_dir):
+        os.makedirs(mergetool_dir)
+
+    project_name = os.path.basename(main_series_path)
+
+    # Make DB file
+    db_fn = DB_FILENAME.format(project_name=project_name)
+    db_fp = os.path.join(mergetool_dir, db_fn)
+    with open(db_fp, 'a'):
+        os.utime(db_fp, None)
+    os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite:///{}".format(db_fp)
+
+    session = get_db_session()
+    engine = session.get_bind()
+    try:
+        engine.execute("SELECT * FROM contours LIMIT 1")
+    except OperationalError:
+        backend.create_database(engine)
+
+    # Make JSON file
+    json_fn = JSON_FILENAME.format(project_name=project_name)
+    json_fp = os.path.join(mergetool_dir, json_fn)
+    with open(json_fp, 'a'):
+        os.utime(json_fp, None)
+    os.environ["MERGETOOL_JSON_FILEPATH"] = json_fp
 
 
 def start_database(series_path_list, app):
+    db_session = get_db_session()
+
     splash_pix = QtGui.QPixmap('loading2.gif')
     splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
     progressBar = QtWidgets.QProgressBar(splash)
@@ -37,9 +81,6 @@ def start_database(series_path_list, app):
 
     i = 0
     progressBar.setValue(i)
-
-    if bool(os.getenv("CREATE_DB",  1)):
-        backend.create_database(ENGINE)
 
     # Load series from series_path_list
     print (series_path_list)
@@ -68,7 +109,7 @@ def start_database(series_path_list, app):
             section = series.sections.get(section_index)
             if section:
                 # Load Section contours into database and determine matches
-                backend.load_db_contours_from_pyrecon_section(SESSION, section, series_number)
+                backend.load_db_contours_from_pyrecon_section(db_session, section, series_number)
 
     i = 2
     progressBar.setValue(i)
@@ -82,9 +123,9 @@ def start_database(series_path_list, app):
         progressBar.setValue(i)
         app.processEvents()
 
-        db_contours = backend.query_all_contours_in_section(SESSION, section_index).all()
+        db_contours = backend.query_all_contours_in_section(db_session, section_index).all()
         backend.load_db_contourmatches_from_db_contours_and_pyrecon_series_list(
-            SESSION,
+            db_session,
             db_contours,
             series_list
         )
@@ -93,24 +134,20 @@ def start_database(series_path_list, app):
     progressBar.setValue(i)
     app.processEvents()
 
-    backend.cleanup_redundant_matches(SESSION)
+    backend.cleanup_redundant_matches(db_session)
 
     i += 1
     progressBar.setValue(i)
     app.processEvents()
 
     # Generate payload for frontend
-    series_matches = backend.prepare_frontend_payload(SESSION, series_list)
+    series_matches = backend.prepare_frontend_payload(db_session, series_list)
 
     i += 1
     progressBar.setValue(i)
     app.processEvents()
 
-    json_fp = os.path.join(main_series_path, MERGETOOL_DIR)
-    if not os.path.exists(json_fp):
-        os.makedirs(json_fp)
-    json_fp = json_fp + "/mergetool.json"
-    with open(json_fp, "w") as f:
+    with open(os.environ["MERGETOOL_JSON_FILEPATH"], "w") as f:
         json.dump(series_matches, f)
 
     i += 1
@@ -122,14 +159,16 @@ def start_database(series_path_list, app):
 
 
 def write_merged_series(series_dict):
-    to_keep = backend.get_output_contours_from_series_dict(SESSION, series_dict["sections"])
+    db_session = get_db_session()
+    to_keep = backend.get_output_contours_from_series_dict(
+        db_session, series_dict["sections"])
 
     series_path_list = []
     for path in series_dict["series"]:
         path = path if os.path.isdir(path) else os.path.dirname(path)
         series_path_list.append(path)
 
-    new_series = backend.create_output_series(SESSION, to_keep, series_path_list)
+    new_series = backend.create_output_series(db_session, to_keep, series_path_list)
     merged_fp = series_path_list[0] + "/{}/".format(MERGETOOL_DIR)
     write_series(new_series, merged_fp, sections=True, overwrite=False)
     return True
@@ -1031,12 +1070,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     outputDict["sections"][next_section]["exact"].append(
                         nextItem.data())
 
-        save_dir = os.path.join(self.fileList[0] if os.path.isdir(self.fileList[0]) \
-                   else os.path.dirname(self.fileList[0]), MERGETOOL_DIR)
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-
-        with open(os.path.join(save_dir, "savedstatus.json"), "w") as f:
+        with open(os.environ["MERGETOOL_JSON_FILEPATH"], "w") as f:
             json.dump(outputDict, f)
 
         if (self.sender().objectName() == "completeButton"):
@@ -1519,33 +1553,31 @@ def startLoadDialogs():
     app = QtWidgets.QApplication(sys.argv)
     initialWindow = RestoreDialog()
     if (initialWindow.restoreBool == False):
+        # New mergetool project
         loadSeries = loadDialog()
         fileList = loadSeries.fileList
         if len(fileList) == 0:
             app.quit()
         else:
+            init_mergetool_project(fileList)
             jsonData = start_database(fileList, app)
 
     elif (len(initialWindow.returnFileList()) > 0):
+        # Existing mergetool project
         jsonFile = initialWindow.jsonFile
-        # loadSeries = loadJsonSeriesDialog(jsonFile)
         jsonData = json.load(open(jsonFile))
-        # fileList = loadSeries.fileList
         # NOTE: for some reason, not able to retrieve fileList from loadJsonSeriesDialog.
         # Maybe the button is misnamed or something. But for now, we will go directly from
         # the JSON file.
+        # fileList = loadSeries.fileList
         fileList = jsonData["series"]
-        if DATABASE_URI == "sqlite://":
-            # Only start_database if it is in memory
-            # NOTE: this will need to change if we multiprocess the db loading
-            start_database(fileList, app)
-
-    if 'jsonData' in locals():
-        mainWindow = MainWindow(jsonData, fileList)
-        mainWindow.show()
-        app.exec_()
+        init_mergetool_project(fileList)
     else:
         app.quit()
+
+    mainWindow = MainWindow(jsonData, fileList)
+    mainWindow.show()
+    app.exec_()
 
 
 def main():
