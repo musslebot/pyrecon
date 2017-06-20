@@ -227,7 +227,7 @@ class Ui_RestoreDialog(object):
     def retranslateUi(self, RestoreDialog):
         _translate = QtCore.QCoreApplication.translate
         RestoreDialog.setWindowTitle(_translate("RestoreDialog", "pyRECONSTRUCT"))
-        self.welcomeLabel.setText(_translate("RestoreDialog", "Welcome to pyRECONSTRUCT! Are you restoring from a previous merge tool session?"))
+        self.welcomeLabel.setText(_translate("RestoreDialog", "Welcome to pyRECONSTRUCT! Are you restoring your session from a mergetool JSON file?"))
 
 
 class RestoreDialog(QtWidgets.QDialog):
@@ -273,9 +273,12 @@ class RestoreDialog(QtWidgets.QDialog):
         self.ui.buttonBox_2.rejected.connect(self.cancelClicked)
         self.ui.buttonBox_2.rejected.connect(self.close)
         self.ui.selectSessionLabel.setText(
-            "Please select the session file you would like to import.")
+            "Please select the mergetool JSON file.")
         self.ui.browseButton.setText("Browse...")
         #clicking yes starts the Main Window with the given dictionary
+
+        self.ui.welcomeLabel.close()
+        self.ui.buttonBox.close()
 
     def noClicked(self):
         """ Not restoring from a previous session.
