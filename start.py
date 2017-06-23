@@ -799,12 +799,12 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.unresolvedLabel.setText(_translate("MainWindow", "Unresolved Potential Duplicates"))
+        self.unresolvedLabel.setText(_translate("MainWindow", "Unresolved Traces"))
         self.resolveButton.setText(_translate("MainWindow", "Resolve Selected"))
         self.transferLeftButton.setText(_translate("MainWindow", "Transfer >>"))
         self.viewAllButton.setText(_translate("MainWindow", "Resolve All"))
         self.transferAllButton.setText(_translate("MainWindow", "Transfer All"))
-        self.resolvedLabel.setText(_translate("MainWindow", "Resolved Duplicates, Exact Duplicates, and Unique Traces"))
+        self.resolvedLabel.setText(_translate("MainWindow", "User/Auto-resolved & Unique Traces"))
         self.transferRightButton.setText(_translate("MainWindow", "Transfer <<"))
         self.saveStatusButton.setText(_translate("MainWindow", "Save Current Status"))
         self.completeButton.setText(_translate("MainWindow", "Resolve Complete"))
