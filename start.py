@@ -685,6 +685,10 @@ class Ui_MainWindow(object):
         self.unresolvedLabel.setFont(font)
         self.unresolvedLabel.setObjectName("unresolvedLabel")
         self.verticalLayout_2.addWidget(self.unresolvedLabel)
+        self.legendLabel1 = QtWidgets.QLabel(self.gridLayoutWidget)
+        self.legendLabel1.setFont(font)
+        self.legendLabel1.setObjectName("legendLabel1")
+        self.verticalLayout_2.addWidget(self.legendLabel1)
 
         self.unresolvedView = QtWidgets.QListView(self.gridLayoutWidget)
         self.unresolvedModel = QtGui.QStandardItemModel(self.unresolvedView)
@@ -724,6 +728,10 @@ class Ui_MainWindow(object):
         self.resolvedLabel.setFont(font)
         self.resolvedLabel.setObjectName("resolvedLabel")
         self.verticalLayout.addWidget(self.resolvedLabel)
+        self.legendLabel2 = QtWidgets.QLabel(self.gridLayoutWidget_2)
+        self.legendLabel2.setFont(font)
+        self.legendLabel2.setObjectName("legendLabel2")
+        self.verticalLayout.addWidget(self.legendLabel2)
 
         self.resolvedView = QtWidgets.QListView(self.gridLayoutWidget_2)
         self.resolvedModel = QtGui.QStandardItemModel(self.resolvedView)
@@ -784,6 +792,8 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.unresolvedLabel.setText(_translate("MainWindow", "Unresolved Traces"))
+        self.legendLabel1.setText(_translate("MainWindow", "red - potential duplicate, orange - potential realignment"))
+        self.legendLabel2.setText(_translate("MainWindow", "yellow - auto resolved, green - unique"))
         self.resolveButton.setText(_translate("MainWindow", "Resolve Selected (one-by-one)"))
         self.transferLeftButton.setText(_translate("MainWindow", "Transfer Selected (without resolving) >>"))
         self.viewAllButton.setText(_translate("MainWindow", "Resolve All (one-by-one)"))
