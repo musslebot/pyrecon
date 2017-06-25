@@ -88,7 +88,7 @@ def start_database(series_path_list, app):
     for series_path in series_path_list:
         series_path = series_path if os.path.isdir(series_path) \
                       else os.path.dirname(series_path)
-        series_list.append(process_series_directory(series_path))
+        series_list.append(process_series_directory(series_path, data_check=True))
 
     # Assign "Main" Series (one with ideal alignment)
     main_series_path = series_path_list[0] if os.path.isdir(series_path_list[0]) \
