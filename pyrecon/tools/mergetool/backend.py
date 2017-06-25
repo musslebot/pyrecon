@@ -260,7 +260,8 @@ def transform_contour_for_frontend(contour, db_id, section, series_name, keep=Tr
         'rect': rect,
         'croppedPoints': croppedPoints,
         'keepBool': keep,
-        'section': section.index
+        'section': section.index,
+        'mag': section.images[0].mag
     }
 
 

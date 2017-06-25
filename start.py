@@ -1201,6 +1201,7 @@ class resolveDialog(QtWidgets.QDialog):
             getattr(self.ui, 'nameEdit'+str(i+1)).setText(self.itemData[i]["name"])
             getattr(self.ui, 'seriesLabel'+str(i)).setText("Series: "+self.itemData[i]["series"])
             getattr(self.ui, 'sectionLabel'+str(i)).setText("Section: "+str(self.itemData[i]["section"]))
+            getattr(self.ui, 'calibrationLabel'+str(i)).setText("Calibration: "+str(self.itemData[i]["mag"]))
 
             image_exists = QtCore.QFileInfo(self.itemData[0]["image"]).exists()
             if not image_exists:
@@ -1313,6 +1314,12 @@ class Ui_Dialog(object):
             getattr(self, 'sectionLabel'+str(i)).setObjectName("sectionLabel"+str(i))
             getattr(self, 'sectionLabel'+str(i)).setText("Section:")
             getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'sectionLabel'+str(i)))
+            # Image mag
+            setattr(self, 'calibrationLabel'+str(i), QtWidgets.QLabel(self.verticalLayoutWidget))
+            getattr(self, 'calibrationLabel'+str(i)).setObjectName("calibrationLabel"+str(i))
+            getattr(self, 'calibrationLabel'+str(i)).setText("calibration:")
+            getattr(self, 'verticalLayout_'+str(i+2)).addWidget(getattr(self, 'calibrationLabel'+str(i)))
+
             setattr(self, 'horizontalLayout_'+str(i+2), QtWidgets.QHBoxLayout())
             getattr(self, 'horizontalLayout_'+str(i+2)).setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
             getattr(self, 'horizontalLayout_'+str(i+2)).setObjectName("horizontalLayout_"+str(i+2))
