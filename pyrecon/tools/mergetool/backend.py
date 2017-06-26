@@ -2,6 +2,7 @@
 """
 from collections import defaultdict
 from copy import deepcopy
+from datetime import datetime
 import itertools
 
 import numpy
@@ -467,7 +468,7 @@ def get_output_contours_from_series_dict(session, series_dict):
     return to_keep
 
 
-def create_output_series(session, to_keep, series_path_list):
+def create_output_series(session, to_keep, series_path_list, series_name=None):
     series_list = []
     for path in series_path_list:
         series = process_series_directory(path)
@@ -475,7 +476,10 @@ def create_output_series(session, to_keep, series_path_list):
 
     main_series = series_list[0]
     output_series = deepcopy(main_series)
-    output_series.name = "merged"
+    if not series_name:
+        output_series.name = "merged-{}".format(datetime.utcnow())
+    else:
+        output_series.name = series_name
 
     # Make sure we grab all sections, since series may contain different sections
     for series in series_list[1:]:
@@ -483,8 +487,9 @@ def create_output_series(session, to_keep, series_path_list):
         output_series.sections.update(series.sections)
 
     # Delete section contours so that we only keep the ones selected in mergetool
+    section_name_template = "{}.".format(series_name) + "{}"
     for section in output_series.sections.values():
-        section.name = "merged.{}".format(section.index)
+        section.name = section_name_template.format(section.index)
         section.contours = []
 
     # TODO: multithread this?

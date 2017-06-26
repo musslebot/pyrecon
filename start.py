@@ -6,6 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+from datetime import datetime
 import json
 import numpy
 import os
@@ -158,7 +159,7 @@ def start_database(series_path_list, app):
     return series_matches
 
 
-def write_merged_series(series_dict):
+def write_merged_series(series_dict, series_name=None):
     db_session = get_db_session()
     to_keep = backend.get_output_contours_from_series_dict(
         db_session, series_dict["sections"])
@@ -168,7 +169,8 @@ def write_merged_series(series_dict):
         path = path if os.path.isdir(path) else os.path.dirname(path)
         series_path_list.append(path)
 
-    new_series = backend.create_output_series(db_session, to_keep, series_path_list)
+    new_series = backend.create_output_series(db_session, to_keep, series_path_list,
+					      series_name=series_name)
     merged_fp = series_path_list[0] + "/{}/".format(MERGETOOL_DIR)
     write_series(new_series, merged_fp, sections=True, overwrite=False)
     return True
@@ -779,7 +781,6 @@ class Ui_MainWindow(object):
         self.transferRightButton.clicked.connect(MainWindow.transferFromRight)
         self.viewAllButton.clicked.connect(MainWindow.viewAll)
 
-        #TODO: fix this for complete output
         self.completeButton.clicked.connect(MainWindow.saveSeries)
         self.actionSave_Resolutions.triggered.connect(MainWindow.saveSeries)
         self.saveStatusButton.clicked.connect(MainWindow.saveSeries)
@@ -806,7 +807,7 @@ class Ui_MainWindow(object):
         self.actionTransfer_all.setText(_translate("MainWindow", "Transfer All"))
         self.actionView_All.setText(_translate("MainWindow", "View All"))
         self.saveStatusButton.setText(_translate("MainWindow", "Save Merge Session"))
-        self.completeButton.setText(_translate("MainWindow", "Export Resolutions"))
+        self.completeButton.setText(_translate("MainWindow", "Output Merge Series"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
 
 
@@ -1069,10 +1070,13 @@ class MainWindow(QtWidgets.QMainWindow):
             json.dump(outputDict, f)
 
         if (self.sender().objectName() == "completeButton"):
-            self.close()
-            write_merged_series(outputDict)
-            write_realigned_log(outputDict)
-            return (outputDict, self.fileList)
+            output_dialog = OutputSeriesDialog()
+            if output_dialog.accepted:
+                series_name = output_dialog.input.text()
+                self.close()
+                write_merged_series(outputDict, series_name=series_name)
+                write_realigned_log(outputDict)
+                return (outputDict, self.fileList)
 
     def loadResolveLeft(self):
         selected = self.ui.unresolvedView.selectedIndexes()
@@ -1549,6 +1553,39 @@ class selectDialog(QtWidgets.QDialog):
         self.ui = Ui_SelectDialog()
         self.ui.setupUi(self)
         self.exec_()
+
+
+class OutputSeriesDialog(QtWidgets.QDialog):
+    """ Dialog for the user to determine name of the output series.
+    """
+    def __init__(self):
+        super().__init__()
+        self.label = QtWidgets.QLabel(self)
+        self.label.setText("Enter name of resolved series:")
+        self.input = QtWidgets.QLineEdit(self)
+        default_name = "merged-{}".format(datetime.now().strftime("%Y%m%d-%H:%M:%S"))
+        self.input.setText(default_name)
+        self.vertical_layout = QtWidgets.QVBoxLayout(self)
+        self.vertical_layout.addWidget(self.label)
+        self.vertical_layout.addWidget(self.input)
+
+        self.button_box = QtWidgets.QDialogButtonBox(self)
+        self.button_box.setOrientation(QtCore.Qt.Horizontal)
+        self.button_box.setStandardButtons(
+            QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.cancel)
+        self.vertical_layout.addWidget(self.button_box)
+        self.accepted = False
+        self.exec_()
+
+    def accept(self):
+        self.accepted = True
+        self.close()
+
+    def cancel(self):
+        self.accepted = False
+        self.close()
 
 
 def startLoadDialogs():
