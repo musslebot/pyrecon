@@ -1209,9 +1209,9 @@ class resolveDialog(QtWidgets.QDialog):
 
             image_exists = QtCore.QFileInfo(self.itemData[0]["image"]).exists()
             if not image_exists:
-                minx, miny, maxx, maxy = self.itemData[i]['nullpoints']
-                pixmap = QtGui.QPixMap(maxx-minx+100, maxy-miny+100)
-                pixmap.fill(fillColor=Qt.black)
+                minx, miny, maxx, maxy = self.itemData[i]['bounds']
+                pixmap = QtGui.QPixmap(maxx-minx+200, maxy-miny+200)
+                pixmap.fill(QtCore.Qt.black)
             else:
                 pixmap = (QtGui.QPixmap(self.itemData[i]["image"]))
 

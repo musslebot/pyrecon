@@ -223,7 +223,7 @@ def transform_contour_for_frontend(contour, db_id, section, series_name, keep=Tr
     contour_copy = deepcopy(contour)
     contour_copy.points = list(map(tuple, contour_copy.transform._tform.inverse(
         numpy.asarray(contour_copy.points)/section.images[0].mag)))
-    nullPoints = contour_copy.shape.bounds
+    contour_bounds = contour_copy.shape.bounds
 
     flipVector = numpy.array([1, -1])
     im = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
@@ -257,7 +257,7 @@ def transform_contour_for_frontend(contour, db_id, section, series_name, keep=Tr
         'image': section.images[0]._path + "/{}".format(section.images[0].src),
         'db_id': db_id,
         'series': series_name,
-        'nullpoints': nullPoints,
+        'bounds': contour_bounds,
         'rect': rect,
         'croppedPoints': croppedPoints,
         'keepBool': keep,
