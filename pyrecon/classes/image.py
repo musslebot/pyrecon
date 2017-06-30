@@ -23,7 +23,7 @@ class Image(object):
         self.border = kwargs.get("border")
         self.fill = kwargs.get("fill")
         self.mode = kwargs.get("mode")
-        self.points = kwargs.get("points", [])
+        self.points = list(kwargs.get("points", []))
 
         # Metadata
         self._path = kwargs.get("_path")
