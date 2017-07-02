@@ -1,11 +1,10 @@
-"""Image."""
-
-
 class Image(object):
-    """Class representing a RECONSTRUCT Image."""
+    """ Class representing a RECONSTRUCT Image.
+    """
 
     def __init__(self, **kwargs):
-        """Apply given keyword arguments as instance attributes."""
+        """ Apply given keyword arguments as instance attributes.
+        """
         self.src = kwargs.get("src")
         self.mag = kwargs.get("mag")
         self.contrast = kwargs.get("contrast")
@@ -29,7 +28,8 @@ class Image(object):
         self._path = kwargs.get("_path")
 
     def __eq__(self, other):
-        """Allow use of == operator."""
+        """ Allow use of == operator.
+        """
         return (
             self.src == other.src and
             self.brightness == other.brightness and
@@ -44,11 +44,13 @@ class Image(object):
         )
 
     def __ne__(self, other):
-        """Allow use of != operator."""
+        """ Allow use of != operator.
+        """
         return not self.__eq__(other)
 
     def attributes(self):
-        """Return relevent attributes as dict."""
+        """ Return relevent attributes as dict.
+        """
         return {
             "src": self.src,
             "mag": self.mag,

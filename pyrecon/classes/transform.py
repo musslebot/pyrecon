@@ -1,20 +1,22 @@
-"""Transform."""
 import numpy as np
 from skimage import transform as tf
 
 
 class Transform(object):
-    """Class representing a RECONSTRUCT Transform."""
+    """ Class representing a RECONSTRUCT Transform.
+    """
 
     def __init__(self, **kwargs):
-        """Assign instance attributes to provided args/kwargs."""
+        """ Assign instance attributes to provided args/kwargs.
+        """
         self.dim = kwargs.get("dim")
         self.xcoef = kwargs.get("xcoef")
         self.ycoef = kwargs.get("ycoef")
 
     @property
     def _tform(self):
-        """Return a skimage transform object."""
+        """ Return a skimage transform object.
+        """
         xcoef = self.xcoef
         ycoef = self.ycoef
         dim = self.dim
@@ -32,7 +34,9 @@ class Transform(object):
                 tmatrix = np.array(
                     [1, 0, a[0], 0, 1, b[0], 0, 0, 1]
                 ).reshape((3, 3))
-            elif dim == 2:  # Special case, swap b[1] and b[2] (look at original Reconstruct code: nform.cpp)
+            elif dim == 2:
+                # Special case, swap b[1] and b[2]
+                # look at original Reconstruct code: nform.cpp
                 tmatrix = np.array(
                     [a[1], 0, a[0], 0, b[1], b[0], 0, 0, 1]
                 ).reshape((3, 3))
@@ -93,7 +97,8 @@ class Transform(object):
             return tforward
 
     def __eq__(self, other):
-        """Allow use of == operator."""
+        """ Allow use of == operator.
+        """
         to_compare = ["dim", "xcoef", "ycoef"]
         for k in to_compare:
             if getattr(self, k) != getattr(other, k):
@@ -101,11 +106,13 @@ class Transform(object):
         return True
 
     def __ne__(self, other):
-        """Allow use of != operator."""
+        """ Allow use of != operator.
+        """
         return not self.__eq__(other)
 
     def isAffine(self):
-        """Returns True if the transform is affine."""
+        """ Returns True if the transform is affine.
+        """
         xcheck = self.xcoef[3:6]
         ycheck = self.ycoef[3:6]
         for elem in xcheck:

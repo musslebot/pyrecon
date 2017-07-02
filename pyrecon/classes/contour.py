@@ -1,13 +1,14 @@
-"""Contour."""
 import numpy
 from shapely.geometry import LineString, Point, Polygon
 
 
 class Contour(object):
-    """Class representing a RECONSTRUCT Contour."""
+    """ Class representing a RECONSTRUCT Contour.
+    """
 
     def __init__(self, **kwargs):
-        """Apply given keyword arguments as instance attributes."""
+        """ Apply given keyword arguments as instance attributes.
+        """
         self.name = kwargs.get("name")
         self.comment = kwargs.get("comment")
         self.hidden = kwargs.get("hidden")
@@ -21,7 +22,8 @@ class Contour(object):
         self.transform = kwargs.get("transform")
 
     def __repr__(self):
-        """Return a string representation of this Contour's data."""
+        """ Return a string representation of this Contour's data.
+        """
         return (
             "Contour name={name} hidden={hidden} closed={closed} "
             "simplified={simplified} border={border} fill={fill} "
@@ -38,21 +40,32 @@ class Contour(object):
         )
 
     def __eq__(self, other):
-        """Allow use of == between multiple contours."""
-        to_compare = ["name", "closed", "simplified", "mode", "border", "fill",
-                      "points", "transform"]
+        """ Allow use of == between multiple contours.
+        """
+        to_compare = [
+            "border",
+            "closed",
+            "fill",
+            "mode",
+            "name",
+            "points",
+            "simplified",
+            "transform",
+        ]
         for k in to_compare:
             if getattr(self, k) != getattr(other, k):
                 return False
         return True
 
     def __ne__(self, other):
-        """Allow use of != between multiple contours."""
+        """ Allow use of != between multiple contours.
+        """
         return not self.__eq__(other)
 
     @property
     def shape(self):
-        """Return a Shapely geometric object."""
+        """ Return a Shapely geometric object.
+        """
         if not self.points:
             raise Exception("No points found: {}".format(self))
 
