@@ -219,50 +219,40 @@ def group_section_matches(session, section_number):
 def transform_contour_for_frontend(contour, db_id, section, series_name, keep=True):
     """ Converts a contour to a dict expected by the frontend.
     """
-    #converting to pixels
+    image = section.images[0]
+    img = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
+    img_width, img_height = img.size
+
+    # Converting to pixels
     contour_copy = deepcopy(contour)
-    contour_copy.points = list(map(tuple, contour_copy.transform._tform.inverse(
-        numpy.asarray(contour_copy.points)/section.images[0].mag)))
+    contour_copy.points = list(map(tuple, numpy.asarray(contour_copy.points) / image.mag))
+    contour_copy.points = list(map(tuple,
+        contour_copy.transform._tform.inverse(numpy.asarray(contour_copy.points))
+    ))
+
+    translation_vector = numpy.array([0, img_height])
+    flip_vector = numpy.array([1, -1])
+    contour_copy.points = list(map(tuple,
+        translation_vector + (numpy.asarray(list(contour_copy.shape.exterior.coords)) * flip_vector)
+    ))
     contour_bounds = contour_copy.shape.bounds
-
-    flipVector = numpy.array([1, -1])
-    im = Image.open(section.images[0]._path + "/{}".format(section.images[0].src))
-    imWidth, imHeight = im.size
-    translationVector = numpy.array([0, imHeight])
-
-    if contour_copy.shape.type == "Polygon":
-        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(contour_copy.shape.exterior.coords))*flipVector)))
-
-    else:
-        x, y = contour_copy.shape.xy
-        x = list(x)
-        y = list(y)
-        coords = zip(x,y)
-        transformedPoints = list(map(tuple, translationVector+(numpy.array(list(coords))*flipVector)))
-    contour_copy.points = transformedPoints
-
-    #cropping
-    minx, miny, maxx, maxy = contour_copy.shape.bounds
-    x = minx-100
-    y = miny - 100
-    width = maxx-x+100
-    height = maxy-y+100
-    rect = [x, y, width, height]
-    cropVector = numpy.array([x,y])
-    croppedPoints = list(map(tuple, numpy.array(contour_copy.points)-cropVector))
-
     return {
-        'name': contour.name,
-        'points': contour.points,
-        'image': section.images[0]._path + "/{}".format(section.images[0].src),
-        'db_id': db_id,
-        'series': series_name,
-        'bounds': contour_bounds,
-        'rect': rect,
-        'croppedPoints': croppedPoints,
-        'keepBool': keep,
-        'section': section.index,
-        'mag': section.images[0].mag
+        "name": contour_copy.name,
+        "points": contour_copy.points,
+        "image_path": section.images[0]._path + "/{}".format(section.images[0].src),
+        "image_height": img_height,
+        "image_width": img_width,
+        "image_transform":{
+            "dim": image.transform.dim,
+            "xcoef": image.transform.xcoef,
+            "ycoef": image.transform.ycoef
+        },
+        "db_id": db_id,
+        "series": series_name,
+        "contour_bounds": contour_bounds,
+        "keepBool": keep,
+        "section": section.index,
+        "mag": section.images[0].mag
     }
 
 

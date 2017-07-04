@@ -12,11 +12,14 @@ import numpy
 import os
 import sys
 
+from PyQt5 import QtCore, QtGui, QtWidgets
+from skimage import io
+from skimage.transform import warp
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
-from PyQt5 import QtCore, QtGui, QtWidgets
 
+from pyrecon.classes.transform import get_skimage_transform
 from pyrecon.tools.reconstruct_reader import process_series_directory
 from pyrecon.tools.reconstruct_writer import write_series
 from pyrecon.tools.mergetool import backend
@@ -1207,44 +1210,53 @@ class resolveDialog(QtWidgets.QDialog):
             getattr(self.ui, 'sectionLabel'+str(i)).setText("Section: "+str(self.itemData[i]["section"]))
             getattr(self.ui, 'calibrationLabel'+str(i)).setText("Calibration: "+str(self.itemData[i]["mag"]))
 
-            image_exists = QtCore.QFileInfo(self.itemData[0]["image"]).exists()
+            image_path = self.itemData[i]['image_path']
+            image_exists = QtCore.QFileInfo(image_path).exists()
             if not image_exists:
-                minx, miny, maxx, maxy = self.itemData[i]['bounds']
-                pixmap = QtGui.QPixmap(maxx-minx+200, maxy-miny+200)
+                pixmap = QtGui.QPixmap(
+		    self.itemData[i]['image_width'],
+		    self.itemData[i]['image_height']
+		)
                 pixmap.fill(QtCore.Qt.black)
             else:
-                pixmap = (QtGui.QPixmap(self.itemData[i]["image"]))
+                # Transform image and create pixmap from it
+                image_transform = self.itemData[i]['image_transform']
+                tform = get_skimage_transform(
+                    dim=image_transform['dim'],
+                    xcoef=image_transform['xcoef'],
+                    ycoef=image_transform['ycoef'],
+                )
+                img = io.imread(image_path, as_grey=True)
+                t_img = warp(img, tform)
+                t_img = (t_img * 255).round().astype('uint8')
+                l, w = len(t_img), len(t_img[0])
+                qimage = QtGui.QImage(t_img.tobytes(), l, w, QtGui.QImage.Format_Grayscale8)
+                pixmap = QtGui.QPixmap(qimage)
 
-            pixmap = pixmap.copy(*(self.itemData[i]['rect']))
-
-            preCropSize = pixmap.size()
-
-            pixmap = pixmap.copy().scaled(300, 300, QtCore.Qt.KeepAspectRatio)
-
-            preWidth = float(preCropSize.width())
-            preHeight = float(preCropSize.height())
-
-            if preWidth == 0.0 or preHeight == 0.0:
-                preWidth = 1.0
-                preHeight = 1.0
-
-            wScale = pixmap.size().width()/preWidth
-            hScale = pixmap.size().height()/preHeight
-
-            scale = numpy.array([wScale, hScale])
-
-            scaledPoints = list(map(tuple, numpy.array(self.itemData[i]['croppedPoints'])*scale))
-            points = scaledPoints
-
+            points = self.itemData[i]['points']
             polygon = QtGui.QPolygon()
             for point in points:
                 polygon.append(QtCore.QPoint(*point))
-
             painter = QtGui.QPainter()
             painter.begin(pixmap)
-            painter.setPen(QtGui.QColor('red'))
+            pen = QtGui.QPen()
+            pen.setColor(QtGui.QColor('red'))
+            pen.setWidth(3)
+            painter.setPen(pen)
             painter.drawConvexPolygon(polygon)
             painter.end()
+
+            # Crop image
+            minx, miny, maxx, maxy = self.itemData[i]['contour_bounds']
+            print(minx, miny, maxx, maxy)
+            x = minx - 200
+            y = miny - 200
+            width = maxx - x + 300
+            height = maxy - y + 300
+            rect = [x, y, width, height]
+            pixmap = pixmap.copy(*rect)
+            pixmap = pixmap.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
+
             getattr(self.ui, 'pix'+str(i+1)).setPixmap(pixmap)
 
     def changeName(self):
