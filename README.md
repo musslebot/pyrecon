@@ -6,13 +6,11 @@ Date Created: 3/7/2013<br>
 # Overview
 [PyRECONSTRUCT](https://pypi.python.org/pypi/PyRECONSTRUCT) provides easy access to data in XML files associated with the program [RECONSTRUCT](http://synapses.clm.utexas.edu/tools/reconstruct/reconstruct.stm).
 * [mergeTool](https://github.com/musslebot/pyrecon/blob/master/pyrecon/tools/mergeTool/mergeTool.md) - merge series together with built-in conflict resolution (graphical or non-graphical)
-* [curationTool](https://github.com/musslebot/pyrecon/blob/master/pyrecon/tools/curationTool/curationTool.md) - check for various properties of objects in a series
 
 The functions/tools already in place can be used to develop solutions to a wide range of problems associated with RECONSTRUCT data.
 
 To start graphical mergetool loader, use commands in python shell:
-* `from pyrecon.gui import mergetool`
-* `mergetool.start()`
+python start.py
 
 # Install Instructions
 
