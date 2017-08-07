@@ -9,7 +9,7 @@ Date Created: 3/7/2013<br>
 
 The functions/tools already in place can be used to develop solutions to a wide range of problems associated with RECONSTRUCT data.
 
-To start graphical mergetool loader, use commands in python shell:
+To start the mergetool, use commands in a terminal:
 python start.py
 
 # Install Instructions
