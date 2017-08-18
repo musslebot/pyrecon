@@ -1,0 +1,9 @@
+lxml
+matplotlib
+nose
+numpy-1.13.1+mkl-cp36-cp36m-win32.whl
+PyQt5
+sqlalchemy
+scikit_image-0.13.0-cp36-cp36m-win32.whl
+scipy-0.19.1-cp36-cp36m-win32.whl
+Shapely-1.5.17-cp36-cp36m-win32.whl
