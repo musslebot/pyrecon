@@ -1226,12 +1226,14 @@ class resolveDialog(QtWidgets.QDialog):
                     xcoef=image_transform['xcoef'],
                     ycoef=image_transform['ycoef'],
                 )
-                img = io.imread(image_path, as_grey=True)
-                t_img = warp(img, tform)
-                t_img = (t_img * 255).round().astype('uint8')
-                l, w = len(t_img), len(t_img[0])
-                qimage = QtGui.QImage(t_img.tobytes(), l, w, QtGui.QImage.Format_Grayscale8)
-                pixmap = QtGui.QPixmap(qimage)
+                pixmap = QtGui.QPixmap(image_path)
+#                 img = io.imread(image_path, as_grey=True)
+#                 t_img = img  # Ignoring warp for now
+#                 t_img = warp(img, tform)
+#                 t_img = (t_img * 255).round().astype('uint8')
+#                 l, w = len(t_img), len(t_img[0])
+#                 qimage = QtGui.QImage(t_img.tobytes(), l, w, QtGui.QImage.Format_Grayscale8)
+#                 pixmap = QtGui.QPixmap(qimage)
 
             points = self.itemData[i]['points']
             polygon = QtGui.QPolygon()
