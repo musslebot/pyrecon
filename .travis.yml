@@ -1,4 +1,7 @@
 language: python
+python:
+ - "3.6-dev"
 before_install:
- - sudo apt-get install python-dev python2.7-dev python-setuptools build-essential libgeos-dev libblas-dev liblapack-dev libfreetype6-dev libpng-dev gfortran libxml2-dev libxslt1-dev cmake libshiboken-dev libphonon-dev libqt4-dev
-script: nosetests -sv
+ - sudo apt-get install python-setuptools build-essential libgeos-dev libblas-dev liblapack-dev libfreetype6-dev libpng-dev gfortran libxml2-dev libxslt1-dev cmake libshiboken-dev libphonon-dev
+script:
+ - nosetests -sv
