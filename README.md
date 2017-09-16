@@ -14,6 +14,15 @@ python start.py
 
 # Install Instructions
 
+### Windows
+Windows Executable
+
+To install PyRECONSTRUCT on Windows, you must first download [Python 3.6](https://www.python.org/downloads/)
+
+Next, use the [PyRECONSTRUCT.exe](https://drive.google.com/file/d/0B5WELYTJ58RMdVloay1DQm1zUlU/view?usp=sharing)
+
+That's all!
+
 ### Linux
 linux dependencies:
 <code>
