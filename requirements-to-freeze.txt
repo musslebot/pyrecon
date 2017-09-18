@@ -1,0 +1,9 @@
+lxml
+matplotlib
+nose
+numpy
+PyQt5
+sqlalchemy
+scipy
+scikit-image
+Shapely

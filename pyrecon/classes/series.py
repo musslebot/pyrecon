@@ -1,11 +1,10 @@
-"""Series."""
-
-
 class Series(object):
-    """Class representing a RECONSTRUCT Series."""
+    """ Class representing a RECONSTRUCT Series.
+    """
 
     def __init__(self, **kwargs):
-        """Set instance attributes with args and kwargs."""
+        """ Set instance attributes with args and kwargs.
+        """
         self.index = kwargs.get("index")
         self.viewport = kwargs.get("viewport")
         self.units = kwargs.get("units")
@@ -97,10 +96,11 @@ class Series(object):
         self.path = kwargs.get("path")
         self.contours = kwargs.get("contours", [])
         self.zcontours = kwargs.get("zcontours", [])
-        self.sections = kwargs.get("sectons", [])
+        self.sections = kwargs.get("sectons", {})
 
     def attributes(self):
-        """Return a dict of this Series" attributes."""
+        """ Return a dict of this Series" attributes.
+        """
         ignore = ["name", "path", "contours", "zcontours", "sections"]
         attributes = {k: v for k, v in self.__dict__.iteritems() if k not in ignore}
         return attributes

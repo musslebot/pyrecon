@@ -14,7 +14,7 @@ def str_to_bool(string):
     return string.capitalize() == "True"
 
 
-def process_series_directory(path):
+def process_series_directory(path, data_check=False):
     """Return a Series, fully loaded with data found in the provided path."""
     # Gather Series from provided path
     series_files = []
@@ -28,13 +28,18 @@ def process_series_directory(path):
 
     # Gather Sections from provided path
     section_regex = re.compile(r"{}.[0-9]+$".format(series.name))
-    sections = []
     for filename in os.listdir(path):
         if re.match(section_regex, filename):
             section_path = os.path.join(path, filename)
-            section = process_section_file(section_path)
-            sections.append(section)
-    series.sections = sorted(sections, key=lambda Section: Section.index)
+            section = process_section_file(section_path, data_check=data_check)
+            series.sections[section.index] = section
+
+    if data_check:
+        thickness_set = set([sec.thickness for _, sec in series.sections.items()])
+        if len(thickness_set) > 1:
+            print("One or more section(s) in series {} contain different thicknesses.".format(
+                series.name
+            ))
 
     return series
 
@@ -66,7 +71,7 @@ def process_series_file(path):
     return series
 
 
-def process_section_file(path):
+def process_section_file(path, data_check=False):
     """Return a Section object from a Section XML file."""
     tree = etree.parse(path)
     root = tree.getroot()
@@ -86,9 +91,7 @@ def process_section_file(path):
 
         # Image node
         images = [child for child in children if child.tag == "Image"]
-        if len(images) > 1:
-            raise Exception("No support for Sections with more than one Image.")
-        elif images:
+        if images:
             image_data = extract_image_attributes(images[0])
             image_data["_path"] = section._path
             image_data["transform"] = transform
@@ -106,6 +109,12 @@ def process_section_file(path):
                 image_data.update(image_contour_data)
 
             image = Image(**image_data)
+            if data_check:
+                # Check if ref exists
+                image_path = os.path.join(image._path, image.src)
+                if not os.path.isfile(image_path):
+                    print("WARNING: Could not find referenced image: {}".format(image_path))
+
             section.images.append(image)
 
         # Non-Image Node
@@ -116,6 +125,12 @@ def process_section_file(path):
                     contour_data["transform"] = transform
                     contour = Contour(**contour_data)
                     section.contours.append(contour)
+
+    if data_check:
+        if not section.images:
+            print("WARNING: section {} is missing an Image.".format(section.index))
+        elif len(section.images) > 1:
+            print("WARNING: section {} contains more than one Image.".format(section.index))
 
     return section
 
@@ -292,7 +307,12 @@ def extract_transform_attributes(node):
             try:  # TODO
                 return int(input)
             except:
-                print "\n\treconstruct_reader.intorfloat():",input,"converted to float",float(input),"\n"
+                print(
+                    "\n\treconstruct_reader.intorfloat(): "
+                    "{} "
+                    "converted to float "
+                    "{}".format(input, float(input))
+                )
                 return float(input)
     attributes = {
         "dim": int(node.get("dim")),
